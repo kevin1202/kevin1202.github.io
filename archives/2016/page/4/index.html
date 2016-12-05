@@ -284,8 +284,152 @@
 <li>网络中断时</li>
 <li>网络异常时</li>
 </ol>
-</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><p>可以通过如下方式处理“发送”按钮按下后，进一步的行为，比如，隐藏软键盘。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">medtMessage.setOnEditorActionListener(new TextView.OnEditorActionListener() &#123;</div><div class="line">            @Override</div><div class="line">            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) &#123;</div><div class="line">                if (actionId == EditorInfo.IME_ACTION_SEND) &#123;</div><div class="line">                    /* 隐藏软键盘 */</div><div class="line">                    hideKeyboard();</div><div class="line">                    String message = medtMessage.getText().toString().trim();</div><div class="line">                    sendText(message);</div><div class="line">                    return true;</div><div class="line">                &#125;</div><div class="line">                return false;</div><div class="line">            &#125;</div><div class="line">        &#125;);</div></pre></td></tr></table></figure></p>
-</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>1 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年11月29日</p><div class="no-title"><p>To streamline the process of working with buck, the OkBuck gradle plugin automatically generates Buck configuration for gradle based projects. It also automatically downloads all the transitive gradle dependencies to a local cache. This has enabled us to support many of the features that gradle supports natively with buck and do it in a seamless way.</p>
-<h2 id="Architecture"><a href="#Architecture" class="headerlink" title="Architecture"></a>Architecture</h2><p>OkBuck relies on the various java/android gradle plugins to evaluate and obtain the build model and dependency graph for a given project. It uses this information to create an abstract representation of the same data. This representation can then be transformed into any other format consumable by another build system.</p>
-<p>Using this approach, OkBuck generates buck files. Adding support for a new build system like <a href="https://bazel.io/" target="_blank" rel="external">Bazel</a> would only involve writing a new transform layer to perform the necessary conversion to a format understood by it.</p>
-</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>1 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年11月29日</p><h4 class="title"><a href="/2016/11/29/Known-caveats/">Butterknife</a></h4><div class="excerpt"></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>2 Minutes</li><li><i class="icon icon-category"></i></li></ul></li></ul><ul class="pagination"><li class="link"><a href="/archives/2016/page/3/"><i class="icon icon-arror-left"></i></a></li><li class="current"><a>4</a></li><li class="link"><a href="/archives/2016/page/5/"><i class="icon icon-arror-right"></i></a></li></ul><div class="page-footer"><div class="top"><ul class="social"><li><a href="https://github.com/kevin1202" title="GitHub" target="_blank"><i class="icon icon-github"></i></a></li><li><a href="http://weibo.com/u/5052645262" title="Weibo" target="_blank"><i class="icon icon-weibo"></i></a></li></ul></div><div class="bottom"><p class="copyright">© 2016 Kevin博客</p></div></div></body></html>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><p>网络模块是Android程序重要的部分，如何从网络上下载数据，如何将处理过的数据上传至网络，往往是网络模块的关键环节。<br>在研究网络模块时，如下问题值得思考</p>
+<ol>
+<li>TCP/IP协议、SOCKET、HTTP协议、HTTPS协议都是做什么的，他们之间有关系吗</li>
+<li>你是如何管理网络使用情况的</li>
+<li>常用的HTTP Client有哪些，该如何选择</li>
+<li>假如你需要修改的你网络请求框架，你要动多少代码</li>
+<li>你是怎么进行网络优化的</li>
+</ol>
+<h1 id="网络通信机制"><a href="#网络通信机制" class="headerlink" title="网络通信机制"></a>网络通信机制</h1><p>网络由下往上分为：物理层、数据链路层、网络层、传输层、会话层、表示层和应用层。</p>
+<p>IP协议对应于网络层，TCP协议对应于传输层，而HTTP协议对应于应用层，三者从本质上来说没有可比性，socket则是对TCP/IP协议的封装和应用。<br>也可以说，TPC/IP协议是传输层协议，主要解决数据如何在网络中传输，而HTTP是应用层协议，主要解决如何包装数据。</p>
+<h3 id="TCP-IP协议"><a href="#TCP-IP协议" class="headerlink" title="TCP/IP协议"></a>TCP/IP协议</h3><p>网络编程的目的就是直接或间接地通过网络协议与其他计算机进行通讯。</p>
+<p>网络编程中有两个主要的问题，</p>
+<ol>
+<li>一个是如何准确的定位网络上一台或多台主机；</li>
+<li>另一个就是找到主机后如何可靠高效的进行数据传输。<br>目前使用最广泛的因特网协议是TCP/IP协议。</li>
+</ol>
+<p>在TCP/IP协议中IP层主要负责网络主机的定位，数据传输的路由，由IP地址可以唯一地确定Internet上的一台主机。而TCP层则提供面向应用的可靠的或非可靠的数据传输机制，这是网络编程的主要对象，一般不需要关心IP层是如何处理数据的。</p>
+<h3 id="Socket"><a href="#Socket" class="headerlink" title="Socket"></a>Socket</h3><p>我们知道两个进程如果需要进行通讯最基本的一个前提是能够唯一的标示一个进程。<br>在本地进程通讯中我们可以使用PID来唯一标示一个进程，但PID只在本地唯一，网络中的两个进程PID冲突几率很大，这时候我们需要另辟它径了。<br>我们知道IP层的ip地址可以唯一标示主机，而TCP层协议和端口号可以唯一标示主机的一个进程，这样我们可以利用<code>ip地址＋协议＋端口号</code>唯一标示网络中的一个进程。</p>
+<p>能够唯一标示网络中的进程后，它们就可以利用socket进行通信了，什么是socket呢？我们经常把socket翻译为套接字，socket是在应用层和传输层之间的一个抽象层，它把TCP/IP层复杂的操作抽象为几个简单的接口供应用层调用已实现进程在网络中通信。</p>
+<p>Socket跟TCP/IP协议没有必然的联系。Socket编程接口在设计的时候，就希望也能适应其他的网络协议。所以说，Socket的出现只是使得程序员更方便地使用TCP/IP协议栈而已，是对TCP/IP协议的抽象，</p>
+<h3 id="Http协议"><a href="#Http协议" class="headerlink" title="Http协议"></a>Http协议</h3><p>HTTP协议即超文本传送协议(Hypertext Transfer Protocol )，是Web联网的基础，也是手机联网常用的协议之一，HTTP协议是建立在TCP协议之上的一种应用。</p>
+<p>HTTP连接最显著的特点是客户端发送的每次请求都需要服务器回送响应，在请求结束后，会主动释放连接。从建立连接到关闭连接的过程称为“一次连接”。</p>
+<p>HTTP提供了封装或者显示数据的具体形式。Socket提供了网络通信的能力。</p>
+<h3 id="Https协议"><a href="#Https协议" class="headerlink" title="Https协议"></a>Https协议</h3><p>HTTPS（全称：Hypertext Transfer Protocol over Secure Socket Layer），是以安全为目标的HTTP通道，简单讲是HTTP的安全版。即HTTP下加入SSL层，HTTPS的安全基础是SSL，因此加密的详细内容就需要SSL。 它是一个URI scheme（抽象标识符体系），句法类同http:体系。用于安全的HTTP数据传输。https:URL表明它使用了HTTP，但HTTPS存在不同于HTTP的默认端口及一个加密/身份验证层（在HTTP与TCP之间）。被广泛用于万维网上安全敏感的通讯，例如交易支付方面。</p>
+<h3 id="Android网络权限"><a href="#Android网络权限" class="headerlink" title="Android网络权限"></a>Android网络权限</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;uses-permission android:name=&quot;android.permission.INTERNET&quot; /&gt;&lt;-- 允许应用程序打开网络套接字 --&gt;</div><div class="line">&lt;uses-permission android:name=&quot;android.permission.ACCESS_NETWORK_STATE&quot; /&gt;&lt;-- 允许应用程序访问网络连接信息 --&gt;</div></pre></td></tr></table></figure>
+<h2 id="选择一个HTTP-Client"><a href="#选择一个HTTP-Client" class="headerlink" title="选择一个HTTP Client"></a>选择一个HTTP Client</h2><p>大多数连接网络的 Android app 会使用 HTTP 来发送与接收数据。Android 提供了三种 HTTP client：</p>
+<ul>
+<li>HttpURLConnection</li>
+<li>Apache HttpClient</li>
+<li>okhttp</li>
+</ul>
+<p>Apache HttpClient和okhttp二者均支持 HTTPS、流媒体上传和下载、可配置的超时、IPv6 与连接池（connection pooling）。</p>
+<h3 id="Java-net包中的HttpURLConnection类"><a href="#Java-net包中的HttpURLConnection类" class="headerlink" title="Java.net包中的HttpURLConnection类"></a>Java.net包中的HttpURLConnection类</h3><p>HttpUrlConnection是JDK里提供的联网API，我们知道Android SDK是基于Java的，所以当然优先考虑HttpUrlConnection这种最原始最基本的API，其实大多数开源的联网框架基本上也是基于JDK的HttpUrlConnection进行的封装罢了</p>
+<h3 id="HttpClient"><a href="#HttpClient" class="headerlink" title="HttpClient"></a>HttpClient</h3><p>HttpClient是开源组织Apache提供的Java请求网络框架，其最早是为了方便Java服务器开发而诞生的，是对JDK中的HttpUrlConnection各API进行了封装和简化，提高了性能并且降低了调用API的繁琐，Android因此也引进了这个联网框架，我们再不需要导入任何jar或者类库就可以直接使用，值得注意的是Android官方已经宣布不建议使用HttpClient了，我们再开发的时候尽量少用吧，但是用了也无妨！</p>
+<h3 id="okhttp"><a href="#okhttp" class="headerlink" title="okhttp"></a>okhttp</h3><p>http是现在主流应用使用的网络请求方式, 用来交换数据和内容, 有效的使用HTTP可以使你的APP变的更快和减少流量的使用。</p>
+<p>OkHttp是一个很棒HTTP客户端:</p>
+<ul>
+<li>支持SPDY,可以合并多个到同一个主机的请求</li>
+<li>使用连接池技术减少请求的延迟(如果SPDY是可用的话)</li>
+<li>使用GZIP压缩减少传输的数据量</li>
+<li>缓存响应避免重复的网络请求</li>
+<li>使用OkHttp很容易,同时支持异步阻塞请求和回调.</li>
+</ul>
+<p>当你的网络出现拥挤的时候,就是OKHttp大显身手的时候,它可以避免常见的网络问题,如果你的服务是部署在不同的IP上面的,如果第一个连接失败,OkHTtp会尝试其他的连接。这对现在IPv4+IPv6中常见的把服务冗余部署在不同的数据中心上也是很有必要的。OkHttp将使用现在TLS特性(SNI ALPN)来初始化新的连接，如果握手失败,将切换到TLS 1.0。</p>
+<p>如果你使用OkHttp ,你不用重写你的代码<br>okhttp-urlconnection模块实现了 java.net.HttpURLConnection 中的API, okhttp-apache模块实现了HttpClient中的API</p>
+<h2 id="如何管理网络的使用情况"><a href="#如何管理网络的使用情况" class="headerlink" title="如何管理网络的使用情况"></a>如何管理网络的使用情况</h2><p>如果我们的程序需要执行大量网络操作，那么应该提供用户设置选项，来允许用户控制程序的数据偏好。例如，同步数据的频率，是否只在连接到 WiFi 才进行下载与上传操作，是否在漫游时使用套餐数据流量等等。这样用户才不大可能在快到达流量上限时，禁止我们的程序获取后台数据，因为他们可以精确控制我们的 app 使用多少数据流量。</p>
+<h3 id="检查网络连接"><a href="#检查网络连接" class="headerlink" title="检查网络连接"></a>检查网络连接</h3><p>在执行网络操作之前，检查设备当前连接的网络连接信息是个好习惯。这样可以防止我们的程序在无意间连接使用了非意向的网络频道。如果网络连接不可用，那么我们的应用应该优雅地做出响应。为了检测网络连接，我们需要使用到下面两个类：</p>
+<p>ConnectivityManager：它会回答关于网络连接的查询结果，并在网络连接改变时通知应用程序。</p>
+<p>NetworkInfo：描述一个给定类型（移动网络或 Wi-Fi等）的网络接口状态。</p>
+<p>下面这个方法可以找到的第一个已连接的网络接口，如果返回null，则表示没有已连接的网络接口(意味着网络连接不可用)：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">public boolean isOnline() &#123;</div><div class="line">    ConnectivityManager connMgr = (ConnectivityManager)getSystemServic(Context.CONNECTIVITY_SERVICE);</div><div class="line">    NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();</div><div class="line">    return (networkInfo != null &amp;&amp; networkInfo.isConnected());</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="管理网络的使用情况"><a href="#管理网络的使用情况" class="headerlink" title="管理网络的使用情况"></a>管理网络的使用情况</h3><p>我们可以实现一个偏好设置的选项，使用户能直接设置程序对网络资源的使用情况。例如:<br>可以允许用户仅在连接到 Wi-Fi 时上传视频。<br>可以根据诸如网络可用，时间间隔等条件来选择是否做同步的操作。</p>
+<h3 id="检测网络连接变化"><a href="#检测网络连接变化" class="headerlink" title="检测网络连接变化"></a>检测网络连接变化</h3><p>要检测网络连接的变化需要用到BroadcastReceiver 的子类：<code>NetworkReceiver</code>。<br>当设备网络连接改变时，NetworkReceiver 会监听到 CONNECTIVITY_ACTION，这时需要判断当前网络连接类型并相应的设置好 wifiConnected 与 mobileConnected。</p>
+<p>这里需要注意的是在使用BroadcastReceiver的时候，<strong>不必要的声明注册会浪费系统资源</strong>。<br>最好在 onCreate()中注册 BroadcastReceiver NetworkReceiver，在 onDestroy()中销毁它。这样做会比在 manifest 里面声明 更轻巧。</p>
+<h2 id="在一个单独的线程中执行网络操作"><a href="#在一个单独的线程中执行网络操作" class="headerlink" title="在一个单独的线程中执行网络操作"></a>在一个单独的线程中执行网络操作</h2><p>网络操作会遇到不可预期的延迟。为了避免造成不好的用户体验，确保总是在 UI 线程之外单独的线程中执行网络操作。关于Android中的线程和进程可以参考<a href="http://blog.csdn.net/sdkfjksf/article/details/51556041" target="_blank" rel="external">这里</a>。</p>
+<h2 id="封装网络请求"><a href="#封装网络请求" class="headerlink" title="封装网络请求"></a>封装网络请求</h2><p>有了Http Client，我们需要考虑的是如何优雅的使用这些Http Client进行网络请求。这时候我们可以对Http Clent进行封装来满足我们的需求。封装的基本要点如下：</p>
+<ul>
+<li>支持自定义请求的Header</li>
+<li>支持Http的基本请求方法：GET、POST、PUT、DELETE等</li>
+<li>支持文件上传和下载</li>
+<li>可以加载图片</li>
+<li>支持多任务网络请求操作</li>
+<li>支持缓存</li>
+<li>支持请求回调</li>
+<li>支持session的保持</li>
+</ul>
+<p>具体可以参考<a href="http://a.codekk.com/detail/Android/grumoon/Volley%20%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90" target="_blank" rel="external">Volley源码分析</a>、<a href="http://www.jianshu.com/p/45cb536be2f4" target="_blank" rel="external">Retrofit分析</a>等，看看这些成名已久的框架是如何封装的。</p>
+<h2 id="网络请求框架"><a href="#网络请求框架" class="headerlink" title="网络请求框架"></a>网络请求框架</h2><p>以下是曾经很火或者现在很多的网络请求框架：</p>
+<ul>
+<li>Android Async HTTP</li>
+<li>AndroidAsync</li>
+<li>Volley</li>
+<li>Retrofit</li>
+<li>AsyncHttp是一个较高层的封装，底层使用的是HttpClient。</li>
+</ul>
+<p>Volley是Google推出的Android异步网络请求框架和图片加载框架。底层网络请求可以使用不同的网络库来处理，比如OkHttp，HttpClient。</p>
+<p>Retrofit是一个封装比较好的，相对更面向开发者的rest请求库，它的底层网络请求也可以使用不同的网络库来处理。</p>
+<h3 id="网络请求框架再封装"><a href="#网络请求框架再封装" class="headerlink" title="网络请求框架再封装"></a>网络请求框架再封装</h3><p>我在这些<a href="http://blog.csdn.net/sdkfjksf/article/details/51106335" target="_blank" rel="external">Tips让你的App更容易维护</a> 简单提到过面向接口编程，这对于网络框架再封装很实用。</p>
+<p>我们可以定义一套我们自己的网络请求接口，接口规定我们需要有什么能力的框架。调用的话我们可以直接调用接口方法就好了，这样不管我们换什么网络框架，只要这个框架有网络请求的能力就行。举个例子，定义接口如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">public interface ISender &#123;</div><div class="line"></div><div class="line">    void send(METHOD method, String url, SenderCallback callback);</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>我们写一个类实现这个接口：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">public class BaseSender implements ISender &#123;</div><div class="line">    @Override</div><div class="line">    public synchronized void sender(METHOD method, final String url, final SenderCallback callback) &#123;</div><div class="line">        //volley,retrofit,balabala,用任意网络请求框架实现。</div><div class="line"></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>然后是我们的SendCallback<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">public interface SendCallback &#123;</div><div class="line"></div><div class="line">    //请求成功回调</div><div class="line">    void onSucceeed(String t);</div><div class="line"></div><div class="line">    //请求失败回调</div><div class="line">    void onError(String errorMsg);</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>最后是我们的调用：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">private ISender mHttp;</div><div class="line"></div><div class="line">public void getWeahter(String tag) &#123;</div><div class="line"></div><div class="line">    //调用接口里定义好的方法</div><div class="line">    mHttp.sender();</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这里传入我们需要的参数就好了。</p>
+<h2 id="数据解析"><a href="#数据解析" class="headerlink" title="数据解析"></a>数据解析</h2><p>以下是比较流行的网络数据解析的库：</p>
+<ul>
+<li>Gson</li>
+<li>Jackson</li>
+<li>FastJson</li>
+<li>HtmlPaser</li>
+<li>Jsoup</li>
+</ul>
+<p>网络数据解析比较基础，这里就不过多描述了。</p>
+<h2 id="移动端网络优化"><a href="#移动端网络优化" class="headerlink" title="移动端网络优化"></a>移动端网络优化</h2><p>对于手机程序，网络操作相对来说是比较耗电的行为。优化网络操作能够显著节约电量的消耗。一个网络请求可以简单分为连接服务器和获取数据两个部分。其中连接服务器前还包括 DNS 解析的过程；获取数据后可能会对数据进行缓存。那么我们如果要进行网络优化需要从这两个关键点入手。</p>
+<p>以下是具体可以优化的点：</p>
+<ul>
+<li>不用域名，用IP直连<br>省去 DNS 解析过程，DNS 全名 Domain Name System，解析意指根据域名得到其对应的IP地址。</li>
+<li>服务器合理部署<br>服务器多运营商多地部署，一般至少含三大运营商、南中北三地部署。</li>
+<li>根据当前的网络环境选择当下最佳的策略<br> 主要的实施步骤有两步：第1是检测收集当前的网络环境信息，第2是根据当前收集到的信息进行网络请求行为的调整。</li>
+<li>预取<br> 我们需要预先判断用户在此次操作之后，后续零散的请求是否很有可能会马上被触发，可以把后面几分钟有可能会使用到的零散请求都一次集中执行完毕。</li>
+<li>连接复用<br>节省连接建立时间，如开启 keep-alive。</li>
+<li>用捆绑批量访问的方式来减少访问的频率<br> 预先判定那些可能马上就会使用到的网络资源，捆绑一起集中进行网络请求。这点我们可以考虑按照提前预期后续1-2分钟的数据作为基准。</li>
+<li>分优先级、延迟部分请求<br> 首先我们需要区分哪些网络请求是需要及时返回结果的，哪些是可以延迟执行的。我们可以有针对性的把请求行为捆绑起来，延迟到某个时刻统一发起请求。</li>
+<li>对传输的数据进行压缩<br> 网络传输数据量的大小主要由两部分组成：图片与序列化的数据，那么我们需要做的就是减少这两部分的数据传输大小。</li>
+<li>多连接<br> 对于较大文件，如大图片、文件下载可考虑多连接。 需要控制请求的最大并发量，毕竟移动端网络受限。</li>
+<li>避免不必要的同步操作<br> 应用程序的一个基础功能是能够保持确保界面上呈现的信息是即时最新的，例如呈现最新的新闻，天气，信息流等等信息。但是，过于频繁的促使手机客户端应用去同步最新的服务器数据会对性能产生很大的负面影响，不仅仅使得CPU不停的在工作，内存，网络流量，电量等等都会持续的被消耗，所以在进行网络请求操作的时候一定要避免多度同步操作。</li>
+<li>做好网络数据的缓存<br> 从手机的缓存中直接读取数据肯定比从网络上获取数据要更加的便捷高效，特别是对于那些会被频繁访问到的数据，需要把这些数据缓存到设备上，以便更加快速的进行访问。</li>
+</ul>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>13 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><h2 id="多姿多彩的Camera"><a href="#多姿多彩的Camera" class="headerlink" title="多姿多彩的Camera"></a>多姿多彩的Camera</h2><ol>
+<li>Intent调用手机内相机程序<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee566e6aeef.jpg" alt=""><br>如果我们设置了照片的存储路径，那么很可能会遇到一下三种问题：</li>
+</ol>
+<p>问题一：onActivityResult方法中的data返回为空（数据表明，93%的机型的data将会是Null，所以如果我们指定了路径，就不要使用data来获取照片，起码在使用前要做空判断）。<br>问题二：照片无法存储。<br>如果自定义存储路径是/mnt/sdcard/lowry/，而手机SD卡下在拍照前没有名为lowry的文件夹，那么部分手机拍照后图片不会保存，导致我们无法获得照片，大多数手机的相机遇到文件夹不存在的情况都会自己创建出不存在的文件夹，而个别手机却不会创建，其代表机型为：三星I8258、华为H30-T00、红米等。</p>
+<p>解决的方法就是在指定存储路径前先判断路径中的文件夹是否都存在，不存在先创建再调用相机。</p>
+<p>问题三：照片可以存储，但是名字不对。<br>file:///mnt/sdcard/123 1.jpg，由于URI的fromFile方法会将路径中的空格用“%20”取代。</p>
+<p>其实对于大多数的手机这都不算事，手机在解析存储路径的时候都会将“%20”替换为空格，这样实际上最终的照片名字还是我们当初指定的名字：123 1.jpg，遗憾的是个别手机（如酷派7260）系统自带的相机没有将“%20”读成空格，拍照后的照片的名字是123%201.jpg，我们用路径“file:///mnt/sdcard/123 1.jpg”能找到照片才怪！<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee567446ec6.jpg" alt=""><br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee56c455fc3.jpg" alt=""><br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee56cc3c251.jpg" alt=""></p>
+<p>总结：</p>
+<p>（1）使用onActivityResult中的intent(data)前要做空判断。<br>（2）指定拍照路径时，先检查路径中的文件夹是否都存在，不存在时先创建文件夹再调用   相机拍照。<br>（3）指定拍照存储路径时，照片的命名中不要包含空格等特殊符号。</p>
+<h2 id="通过Camera的open方法调用手机摄像头"><a href="#通过Camera的open方法调用手机摄像头" class="headerlink" title="通过Camera的open方法调用手机摄像头"></a>通过Camera的open方法调用手机摄像头</h2><p>2.1 连续自动对焦crash</p>
+<p>原因：第一次对焦未结束，应用层又发起的第二次对焦，引起对焦失败。<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee57d42b772_middle.jpg" alt=""><br>解决方案一：传入AutoFocusCallback；<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee585dd32ae.jpg" alt=""><br>解决方案二：延时操作；</p>
+<p>解决方案三：异常捕获。</p>
+<h2 id="UI适配"><a href="#UI适配" class="headerlink" title="UI适配"></a>UI适配</h2><p>有时候布局文件中的某个标签还会引起一些问题，我们先看下面一段布局代码：<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee5b1629003.jpg" alt=""><br>正确结果：<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee5b34bae1a.jpg" alt=""><br>错误结果：<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee5b050cf58.jpg" alt=""><br>这就是因为Android 3.0以下版本在FrameLayout中使用layout_marginTo标签，必须要设置gravity才能生效。</p>
+<p>那么如何解决这个问题呢？在设置android:layout_marginTop的组件中再设置一下 <code>android:layout_gravity=&quot;top&quot;</code>即可。</p>
+<p><a href="http://www.csdn.net/article/2015-09-08/2825645/3" target="_blank" rel="external">原文链接</a></p>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>2 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><h2 id="辅助开发工具"><a href="#辅助开发工具" class="headerlink" title="辅助开发工具"></a>辅助开发工具</h2><ul>
+<li>Android模拟器<ul>
+<li><a href="http://www.genymotion.net/" target="_blank" rel="external">最快的安卓模拟器Genymotion</a></li>
+<li><a href="http://www.iplaysoft.com/genymotion.html" target="_blank" rel="external">Genymotion - 强大好用高性能的 Android 模拟器</a></li>
+</ul>
+</li>
+<li>常用图标生成工具<ul>
+<li><a href="http://romannurik.github.io/AndroidAssetStudio/" target="_blank" rel="external">Android Asset Studio</a></li>
+<li><a href="http://jgilfelt.github.io/android-actionbarstylegenerator/#name=example&amp;compat=appcompat&amp;theme=light_dark&amp;actionbarstyle=solid&amp;texture=1&amp;hairline=1&amp;neutralPressed=1&amp;backColor=e4e4e4%2C100&amp;secondaryColor=d6d6d6%2C100&amp;tabColor=f80%2C100&amp;tertiaryColor=d6d6d6%2C100&amp;accentColor=f80%2C100&amp;cabBackColor=fb3%2C100&amp;cabHighlightColor=f80%2C100" target="_blank" rel="external">Android Action Bar Style Generator</a></li>
+<li><a href="http://android-holo-colors.com/" target="_blank" rel="external">Android Holo Colors Generator</a></li>
+</ul>
+</li>
+<li>Teambition<ul>
+<li><a href="https://www.teambition.com/project/55dec0bd61ebf398124937b2/home" target="_blank" rel="external">南瓜姑娘整体项目进度</a></li>
+</ul>
+</li>
+<li>Slack<ul>
+<li><a href="http://xiao-guan.blogspot.com/2014/12/slack.html" target="_blank" rel="external">超好用的小团队沟通工具 - Slack</a></li>
+<li><a href="https://nggirl.slack.com/messages/@slackbot/" target="_blank" rel="external">Slack for nggirl</a></li>
+</ul>
+</li>
+<li>Trello<ul>
+<li><a href="http://36kr.com/p/46852.html" target="_blank" rel="external">Trello：轻量级团队流程协作和列表管理平台</a></li>
+<li><a href="https://trello.com/b/5e8z3iTm/nggirl" target="_blank" rel="external">Trello for nggirl</a></li>
+</ul>
+</li>
+</ul>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>1 Minutes</li><li><i class="icon icon-category"></i></li></ul></li></ul><ul class="pagination"><li class="link"><a href="/archives/2016/page/3/"><i class="icon icon-arror-left"></i></a></li><li class="current"><a>4</a></li><li class="link"><a href="/archives/2016/page/5/"><i class="icon icon-arror-right"></i></a></li></ul><div class="page-footer"><div class="top"><ul class="social"><li><a href="https://github.com/kevin1202" title="GitHub" target="_blank"><i class="icon icon-github"></i></a></li><li><a href="http://weibo.com/u/5052645262" title="Weibo" target="_blank"><i class="icon icon-weibo"></i></a></li></ul></div><div class="bottom"><p class="copyright">© 2016 Kevin博客</p></div></div></body></html>

@@ -1,53 +1,29 @@
-<!DOCTYPE html><html lang="zh-cn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"><meta name="format-detection" content="telephone=no"><meta name="format-detection" content="email=no"><meta name="description" content="欢迎大家来到我的博客，希望可以帮到你们，很高兴认识你们。我的github地址：https:github.com/kevin1202"><meta name="keywords" content="Hexo, Gruntjs, Nodejs, Reactjs, Vuejs"><title>Kevin博客 - 梦想还是要有的，万一实现了呢？</title><link rel="stylesheet" href="/css/main_style.min.css"><link rel="icon" href="/favicon.ico"></head><body><div class="page-header"><div class="background"><img src="/default_images/page_background.jpg"></div><div class="author"><div class="head"><img src="/default_images/author_head.gif"></div><h3 class="name">Kevin</h3><p class="signature">梦想还是要有的，万一实现了呢？</p></div></div><ul class="post-list"><li> <p class="date">2016年12月5日</p><div class="no-title"><p>属性值可以根据实际需求更改<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">&lt;android.support.v7.widget.CardView xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;</div><div class="line">    xmlns:card_view=&quot;http://schemas.android.com/apk/res-auto&quot;</div><div class="line">    android:layout_width=&quot;match_parent&quot;</div><div class="line">    android:layout_height=&quot;match_parent&quot;</div><div class="line">    card_view:background=&quot;@color/white&quot;</div><div class="line">    card_view:cardCornerRadius=&quot;0dp&quot;</div><div class="line">    card_view:cardElevation=&quot;0dp&quot;</div><div class="line">    card_view:cardUseCompatPadding=&quot;true&quot;</div><div class="line">    card_view:contentPadding=&quot;0dp&quot;</div><div class="line">    card_view:paddingEnd=&quot;0dp&quot;</div><div class="line">    card_view:paddingStart=&quot;0dp&quot;</div><div class="line">    android:elevation=&quot;0dp&quot;</div><div class="line">    android:orientation=&quot;vertical&quot;&gt;</div><div class="line"></div><div class="line">    &lt;ImageView</div><div class="line">        android:id=&quot;@+id/iv_column_banner_grid&quot;</div><div class="line">        android:layout_width=&quot;280dp&quot;</div><div class="line">        android:layout_height=&quot;140dp&quot;</div><div class="line">        android:scaleType=&quot;centerCrop&quot;/&gt;</div><div class="line"></div><div class="line">&lt;/android.support.v7.widget.CardView&gt;</div></pre></td></tr></table></figure></p>
-</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>2 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><h2 id="项目中用到的技术和相关参考资料"><a href="#项目中用到的技术和相关参考资料" class="headerlink" title="项目中用到的技术和相关参考资料"></a>项目中用到的技术和相关参考资料</h2><ul>
-<li>百度云推送<ul>
-<li><a href="http://push.baidu.com/" target="_blank" rel="external">百度云推送官网</a></li>
-<li><a href="http://push.baidu.com/doc/android/api" target="_blank" rel="external">Android SDK 开发文档</a></li>
-</ul>
+<!DOCTYPE html><html lang="zh-cn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"><meta name="format-detection" content="telephone=no"><meta name="format-detection" content="email=no"><meta name="description" content="欢迎大家来到我的博客，希望可以帮到你们，很高兴认识你们。我的github地址：https:github.com/kevin1202"><meta name="keywords" content="Hexo, Gruntjs, Nodejs, Reactjs, Vuejs"><title>Kevin博客 - 梦想还是要有的，万一实现了呢？</title><link rel="stylesheet" href="/css/main_style.min.css"><link rel="icon" href="/favicon.ico"></head><body><div class="page-header"><div class="background"><img src="/default_images/page_background.jpg"></div><div class="author"><div class="head"><img src="/default_images/author_head.gif"></div><h3 class="name">Kevin</h3><p class="signature">梦想还是要有的，万一实现了呢？</p></div></div><ul class="post-list"><li> <p class="date">2016年12月5日</p><div class="no-title"><ol>
+<li>开发微信时如果使用的肯定是dubug的keyStore或者中间更换了keyStore。<br>分享的时候会被微信拒绝，微信会生成缓存，就算换了正式的keystore来分享显示的还会是被微信拒绝。<br>就算重启微信重启手机也不管用，那你就要清空微信的数据。</li>
+</ol>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><ol>
+<li>定义变量时，UI变量单独放一块，数据变量放一块，空行隔开不要掺杂在一块。</li>
+<li><p>使用UIL时，如果只是简单加载一个图片的bitmap，可以使用SimpleImageLoadingListener方法，而不是ImageLoadingListener。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">imageLoader.displayImage(detailModel.getData().getPicture(), </div><div class="line">                        headerBg, </div><div class="line">                        new SimpleImageLoadingListener() &#123;</div><div class="line"></div><div class="line">                    @Override</div><div class="line">                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) &#123;</div><div class="line">                        headerBg.setImageBitmap(loadedImage);</div><div class="line">                        setBitmap(loadedImage);</div><div class="line">                    &#125;</div><div class="line"></div><div class="line">                &#125;);</div></pre></td></tr></table></figure>
 </li>
-<li>环信即时通讯云<ul>
-<li><a href="http://www.easemob.com/docs/gettingstart/" target="_blank" rel="external">快速入门（五分钟运行环信demo)</a></li>
-<li><a href="https://github.com/easemob/sdkexamples-android" target="_blank" rel="external">ChatDemo</a></li>
-</ul>
+<li><p>Activity或Fragment中对adapter.updateDataSet(data);时，<code>notifyDataSetChanged</code>的操作放在adapter的updateDataSet方法内执行。</p>
 </li>
-<li>微信<ul>
-<li><a href="https://open.weixin.qq.com/cgi-bin/showdocument?action=dir_list&amp;t=resource/res_list&amp;verify=1&amp;id=1417751808&amp;token=&amp;lang=zh_CN" target="_blank" rel="external">Android接入指南</a></li>
-<li><a href="https://open.weixin.qq.com/cgi-bin/showdocument?action=dir_list&amp;t=resource/res_list&amp;verify=1&amp;id=open1419319167&amp;lang=zh_CN" target="_blank" rel="external">Android资源下载</a></li>
-</ul>
+<li><p>外部启动activity时，调用该activity的静态方法，例如</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">public static Intent newInstance(Context context, int tabIndexIfNeeded) &#123;</div><div class="line">    Intent intent = new Intent(context, UserGuideActivity.class);</div><div class="line">    intent.putExtra(Constants.KEY_WHICH_TAB, tabIndexIfNeeded);</div><div class="line">    return intent;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>而外表类实例化该activity的intent的方法是<br><code>final Intent intent = UserGuideActivity.newInstance(this, UserGuideConstants.OPEN_BIZ_AREAS_GUIDE_VIEW);</code></p>
+<p>类似地，启动fragment时，调用该fragment的静态方法，例如</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">public static GuiseFragment newInstance(NGGuiseGroup guiseGroup) &#123;</div><div class="line">     GuiseFragment fragment = new GuiseFragment();</div><div class="line">     Bundle bundle = new Bundle();</div><div class="line">     bundle.putSerializable(EXTRA_GUISE_GROUP, guiseGroup);</div><div class="line">     fragment.setArguments(bundle);</div><div class="line">     return fragment;</div><div class="line"> &#125;</div></pre></td></tr></table></figure>
+<p>而外表类实例化该fragment的方法是<br><code>final GuiseFragment guiseFragment = GuiseFragment.newInstance(guiseGroup);</code></p>
 </li>
-<li>新浪微博<ul>
-<li><a href="http://open.weibo.com/wiki/%E7%A7%BB%E5%8A%A8%E5%BA%94%E7%94%A8SSO%E6%8E%88%E6%9D%83" target="_blank" rel="external">移动应用SSO授权（SSO 登陆授权）</a></li>
-<li><a href="https://github.com/8tory/weibo-android-sdk" target="_blank" rel="external">项目主页</a></li>
-</ul>
+<li><p>发起网络请求之前，务必检测网络状态，只有网络可用时才允许发起网络请求。网络不可用时提示网络连接错误，不允许发起网络请求。<br>例如  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">if (!Utils.isNetworkOn()) &#123;</div><div class="line">    showShortToast(R.string.network_down);</div><div class="line">&#125; else</div><div class="line">  net.getArticlePostDetail(APIKey.KEY_ARTICLE_POST_DETAIL, token, String.valueOf(postId), String.valueOf(postType));</div></pre></td></tr></table></figure>
+<p>特殊地，比如视频播放只允许wifi网络下才可以播放，非wifi网络下中断播放。</p>
 </li>
-<li>xUtils (DbUtils模块, ViewUtils模块, HttpUtils模块, BitmapUtils模块)<ul>
-<li><a href="https://github.com/wyouflf/xUtils" target="_blank" rel="external">项目主页</a></li>
-<li><a href="http://codekk.com/blogs/detail/54cfab086c4761e5001b2543" target="_blank" rel="external">xUtils 源码解析</a></li>
-</ul>
-</li>
-<li>GSON<ul>
-<li><a href="https://github.com/google/gson" target="_blank" rel="external">项目主页</a></li>
-</ul>
-</li>
-<li>afinal<ul>
-<li><a href="https://github.com/yangfuhai/afinal" target="_blank" rel="external">项目主页</a></li>
-</ul>
-</li>
-<li>android-wheel<ul>
-<li><a href="https://github.com/chemalarrea/Android-wheel" target="_blank" rel="external">项目主页</a></li>
-</ul>
-</li>
-<li>PhotoView<ul>
-<li><a href="https://github.com/chrisbanes/PhotoView" target="_blank" rel="external">项目主页</a></li>
-</ul>
-</li>
-<li>友盟<ul>
-<li><a href="http://dev.umeng.com/analytics/android-doc/integration#" target="_blank" rel="external">集成文档</a></li>
-<li><a href="http://www.umeng.com/apps/a612001097e85e7605c75d55/error_types" target="_blank" rel="external">Bug追踪列表</a></li>
-</ul>
-</li>
-</ul>
-</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>2 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><h1 id="应用缓存导致的错误"><a href="#应用缓存导致的错误" class="headerlink" title="应用缓存导致的错误"></a>应用缓存导致的错误</h1><h3 id="错误的场景"><a href="#错误的场景" class="headerlink" title="错误的场景"></a>错误的场景</h3><ol>
+</ol>
+<h2 id="必读材料"><a href="#必读材料" class="headerlink" title="必读材料"></a>必读材料</h2><ol>
+<li><a href="https://github.com/futurice/android-best-practices/blob/master/translations/Chinese/README.cn.md" target="_blank" rel="external">Android 开发最佳实践</a></li>
+</ol>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>4 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><h1 id="应用缓存导致的错误"><a href="#应用缓存导致的错误" class="headerlink" title="应用缓存导致的错误"></a>应用缓存导致的错误</h1><h3 id="错误的场景"><a href="#错误的场景" class="headerlink" title="错误的场景"></a>错误的场景</h3><ol>
 <li>作品集-头部轮播图片-显示的图片和服务器要展示的图片不一致</li>
 <li>曾经在使用应用时登录成功，再次使用时崩溃。比如查看优惠券时崩溃。</li>
 </ol>
@@ -75,136 +51,29 @@
 <h3 id="解决的办法-3"><a href="#解决的办法-3" class="headerlink" title="解决的办法"></a>解决的办法</h3><ol>
 <li>添加对网络异常的判断</li>
 </ol>
-<h3 id="解决的办法-4"><a href="#解决的办法-4" class="headerlink" title="解决的办法"></a>解决的办法</h3></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>1 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><h2 id="Android面试题"><a href="#Android面试题" class="headerlink" title="Android面试题"></a>Android面试题</h2><ol>
-<li><p>下面哪些是Thread类的方法（）</p>
-<p> A start()<br> B run()<br> C exit()<br> D getPriority()</p>
-<p> 答案：ABD</p>
-<p> 解析：看Java API docs吧：<a href="http://docs.oracle.com/javase/7/docs/api/，exit()是System类的方法，如System.exit(0)。" target="_blank" rel="external">http://docs.oracle.com/javase/7/docs/api/，exit()是System类的方法，如System.exit(0)。</a></p>
-</li>
-</ol>
-<ol>
-<li><p>下面关于java.lang.Exception类的说法正确的是（）</p>
-<p> A 继承自Throwable<br> B 实现了Serialable接口</p>
-<p> 答案：A</p>
-<p> 解析：Java异常的基类为java.lang.Throwable，java.lang.Error和java.lang.Exception继承 Throwable，RuntimeException和其它的Exception等继承Exception，具体的RuntimeException继承RuntimeException。</p>
-</li>
-<li><p>下面程序的运行结果是（）</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">String str1 = &quot;hello&quot;;</div><div class="line">String str2 = &quot;he&quot; + new String(&quot;llo&quot;);</div><div class="line">System.err.println(str1 == str2);</div></pre></td></tr></table></figure>
-<p> 答案：false</p>
-<p> 解析：因为str2中的llo是新申请的内存块，而==判断的是对象的地址而非值，所以不一样。如果是String str2 = str1，那么就是true了。</p>
-</li>
-<li><p>volatile关键字是否能保证线程安全？（）</p>
-<p> 答案：不能</p>
-<p> 解析：volatile关键字用在多线程同步中，可保证读取的可见性，JVM只是保证从主内存加载到线程工作内存的值是最新的读取值，而非cache中。但多个线程对</p>
-<p> volatile的写操作，无法保证线程安全。例如假如线程1，线程2 在进行read,load 操作中，发现主内存中count的值都是5，那么都会加载这个最新的值，在线程1堆count进行修改之后，会write到主内存中，主内存中的count变量就会变为6；线程2由于已经进行read,load操作，在进行运算之后，也会更新主内存count的变量值为6；导致两个线程及时用volatile关键字修改之后，还是会存在并发的情况。</p>
-</li>
-<li><p>下列说法正确的是（）</p>
-<p> A LinkedList继承自List</p>
-<p> B AbstractSet继承自Set</p>
-<p> C HashSet继承自AbstractSet</p>
-<p> D WeakMap继承自HashMap</p>
-<p> 答案：AC</p>
-</li>
-<li><p>由于南瓜姑娘安卓客户端的代码是托管在Github上的，所以需要面试者有一定的Github使用经验。请写出你的Github个人主页地址？</p>
-</li>
-<li><p>Android Studio上格式化代码的快捷键是？（由于windows\Linux版或Mac版）的快捷键不同，所以回答是请注明来自哪个系统环境。</p>
-<p> 答：格式化代码    Cmd + Option + L（mac版）或者    Ctrl + Alt + L（windows\Linux版）</p>
-</li>
-<li><p>如何在Gradle配置文件中声明该Android模块是一个Android库，声明该Android模块是一个Android应用呢？</p>
-<p> 答：a. 声明该Android模块是一个Android库：apply plugin: ‘com.android.library’<br> b. 声明该Android模块是一个Android应用：apply plugin: ‘com.android.application’</p>
-</li>
-<li><p>git来比较项目中任意两个版本的差异的命令是？</p>
-<p> 答：git diff</p>
-</li>
-<li><p>如何使用markdown编辑器来显示一段代码块，只需要写明显示代码块的语法即可。</p>
-<p>答：使用三个`符号。比如``` 代码块 ```</p>
-</li>
-<li><p>如何国际化一个Android项目，请说明具体需要做哪些操作？</p>
-<p>答：通常国际化我们只要在res/目录下在重新定义values-国家编号,如values-zh-rCN是简体汉语语言包，values-zh-rTW是繁体语言包，values-jp是日语语言包等。</p>
-</li>
-<li><p>Android launcher图标有哪几种常见的尺寸，分别是多少？</p>
-<p>答： </p>
-<ul>
-<li>48 × 48 (mdpi) </li>
-<li>72 × 72 (hdpi) </li>
-<li>96 × 96 (xhdpi)    </li>
-<li>144 × 144 (xxhdpi)    </li>
-<li>192 × 192 (xxxhdpi)    </li>
-<li>512 × 512 (Google Play store)</li>
-</ul>
-</li>
-<li><p>如何让android的service一直在后台运行？</p>
-<p>答：a. 把service和activity分开，让service开机启动。设置一个broadcast receiver接受开机信号，使用RECEIVE_BOOT_COMPLETED的permission， 然后启动service。activity启动后绑定到service上，通过ipc机制通信，acitivity结束后松绑。注意安装后要手动启动service，不会自动启动，之后重启手机后才会随开机启动。<br>b. 在内存低的时候系统会自动清理进程，这时候后台service可能会被杀掉。可以在onStartCommand中返回START_STICKY，这样系统有足够多资源的时候，就会重新开启service。</p>
-</li>
-<li><p>试着简要描述一下grep的作用？</p>
-<p>答：Linux系统中grep命令是一种强大的文本搜索工具，它能使用正则表达式搜索文本，并把匹 配的行打印出来。grep全称是Global Regular Expression Print，表示全局正则表达式版本，它的使用权限是所有用户。</p>
-</li>
-<li><p>如果想在Activity中得到新打开Activity关闭后返回的数据，需要使用系统提供什么方法？新的Activity关闭后会向前面的Activity传回数据，为了得到传回的数据，必须在前面的Activity中重写什么方法？（只写方法名即可）</p>
-<p>答：startActivityForResult (Intent intent, int requestCode)， onActivityResult (int requestCode, int resultCode, Intent data)</p>
-</li>
-<li><p>请描述下Activity的生命周期。</p>
-<p>答：创建 oncreate -  启动onstart – 恢复 onResume – 暂停 onPause – 结束 onStop – 销毁onDestroy</p>
-</li>
-<li><p>TCP/IP 建立连接的过程?(3-way shake)</p>
-<p>答：在TCP/IP协议中，TCP协议提供可靠的连接服务，采用三次握手建立一个连接。<br>第一次握手：建立连接时，客户端发送syn包(syn=j)到服务器，并进入SYN_SEND状态，等待服务器确认；<br>第二次握手：服务器收到syn包，必须确认客户的SYN(ack=j+1)，同时自己也发送一个SYN包(syn=k)，即SYN+ACK包，此时服务器进入SYN_RECV状态；<br>第三次握手：客户端收到服务器的SYN＋ACK包，向服务器发送确认包ACK(ack=k+1)，此包发送完毕，客户端和服务器进入ESTABLISHED状态，完成三次握手。</p>
-</li>
-<li><p>java集合类框架的基本接口有哪些？</p>
-<p>Java集合类提供了一套设计良好的支持对一组对象进行操作的接口和类。Java集合类里面最基本的接口有：</p>
-<ul>
-<li>Collection：代表一组对象，每一个对象都是它的子元素。</li>
-<li>Set：不包含重复元素的Collection。</li>
-<li>List：有顺序的collection，并且可以包含重复元素。</li>
-<li>Map：可以把键(key)映射到值(value)的对象，键不能重复。</li>
-</ul>
-</li>
-</ol>
-<p>19.什么是值传递和引用传递？</p>
-<pre><code>对象被值传递，意味着传递了对象的一个副本。因此，就算是改变了对象副本，也不会影响源对象的值。
-对象被引用传递，意味着传递的并不是实际的对象，而是对象的引用。因此，外部对引用对象所做的改变会反映到所有的对象
-</code></pre><p>20.OSI七层模型有哪七层？</p>
-<pre><code>答：由高到低依次为物理层、数据链路层、网络层、传输层、会话层、表示层和应用层
-</code></pre><p>21.适合频繁插入和查找的数据结构?</p>
-<p>答：频繁插入，链表效率高，频繁查找数组效率高，那么综合一下，我个人觉得是哈希表，或者说HashMap等使用hash算法的数据结构</p>
-<p>SEE ALSO <a href="http://www.cnblogs.com/lanxuezaipiao/p/3371224.html" target="_blank" rel="external">http://www.cnblogs.com/lanxuezaipiao/p/3371224.html</a></p>
-</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>5 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><p>#不对0x80以上的字符进行quote，解决git status/commit时中文文件名乱码<br><code>git config --global core.quotepath false</code></p>
+<h3 id="解决的办法-4"><a href="#解决的办法-4" class="headerlink" title="解决的办法"></a>解决的办法</h3></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>1 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><p>这里需要注意的是在使用BroadcastReceiver的时候，不必要的声明注册会浪费系统资源。最好在 onCreate()中注册 BroadcastReceiver NetworkReceiver，在 onDestroy()中销毁它。这样做会比在 manifest 里面声明 更轻巧。</p>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><p>#不对0x80以上的字符进行quote，解决git status/commit时中文文件名乱码<br><code>git config --global core.quotepath false</code></p>
 <p><a href="http://xstarcd.github.io/wiki/shell/git_chinese.html" target="_blank" rel="external">http://xstarcd.github.io/wiki/shell/git_chinese.html</a></p>
-</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><h2 id="未呼出键盘输入框不要闪烁"><a href="#未呼出键盘输入框不要闪烁" class="headerlink" title="未呼出键盘输入框不要闪烁"></a>未呼出键盘输入框不要闪烁</h2><p>在根布局中添加</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">android:focusableInTouchMode=&quot;true&quot;</div></pre></td></tr></table></figure>
-<p>动态设置</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">ivClear.setVisibility(View.GONE);</div><div class="line">etDetail.clearFocus();</div><div class="line">rootView.requestFocus();</div><div class="line">rootView.setFocusableInTouchMode(true);</div><div class="line">rootView.setFocusable(true);</div></pre></td></tr></table></figure>
-<h2 id="监听键盘弹出和隐藏事件"><a href="#监听键盘弹出和隐藏事件" class="headerlink" title="监听键盘弹出和隐藏事件"></a>监听键盘弹出和隐藏事件</h2><p>目前大概有<a href="http://toughcoder.net/blog/2015/10/09/android-trick-detect-soft-keyboard-show-slash-hide/" target="_blank" rel="external">四种解决键盘弹出和隐藏事件的方法</a>，其中有三种方法是受限的，当activity的属性windowSoftInputMode设置成adjustPan或者adjustResize时这种方法就失效了。因为这二种情况软键盘弹起时，布局是不会发生变化的，二种height值是一样的，自然无法分辨。<br>只有第四种方法时相对完美的，不受activity的属性windowSoftInputMode的值的影响。下面终点来说下这种方法的<a href="http://stackoverflow.com/a/33062760/3962551" target="_blank" rel="external">具体内容</a></p>
-<h2 id="计算根布局的高度差"><a href="#计算根布局的高度差" class="headerlink" title="计算根布局的高度差"></a>计算根布局的高度差</h2><p>判断的依据是根布局与DectorView之间的差值，在正常情况下应该等于status bar高度与action bar高度之和。当软键盘弹起时则会大于此值。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">private boolean isKeyboardShown(View rootView) &#123;</div><div class="line">        final int softKeyboardHeight = 100;</div><div class="line">        Rect r = new Rect();</div><div class="line">        rootView.getWindowVisibleDisplayFrame(r);</div><div class="line">        DisplayMetrics dm = rootView.getResources().getDisplayMetrics();</div><div class="line">        int heightDiff = rootView.getBottom() - r.bottom;</div><div class="line">        return heightDiff &gt; softKeyboardHeight * dm.density;</div><div class="line">&#125;</div><div class="line"></div><div class="line">globalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() &#123;</div><div class="line">            @Override</div><div class="line">            public void onGlobalLayout() &#123;</div><div class="line">                if (!keyboardShown(etComment.getRootView())) &#123;</div><div class="line">                    // keyboard hidden</div><div class="line">                    if (!emojPanelShown) &#123;</div><div class="line">                        mface_container.setVisibility(View.GONE);</div><div class="line">                    &#125;</div><div class="line">                &#125; else &#123;</div><div class="line">                    // keyboard shown</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;;</div><div class="line"> </div><div class="line">etComment.getViewTreeObserver().addOnGlobalLayoutListener(globalLayoutListener);</div></pre></td></tr></table></figure>
-<p><strong>注意</strong>：要记得把注册的GlobalLayoutListener再反注册掉。</p>
-<h2 id="按下返回键后键盘消失但是onBackPressed方法没有被调用"><a href="#按下返回键后键盘消失但是onBackPressed方法没有被调用" class="headerlink" title="按下返回键后键盘消失但是onBackPressed方法没有被调用"></a>按下返回键后键盘消失但是onBackPressed方法没有被调用</h2><p>这是因为键盘“吃掉”了这个事件，可以通过自定义EditText的方式来处理<br>参见<a href="http://stackoverflow.com/a/5993196/3962551" target="_blank" rel="external">http://stackoverflow.com/a/5993196/3962551</a></p>
-</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>4 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><ol>
-<li>禁用PullToRefreshListView(listview)默认的快速滑动功能<br><code>listView.getRefreshableView().setOverScrollMode(View.OVER_SCROLL_NEVER);</code></li>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><p><a href="http://www.jianshu.com/p/2be492c1df96#" target="_blank" rel="external">可能是讲解Android事件分发最好的文章</a></p>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><ol>
+<li>我的－消息－评论列表，弹出键盘会把评论列表（1条时）挤出屏幕</li>
+<li>登录页面－点击输入框弹出键盘，logo消失－当输入内容时－logo会再次出现</li>
+<li>[B端]点击商圈－打不开（页面闪退）</li>
+<li>[B端]用户注册时，填入手机号点击“发送验证码”，系统发生错误，跳转到登录页</li>
+<li>手势返回</li>
+<li>视频加入第一帧配图</li>
+<li>我的－消息－评论列表，弹出键盘会把评论列表（1条时）挤出屏幕</li>
+<li>禅道上的bug修复</li>
+<li>C端列表滑动标题栏渐变动画</li>
+<li>已知bug，需要紧急修复。timer问题</li>
+<li>登录页面动画效果</li>
+<li>C端重构任务</li>
+<li>发版本</li>
+<li>任务排期 网络异常处理</li>
+<li>个人资料显示性别时崩溃<a href="http://testcli2.nggirl.com.cn/zentaopms/www/index.php?m=bug&amp;f=view&amp;bugID=476" target="_blank" rel="external">http://testcli2.nggirl.com.cn/zentaopms/www/index.php?m=bug&amp;f=view&amp;bugID=476</a></li>
+<li>乐视页面导致的，需要找到解决方案<a href="http://testcli2.nggirl.com.cn/zentaopms/www/index.php?m=bug&amp;f=view&amp;bugID=480" target="_blank" rel="external">http://testcli2.nggirl.com.cn/zentaopms/www/index.php?m=bug&amp;f=view&amp;bugID=480</a></li>
+<li>OutOfMemoryError内存溢出<a href="http://testcli2.nggirl.com.cn/zentaopms/www/index.php?m=bug&amp;f=view&amp;bugID=516" target="_blank" rel="external">http://testcli2.nggirl.com.cn/zentaopms/www/index.php?m=bug&amp;f=view&amp;bugID=516</a></li>
+<li>文章详情数据解析崩溃，<a href="http://testcli2.nggirl.com.cn/zentaopms/www/index.php?m=bug&amp;f=view&amp;bugID=521" target="_blank" rel="external">http://testcli2.nggirl.com.cn/zentaopms/www/index.php?m=bug&amp;f=view&amp;bugID=521</a></li>
 </ol>
-</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><h2 id="辅助开发工具"><a href="#辅助开发工具" class="headerlink" title="辅助开发工具"></a>辅助开发工具</h2><ul>
-<li>Android模拟器<ul>
-<li><a href="http://www.genymotion.net/" target="_blank" rel="external">最快的安卓模拟器Genymotion</a></li>
-<li><a href="http://www.iplaysoft.com/genymotion.html" target="_blank" rel="external">Genymotion - 强大好用高性能的 Android 模拟器</a></li>
-</ul>
-</li>
-<li>常用图标生成工具<ul>
-<li><a href="http://romannurik.github.io/AndroidAssetStudio/" target="_blank" rel="external">Android Asset Studio</a></li>
-<li><a href="http://jgilfelt.github.io/android-actionbarstylegenerator/#name=example&amp;compat=appcompat&amp;theme=light_dark&amp;actionbarstyle=solid&amp;texture=1&amp;hairline=1&amp;neutralPressed=1&amp;backColor=e4e4e4%2C100&amp;secondaryColor=d6d6d6%2C100&amp;tabColor=f80%2C100&amp;tertiaryColor=d6d6d6%2C100&amp;accentColor=f80%2C100&amp;cabBackColor=fb3%2C100&amp;cabHighlightColor=f80%2C100" target="_blank" rel="external">Android Action Bar Style Generator</a></li>
-<li><a href="http://android-holo-colors.com/" target="_blank" rel="external">Android Holo Colors Generator</a></li>
-</ul>
-</li>
-<li>Teambition<ul>
-<li><a href="https://www.teambition.com/project/55dec0bd61ebf398124937b2/home" target="_blank" rel="external">南瓜姑娘整体项目进度</a></li>
-</ul>
-</li>
-<li>Slack<ul>
-<li><a href="http://xiao-guan.blogspot.com/2014/12/slack.html" target="_blank" rel="external">超好用的小团队沟通工具 - Slack</a></li>
-<li><a href="https://nggirl.slack.com/messages/@slackbot/" target="_blank" rel="external">Slack for nggirl</a></li>
-</ul>
-</li>
-<li>Trello<ul>
-<li><a href="http://36kr.com/p/46852.html" target="_blank" rel="external">Trello：轻量级团队流程协作和列表管理平台</a></li>
-<li><a href="https://trello.com/b/5e8z3iTm/nggirl" target="_blank" rel="external">Trello for nggirl</a></li>
-</ul>
-</li>
-</ul>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>1 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><p>可以通过如下方式处理“发送”按钮按下后，进一步的行为，比如，隐藏软键盘。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">medtMessage.setOnEditorActionListener(new TextView.OnEditorActionListener() &#123;</div><div class="line">            @Override</div><div class="line">            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) &#123;</div><div class="line">                if (actionId == EditorInfo.IME_ACTION_SEND) &#123;</div><div class="line">                    /* 隐藏软键盘 */</div><div class="line">                    hideKeyboard();</div><div class="line">                    String message = medtMessage.getText().toString().trim();</div><div class="line">                    sendText(message);</div><div class="line">                    return true;</div><div class="line">                &#125;</div><div class="line">                return false;</div><div class="line">            &#125;</div><div class="line">        &#125;);</div></pre></td></tr></table></figure></p>
 </div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>1 Minutes</li><li><i class="icon icon-category"></i></li></ul></li></ul><ul class="pagination"><li class="current"><a>1</a></li><li class="link"><a href="/archives/2016/12/page/2/"><i class="icon icon-arror-right"></i></a></li></ul><div class="page-footer"><div class="top"><ul class="social"><li><a href="https://github.com/kevin1202" title="GitHub" target="_blank"><i class="icon icon-github"></i></a></li><li><a href="http://weibo.com/u/5052645262" title="Weibo" target="_blank"><i class="icon icon-weibo"></i></a></li></ul></div><div class="bottom"><p class="copyright">© 2016 Kevin博客</p></div></div></body></html>
