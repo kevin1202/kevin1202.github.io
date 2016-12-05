@@ -1,79 +1,30 @@
-<!DOCTYPE html><html lang="zh-cn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"><meta name="format-detection" content="telephone=no"><meta name="format-detection" content="email=no"><meta name="description" content="欢迎大家来到我的博客，希望可以帮到你们，很高兴认识你们。我的github地址：https:github.com/kevin1202"><meta name="keywords" content="Hexo, Gruntjs, Nodejs, Reactjs, Vuejs"><title>Kevin博客 - 梦想还是要有的，万一实现了呢？</title><link rel="stylesheet" href="/css/main_style.min.css"><link rel="icon" href="/favicon.ico"></head><body><div class="page-header"><div class="background"><img src="/default_images/page_background.jpg"></div><div class="author"><div class="head"><img src="/default_images/author_head.gif"></div><h3 class="name">Kevin</h3><p class="signature">梦想还是要有的，万一实现了呢？</p></div></div><ul class="post-list"><li> <p class="date">2016年12月5日</p><div class="no-title"><ol>
-<li>开发微信时如果使用的肯定是dubug的keyStore或者中间更换了keyStore。<br>分享的时候会被微信拒绝，微信会生成缓存，就算换了正式的keystore来分享显示的还会是被微信拒绝。<br>就算重启微信重启手机也不管用，那你就要清空微信的数据。</li>
-</ol>
-</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><ol>
-<li>定义变量时，UI变量单独放一块，数据变量放一块，空行隔开不要掺杂在一块。</li>
-<li><p>使用UIL时，如果只是简单加载一个图片的bitmap，可以使用SimpleImageLoadingListener方法，而不是ImageLoadingListener。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">imageLoader.displayImage(detailModel.getData().getPicture(), </div><div class="line">                        headerBg, </div><div class="line">                        new SimpleImageLoadingListener() &#123;</div><div class="line"></div><div class="line">                    @Override</div><div class="line">                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) &#123;</div><div class="line">                        headerBg.setImageBitmap(loadedImage);</div><div class="line">                        setBitmap(loadedImage);</div><div class="line">                    &#125;</div><div class="line"></div><div class="line">                &#125;);</div></pre></td></tr></table></figure>
-</li>
-<li><p>Activity或Fragment中对adapter.updateDataSet(data);时，<code>notifyDataSetChanged</code>的操作放在adapter的updateDataSet方法内执行。</p>
-</li>
-<li><p>外部启动activity时，调用该activity的静态方法，例如</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">public static Intent newInstance(Context context, int tabIndexIfNeeded) &#123;</div><div class="line">    Intent intent = new Intent(context, UserGuideActivity.class);</div><div class="line">    intent.putExtra(Constants.KEY_WHICH_TAB, tabIndexIfNeeded);</div><div class="line">    return intent;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>而外表类实例化该activity的intent的方法是<br><code>final Intent intent = UserGuideActivity.newInstance(this, UserGuideConstants.OPEN_BIZ_AREAS_GUIDE_VIEW);</code></p>
-<p>类似地，启动fragment时，调用该fragment的静态方法，例如</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">public static GuiseFragment newInstance(NGGuiseGroup guiseGroup) &#123;</div><div class="line">     GuiseFragment fragment = new GuiseFragment();</div><div class="line">     Bundle bundle = new Bundle();</div><div class="line">     bundle.putSerializable(EXTRA_GUISE_GROUP, guiseGroup);</div><div class="line">     fragment.setArguments(bundle);</div><div class="line">     return fragment;</div><div class="line"> &#125;</div></pre></td></tr></table></figure>
-<p>而外表类实例化该fragment的方法是<br><code>final GuiseFragment guiseFragment = GuiseFragment.newInstance(guiseGroup);</code></p>
-</li>
-<li><p>发起网络请求之前，务必检测网络状态，只有网络可用时才允许发起网络请求。网络不可用时提示网络连接错误，不允许发起网络请求。<br>例如  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">if (!Utils.isNetworkOn()) &#123;</div><div class="line">    showShortToast(R.string.network_down);</div><div class="line">&#125; else</div><div class="line">  net.getArticlePostDetail(APIKey.KEY_ARTICLE_POST_DETAIL, token, String.valueOf(postId), String.valueOf(postType));</div></pre></td></tr></table></figure>
-<p>特殊地，比如视频播放只允许wifi网络下才可以播放，非wifi网络下中断播放。</p>
-</li>
-</ol>
-<h2 id="必读材料"><a href="#必读材料" class="headerlink" title="必读材料"></a>必读材料</h2><ol>
-<li><a href="https://github.com/futurice/android-best-practices/blob/master/translations/Chinese/README.cn.md" target="_blank" rel="external">Android 开发最佳实践</a></li>
-</ol>
-</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>4 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><h1 id="应用缓存导致的错误"><a href="#应用缓存导致的错误" class="headerlink" title="应用缓存导致的错误"></a>应用缓存导致的错误</h1><h3 id="错误的场景"><a href="#错误的场景" class="headerlink" title="错误的场景"></a>错误的场景</h3><ol>
-<li>作品集-头部轮播图片-显示的图片和服务器要展示的图片不一致</li>
-<li>曾经在使用应用时登录成功，再次使用时崩溃。比如查看优惠券时崩溃。</li>
-</ol>
-<h3 id="解决的办法"><a href="#解决的办法" class="headerlink" title="解决的办法"></a>解决的办法</h3><ol>
-<li>系统-应用-南瓜姑娘-清理缓存</li>
-<li>删除SD卡上的nggirl文件夹</li>
-</ol>
-<h1 id="系统推送导致的错误"><a href="#系统推送导致的错误" class="headerlink" title="系统推送导致的错误"></a>系统推送导致的错误</h1><h3 id="错误的场景-1"><a href="#错误的场景-1" class="headerlink" title="错误的场景"></a>错误的场景</h3><ol>
-<li>服务器端有环信聊天信息推送到用户端时，首次打开应用导致崩溃</li>
-</ol>
-<h3 id="解决的办法-1"><a href="#解决的办法-1" class="headerlink" title="解决的办法"></a>解决的办法</h3><ol>
-<li>可能是JSON解析出错导致的，在代码中解决</li>
-</ol>
-<h1 id="SD卡读取或者写入导致的错误"><a href="#SD卡读取或者写入导致的错误" class="headerlink" title="SD卡读取或者写入导致的错误"></a>SD卡读取或者写入导致的错误</h1><h3 id="错误的场景-2"><a href="#错误的场景-2" class="headerlink" title="错误的场景"></a>错误的场景</h3><ol>
-<li>SD卡不可写</li>
-</ol>
-<h3 id="解决的办法-2"><a href="#解决的办法-2" class="headerlink" title="解决的办法"></a>解决的办法</h3><ol>
-<li>重启手机</li>
-<li>断开USB连接</li>
-</ol>
-<h1 id="网络异常导致的错误"><a href="#网络异常导致的错误" class="headerlink" title="网络异常导致的错误"></a>网络异常导致的错误</h1><h3 id="错误的场景-3"><a href="#错误的场景-3" class="headerlink" title="错误的场景"></a>错误的场景</h3><ol>
-<li>断网时</li>
-<li>网络较慢时，数据加载未完成时，用户执行某些需要加载到本地的数据的操作时导致崩溃</li>
-</ol>
-<h3 id="解决的办法-3"><a href="#解决的办法-3" class="headerlink" title="解决的办法"></a>解决的办法</h3><ol>
-<li>添加对网络异常的判断</li>
-</ol>
-<h3 id="解决的办法-4"><a href="#解决的办法-4" class="headerlink" title="解决的办法"></a>解决的办法</h3></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>1 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><p>这里需要注意的是在使用BroadcastReceiver的时候，不必要的声明注册会浪费系统资源。最好在 onCreate()中注册 BroadcastReceiver NetworkReceiver，在 onDestroy()中销毁它。这样做会比在 manifest 里面声明 更轻巧。</p>
-</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><p>#不对0x80以上的字符进行quote，解决git status/commit时中文文件名乱码<br><code>git config --global core.quotepath false</code></p>
-<p><a href="http://xstarcd.github.io/wiki/shell/git_chinese.html" target="_blank" rel="external">http://xstarcd.github.io/wiki/shell/git_chinese.html</a></p>
-</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><p><a href="http://www.jianshu.com/p/2be492c1df96#" target="_blank" rel="external">可能是讲解Android事件分发最好的文章</a></p>
-</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><ol>
-<li>我的－消息－评论列表，弹出键盘会把评论列表（1条时）挤出屏幕</li>
-<li>登录页面－点击输入框弹出键盘，logo消失－当输入内容时－logo会再次出现</li>
-<li>[B端]点击商圈－打不开（页面闪退）</li>
-<li>[B端]用户注册时，填入手机号点击“发送验证码”，系统发生错误，跳转到登录页</li>
-<li>手势返回</li>
-<li>视频加入第一帧配图</li>
-<li>我的－消息－评论列表，弹出键盘会把评论列表（1条时）挤出屏幕</li>
-<li>禅道上的bug修复</li>
-<li>C端列表滑动标题栏渐变动画</li>
-<li>已知bug，需要紧急修复。timer问题</li>
-<li>登录页面动画效果</li>
-<li>C端重构任务</li>
-<li>发版本</li>
-<li>任务排期 网络异常处理</li>
-<li>个人资料显示性别时崩溃<a href="http://testcli2.nggirl.com.cn/zentaopms/www/index.php?m=bug&amp;f=view&amp;bugID=476" target="_blank" rel="external">http://testcli2.nggirl.com.cn/zentaopms/www/index.php?m=bug&amp;f=view&amp;bugID=476</a></li>
-<li>乐视页面导致的，需要找到解决方案<a href="http://testcli2.nggirl.com.cn/zentaopms/www/index.php?m=bug&amp;f=view&amp;bugID=480" target="_blank" rel="external">http://testcli2.nggirl.com.cn/zentaopms/www/index.php?m=bug&amp;f=view&amp;bugID=480</a></li>
-<li>OutOfMemoryError内存溢出<a href="http://testcli2.nggirl.com.cn/zentaopms/www/index.php?m=bug&amp;f=view&amp;bugID=516" target="_blank" rel="external">http://testcli2.nggirl.com.cn/zentaopms/www/index.php?m=bug&amp;f=view&amp;bugID=516</a></li>
-<li>文章详情数据解析崩溃，<a href="http://testcli2.nggirl.com.cn/zentaopms/www/index.php?m=bug&amp;f=view&amp;bugID=521" target="_blank" rel="external">http://testcli2.nggirl.com.cn/zentaopms/www/index.php?m=bug&amp;f=view&amp;bugID=521</a></li>
-</ol>
-</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>1 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><p>可以通过如下方式处理“发送”按钮按下后，进一步的行为，比如，隐藏软键盘。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">medtMessage.setOnEditorActionListener(new TextView.OnEditorActionListener() &#123;</div><div class="line">            @Override</div><div class="line">            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) &#123;</div><div class="line">                if (actionId == EditorInfo.IME_ACTION_SEND) &#123;</div><div class="line">                    /* 隐藏软键盘 */</div><div class="line">                    hideKeyboard();</div><div class="line">                    String message = medtMessage.getText().toString().trim();</div><div class="line">                    sendText(message);</div><div class="line">                    return true;</div><div class="line">                &#125;</div><div class="line">                return false;</div><div class="line">            &#125;</div><div class="line">        &#125;);</div></pre></td></tr></table></figure></p>
-</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>1 Minutes</li><li><i class="icon icon-category"></i></li></ul></li></ul><ul class="pagination"><li class="current"><a>1</a></li><li class="link"><a href="/archives/2016/page/2/"><i class="icon icon-arror-right"></i></a></li></ul><div class="page-footer"><div class="top"><ul class="social"><li><a href="https://github.com/kevin1202" title="GitHub" target="_blank"><i class="icon icon-github"></i></a></li><li><a href="http://weibo.com/u/5052645262" title="Weibo" target="_blank"><i class="icon icon-weibo"></i></a></li></ul></div><div class="bottom"><p class="copyright">© 2016 Kevin博客</p></div></div></body></html>
+<!DOCTYPE html><html lang="zh-cn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"><meta name="format-detection" content="telephone=no"><meta name="format-detection" content="email=no"><meta name="description" content="欢迎大家来到我的博客，希望可以帮到你们，很高兴认识你们。我的github地址：https:github.com/kevin1202"><meta name="keywords" content="Hexo, Gruntjs, Nodejs, Reactjs, Vuejs"><title>Kevin博客 - 梦想还是要有的，万一实现了呢？</title><link rel="stylesheet" href="/css/main_style.min.css"><link rel="icon" href="/favicon.ico"></head><body><div class="page-header"><div class="background"><img src="/default_images/page_background.jpg"></div><div class="author"><div class="head"><img src="/default_images/author_head.gif"></div><h3 class="name">Kevin</h3><p class="signature">梦想还是要有的，万一实现了呢？</p></div></div><ul class="post-list"><li> <p class="date">2016年12月5日</p><h4 class="title"><a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/">基于Travis-CI搭建Android自动打包发布工作流</a></h4><div class="excerpt"><p>未自动化前安卓开发总是避免不了这样的工作流程：</p>
+<pre><code>1. 开发一些新功能，提交代码
+2. 完成一部分功能后，打包一个测试版APK
+3. 将测试版APK上传到QQ群 / 网盘 / Fir.im / 蒲公英等
+4. 在QQ群或发布平台解释当前版本所完成的功能
+5. 通知测试人员测试
+</code></pre><p>实现了这套自动化发布后，工作流程被简化成：</p>
+<pre><code>1. 开发新功能，提交代码
+2. 通过git tag对代码打一个内测版的tag，
+</code></pre><p>Tag提交后Travis CI会自动编译代码，生成APK文件并分发到Github和fir.im，Github和fir.im中会保持Tag的描述信息，分发完成后会有邮件通知所有参与测试的人员。而作为开发人员，只需要专注于对代码打好一个Tag就可以了。</p>
+<p>整个流程看似做了不少工作，其实体现在Travis CI只有数行指令而已，以下逐一讲解：</p></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>17 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><h4 class="title"><a href="/2016/12/05/mac_library_show_hide/">解决git status/commit时中文文件名乱码</a></h4><div class="excerpt"></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/git/">git</a><span class="category-list-count">1</span></li></ul></li></ul></li><li> <p class="date">2016年12月5日</p><h4 class="title"><a href="/2016/12/05/Android最佳实践/">Android最佳实践</a></h4><div class="excerpt"></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>4 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><h4 class="title"><a href="/2016/12/05/微信SDK使用时遇到的问题汇总/">使用微信SDK遇到的问题汇总</a></h4><div class="excerpt"><p>在正式开始之前这里要着啰嗦一下，进来的同学一定要看，在申请应用的时候要填一个签名，这个签名是由应用的签名文件keystore决定的，那么你在填这个签名的时候，一定要把你的应用用正式的keyStore生成apk，安装到手机，然后用微信提供的获取应用签名的apk工具获取你应用的签名，然后这会生成的这个签名才是正确的，千万记得，不要使用dubug的ketStore测试，不然后面虽然可以修改，修改了后要审核，但是审核也是需要时间的，会很麻烦。<br>还有一点，你在测试微信分享的时候可能会直接在Eclipse好或者Studio运行项目，那样使用的肯定是dubug的keyStore了，这样分享的时候会被微信拒绝，微信会生成缓存，就算你这会换了正式的keystore来分享显示的还会是被微信拒绝，就算重启微信重启手机也不管用，那你就要清空微信的数据了；很多东西是不是丢了？好吧，啰嗦够了，正式进入主题。</p>
+<p>今天会提供如果实现微信分享，并且对怎么成功接受回调结果做一个详细的介绍和教程，有回调结果失败的同学，往下看吧</p></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>23 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><h4 class="title"><a href="/2016/12/05/图标尺寸/">图标尺寸</a></h4><div class="excerpt"></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>4 Minutes</li><li><i class="icon icon-category"></i><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/">Android</a><span class="category-list-count">4</span></li></ul></li></ul></li><li> <p class="date">2016年12月5日</p><h4 class="title"><a href="/2016/12/05/开发规范/">开发规范</a></h4><div class="excerpt"></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>10 Minutes</li><li><i class="icon icon-category"></i><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/">Android</a><span class="category-list-count">4</span></li></ul></li></ul></li><li> <p class="date">2016年12月5日</p><h4 class="title"><a href="/2016/12/05/处理表情和文字输入的正确姿势/">处理表情和文字输入的正确姿势</a></h4><div class="excerpt"><ol>
+<li>点击“输入框”以外的区域，如果当前他们显示的话，需要隐藏表情面板或者软键盘。</li>
+<li>点击“输入框”，如果当前表情面板显示的话，需要先隐藏之，然后弹出软键盘。</li>
+<li>输入框中一般会有显示当前输入状态的提示按钮（有的在输入框左边，有的在右边），比如，如果当前是表情输入状态，该提示按钮的图标应该是软键盘，以提示用户点击该按钮切换到文字输入状态。这个提示按钮的图标和点击后的响应要分情况处理，是动态的。</li>
+<li><p>键盘相关操作方法</p></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>12 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><h4 class="title"><a href="/2016/12/05/Android机型适配之痛/">Android机型适配之痛</a></h4><div class="excerpt"></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>2 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年11月28日</p><h4 class="title"><a href="/2016/11/28/mac_library_show_hide/">Mac 中显示资源库（Library）文件夹目录的几种方法</a></h4><div class="excerpt"><h2 id="Mac-中显示资源库（Library）文件夹目录的几种方法"><a href="#Mac-中显示资源库（Library）文件夹目录的几种方法" class="headerlink" title="Mac 中显示资源库（Library）文件夹目录的几种方法"></a>Mac 中显示资源库（Library）文件夹目录的几种方法</h2><p>Mac中Library目录在10.6.7系统之后默认隐藏的，要想找到此文件夹有如下几种方法：</p>
+<h5 id="用命令可以使其显示"><a href="#用命令可以使其显示" class="headerlink" title="用命令可以使其显示"></a><strong>用命令可以使其显示</strong></h5><blockquote>
+<p>在终端中执行命令：</p>
+<p>chflags nohidden ~/Library</p>
+<p>可显示资源库文件夹</p>
+<p>如想隐藏，可以在终端中执行命令：</p>
+<p>chflags hidden ~/Library  </p>
+</blockquote>
+<p>隐藏</p>
+<hr>
+<h5 id="在Finder菜单中的偏好设置中设置"><a href="#在Finder菜单中的偏好设置中设置" class="headerlink" title="在Finder菜单中的偏好设置中设置"></a>在<strong>Finder</strong>菜单中的<strong>偏好设置</strong>中设置</h5><blockquote>
+<p>在Finder菜单中的<strong>偏好设置</strong>中选择<strong>边栏</strong>，勾选上<strong>设备</strong>中的<strong>硬盘</strong>。</p>
+<p>再打开Finder，Finder的<strong>左边栏</strong>会有<strong>设备</strong>显示，在这里可以找到用户下的资源库也可以找到系统下的资源库文件目录了。</p>
+<p>想要隐藏，去掉Finder偏好设置中边栏选项设备中的硬盘勾选或着直接在Finder的左边栏上设备出悬浮鼠标会出现隐藏，直接隐藏即可。</p>
+</blockquote></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>1 Minutes</li><li><i class="icon icon-category"></i><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/mac/">mac</a><span class="category-list-count">1</span></li></ul></li></ul></li><li> <p class="date">2016年11月24日</p><h4 class="title"><a href="/2016/11/24/TimerTask 更新UI线程/">timertask</a></h4><div class="excerpt"><p>昨天犯了一个低级的错误，在TimerTask任务里执行activity跳转，导致activity切入动画无效。查阅相关资料，有以下两种方法更新UI</p></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>3 Minutes</li><li><i class="icon icon-category"></i><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Android/">Android</a><span class="category-list-count">4</span></li></ul></li></ul></li></ul><ul class="pagination"><li class="current"><a>1</a></li><li class="link"><a href="/archives/2016/page/2/"><i class="icon icon-arror-right"></i></a></li></ul><div class="page-footer"><div class="top"><ul class="social"><li><a href="https://github.com/kevin1202" title="GitHub" target="_blank"><i class="icon icon-github"></i></a></li><li><a href="http://weibo.com/u/5052645262" title="Weibo" target="_blank"><i class="icon icon-weibo"></i></a></li></ul></div><div class="bottom"><p class="copyright">© 2016 Kevin博客</p></div></div></body></html>

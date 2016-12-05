@@ -1,0 +1,25 @@
+<!DOCTYPE html><html lang="zh-cn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"><meta name="format-detection" content="telephone=no"><meta name="format-detection" content="email=no"><meta name="description" content="欢迎大家来到我的博客，希望可以帮到你们，很高兴认识你们。我的github地址：https:github.com/kevin1202"><meta name="keywords" content="Hexo, Gruntjs, Nodejs, Reactjs, Vuejs"><title>Android机型适配之痛 - Kevin博客</title><link rel="stylesheet" href="/css/main_style.min.css"><link rel="icon" href="/favicon.ico"></head><body><div class="post-header"><img class="background" src="/default_images/post_background.jpg"><div class="post-title"><h1 class="title">Android机型适配之痛</h1><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>2 Minutes</li><li><i class="icon icon-calendar"></i>2016年12月5日</li></ul></div></div><div class="article-content"><h2 id="多姿多彩的Camera"><a href="#多姿多彩的Camera" class="headerlink" title="多姿多彩的Camera"></a>多姿多彩的Camera</h2><ol>
+<li>Intent调用手机内相机程序<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee566e6aeef.jpg" alt=""><br>如果我们设置了照片的存储路径，那么很可能会遇到一下三种问题：</li>
+</ol>
+<p>问题一：onActivityResult方法中的data返回为空（数据表明，93%的机型的data将会是Null，所以如果我们指定了路径，就不要使用data来获取照片，起码在使用前要做空判断）。<br>问题二：照片无法存储。<br>如果自定义存储路径是/mnt/sdcard/lowry/，而手机SD卡下在拍照前没有名为lowry的文件夹，那么部分手机拍照后图片不会保存，导致我们无法获得照片，大多数手机的相机遇到文件夹不存在的情况都会自己创建出不存在的文件夹，而个别手机却不会创建，其代表机型为：三星I8258、华为H30-T00、红米等。</p>
+<p>解决的方法就是在指定存储路径前先判断路径中的文件夹是否都存在，不存在先创建再调用相机。</p>
+<p>问题三：照片可以存储，但是名字不对。<br>file:///mnt/sdcard/123 1.jpg，由于URI的fromFile方法会将路径中的空格用“%20”取代。</p>
+<p>其实对于大多数的手机这都不算事，手机在解析存储路径的时候都会将“%20”替换为空格，这样实际上最终的照片名字还是我们当初指定的名字：123 1.jpg，遗憾的是个别手机（如酷派7260）系统自带的相机没有将“%20”读成空格，拍照后的照片的名字是123%201.jpg，我们用路径“file:///mnt/sdcard/123 1.jpg”能找到照片才怪！<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee567446ec6.jpg" alt=""><br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee56c455fc3.jpg" alt=""><br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee56cc3c251.jpg" alt=""></p>
+<p>总结：</p>
+<p>（1）使用onActivityResult中的intent(data)前要做空判断。<br>（2）指定拍照路径时，先检查路径中的文件夹是否都存在，不存在时先创建文件夹再调用   相机拍照。<br>（3）指定拍照存储路径时，照片的命名中不要包含空格等特殊符号。</p>
+<h2 id="通过Camera的open方法调用手机摄像头"><a href="#通过Camera的open方法调用手机摄像头" class="headerlink" title="通过Camera的open方法调用手机摄像头"></a>通过Camera的open方法调用手机摄像头</h2><p>2.1 连续自动对焦crash</p>
+<p>原因：第一次对焦未结束，应用层又发起的第二次对焦，引起对焦失败。<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee57d42b772_middle.jpg" alt=""><br>解决方案一：传入AutoFocusCallback；<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee585dd32ae.jpg" alt=""><br>解决方案二：延时操作；</p>
+<p>解决方案三：异常捕获。</p>
+<h2 id="UI适配"><a href="#UI适配" class="headerlink" title="UI适配"></a>UI适配</h2><p>有时候布局文件中的某个标签还会引起一些问题，我们先看下面一段布局代码：<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee5b1629003.jpg" alt=""><br>正确结果：<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee5b34bae1a.jpg" alt=""><br>错误结果：<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee5b050cf58.jpg" alt=""><br>这就是因为Android 3.0以下版本在FrameLayout中使用layout_marginTo标签，必须要设置gravity才能生效。</p>
+<p>那么如何解决这个问题呢？在设置android:layout_marginTop的组件中再设置一下 <code>android:layout_gravity=&quot;top&quot;</code>即可。</p>
+<p><a href="http://www.csdn.net/article/2015-09-08/2825645/3" target="_blank" rel="external">原文链接</a></p>
+</div><div class="article-meta"></div><div class="article-comment"><div class="ds-thread" id="ds-thread" data-thread-key="ciwbyg0rp0000nmv9sew2peu4" data-title="Android机型适配之痛" data-url="https://kevin1202.github.io/2016/12/05/Android机型适配之痛/" site-name="kevinbolg"></div><script>var siteName = document.getElementById('ds-thread').getAttribute('site-name');
+var duoshuoQuery = {short_name: siteName};
+(function() {
+  var ds = document.createElement('script');
+  ds.type = 'text/javascript';ds.async = true;
+  ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+  ds.charset = 'UTF-8';
+  (document.getElementsByTagName('head')[0] 
+  || document.getElementsByTagName('body')[0]).appendChild(ds);
+})();</script></div><ul class="navication"><li class="home"><a href="/"><i class="icon icon-home"></i></a></li><li><a href="/2016/12/05/处理表情和文字输入的正确姿势/"><i class="icon icon-arror-left"></i></a></li><li><a href="/2016/11/28/mac_library_show_hide/"><i class="icon icon-arror-right"></i></a></li></ul><div class="page-footer"><div class="top"><ul class="social"><li><a href="https://github.com/kevin1202" title="GitHub" target="_blank"><i class="icon icon-github"></i></a></li><li><a href="http://weibo.com/u/5052645262" title="Weibo" target="_blank"><i class="icon icon-weibo"></i></a></li></ul></div><div class="bottom"><p class="copyright">© 2016 Kevin博客</p></div></div></body></html>
