@@ -1,0 +1,91 @@
+<!DOCTYPE html><html lang="zh-cn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"><meta name="format-detection" content="telephone=no"><meta name="format-detection" content="email=no"><meta name="description" content="欢迎大家来到我的博客，希望可以帮到你们，很高兴认识你们。我的github地址：https:github.com/kevin1202"><meta name="keywords" content="Hexo, Gruntjs, Nodejs, Reactjs, Vuejs"><title>Kevin博客 - 梦想还是要有的，万一实现了呢？</title><link rel="stylesheet" href="/css/main_style.min.css"><link rel="icon" href="/favicon.ico"></head><body><div class="post-header"><img class="background" src="/default_images/post_background.jpg"><div class="post-title"><h1 class="title">随笔</h1><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>4 Minutes</li><li><i class="icon icon-calendar"></i>2016年12月5日</li></ul></div></div><div class="article-content"><p>采用敏捷开发，依赖”小步快跑”的方式，集中”优势兵力”各个击破。具体做法是</p>
+<h2 id="功能性任务"><a href="#功能性任务" class="headerlink" title="功能性任务"></a>功能性任务</h2><ol>
+<li>比如让杨凯负责一张页面的开发</li>
+<li>他需要把这张页面“切”开，切成具体的功能点，然后分别实现。</li>
+<li>拿视频详情页来讲，切分后的技术点如下<ul>
+<li>视频播放</li>
+<li>文章详情</li>
+<li>评论详情</li>
+<li>键盘和表情输入</li>
+<li>点赞，收藏，分享各占一个（一般只要有网络请求参与都算一个点）</li>
+<li>上拉加载等<br>这么做是为了细化一个大页面的任务量，方便评估开发时间，从而方便避免项目延迟和加班的问题。敏捷开发的另一个优点是提升效率，以后其他部门打断我们思考的次数会减少，我们可以集中精力去抠技术细节。</li>
+</ul>
+</li>
+</ol>
+<h2 id="Teambition任务管理"><a href="#Teambition任务管理" class="headerlink" title="Teambition任务管理"></a>Teambition任务管理</h2><ol>
+<li>当事人负责更新自己的任务状态</li>
+<li><p>任务的优先级  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">1-7上拉加载时，没有更多内容要返回toast提示</div></pre></td></tr></table></figure>
+<p>如上所示，标号有两部分数组组成。<br>1表示该任务在需求文档中的位置，1表示第一个位置，位置越靠前优先级越高，开发和测试根据这个编号确定优先级。<br>7表示需求编号，方便产品确认时核对。</p>
+</li>
+</ol>
+<h2 id="测试出的问题修复"><a href="#测试出的问题修复" class="headerlink" title="测试出的问题修复"></a>测试出的问题修复</h2><ol>
+<li>这个有个优先级，优先级高的问题需要尽快解决</li>
+<li>用户反馈的问题，虽然可能不是bug，但是需要优先解决</li>
+</ol>
+<h2 id="每天的时间划分"><a href="#每天的时间划分" class="headerlink" title="每天的时间划分"></a>每天的时间划分</h2><ol>
+<li>5+2+1，5个小时开发，2小时fix bug，1小时机动时间灵活应对未完成任务。</li>
+<li>关键点：“优先级”，“细化”，“效率”，“专注”</li>
+</ol>
+<h2 id="分支，PullRequest和代码review"><a href="#分支，PullRequest和代码review" class="headerlink" title="分支，PullRequest和代码review"></a>分支，PullRequest和代码review</h2><ol>
+<li>一般情况下，分任务的时候一个页面会分给一个人，写代码的时候需要新建一个和该页面的对应的分支。</li>
+<li>因为一个页面可以含有多个功能点，比如六个。这样写代码时，比较好的方式是，针对每个功能点提交一次代码，提交的信息就写”完成了哪个页面的哪个功能点“。</li>
+<li>一般推荐为每个页面创建一个Pull Request，这样的目的是<ul>
+<li>解决一个PR里面的文件改动数量太多导致review时抓不到重点，看不出错误，review效果不好的问题</li>
+<li>可以更“专注”于这个页面，有利于深入思考（想想同时改三个页面时的效率和只改一个页面的一个功能点时候的效率）</li>
+</ul>
+</li>
+<li>单独为每个页面新建分支是为了方便以后fix bug，因为新功能提交测试后会有bug，而bug fix的相关代码应该提交到该分支上。比如做视频详情页面的时候，新建一个分支叫“feature/video_details”,改bug的时候，是从“feature/video_details”这个分支签出代码然后，提交PR到这个分支的。这样每个页面的开发就闭合了，和其它页面的开发隔绝开了。即提升效率也提高代码质量。</li>
+<li>以后PR的流程是这样的：<ul>
+<li>根据页面新建分支，分支是从develop分支签出的</li>
+<li>每个PR至少包含N个对技术点切分后的提交，还可以另外包括代码清理和fix review的提交</li>
+<li>每个PR的都要有完整的标题和内容说明，不要试着粘贴别的PR里面的文字，自己写，即便刚开始写的不太优雅，相信你可以。</li>
+<li>每个PR的生命周期是：开发－创建PR－review－自己测试（单元测试和模块测试）－提交测试人员－fix测试反馈的bug－提交fix bug之后的代码，合并PR</li>
+</ul>
+</li>
+<li>关于如何创建分支的说明<ul>
+<li>功能性的分支命名：“feature/功能名称”，从develop分支签出</li>
+<li>修复bug的分支命名：“fix/bug名字或描述“，<ul>
+<li>如果是正在开发的版本，比如刚发布2.0.0，正在开发2.0.1，此时如果有个紧急bug需要修复并<strong>发版</strong>，需要从2.0.0的tag签出代码。这里需要着重<strong>强调</strong>的是<strong>别忘记把修复bug的代码合并到master</strong>以防遗漏</li>
+<li>如果是2.0.1开发的某个功能的bug，参照第5条在PR内解决。如果PR关闭，则从develop签出后修复，命名规则同上。</li>
+<li>如果是历史版本的bug，比如1.5.0引入的bug，则从master分支签出，命名规则同上。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="线上bug修复流程"><a href="#线上bug修复流程" class="headerlink" title="线上bug修复流程"></a>线上bug修复流程</h2><ol>
+<li>先复现该bug，并记下复现的步骤，如果复现频率太低，可以通过分析崩溃代码的方式fix</li>
+<li>从对应的tag新开分支，一定注意bug的版本要和tag对应，否则错误行和IDE中的代码可能对不上</li>
+<li>修复该bug，提交代码和PR，PR中提交信息的书写格式在下文有规定。</li>
+<li>指派给测试人员，测试通过才进入下一步</li>
+<li>review PR没问题后合并</li>
+</ol>
+<p><strong>注意</strong>  </p>
+<ol>
+<li>在fix环节，为了保证不引入新的bug，所以每一个bug单开一个分支，提交一个pr，这样可以在review环节保证不出问题。如果是特别明显的bug可以合并到一个pr  </li>
+<li>由于这些bug都是英文的，春娇不知道如何测试，所以在指派给春娇时注明这个bug是什么错误，方便春娇测试这个bug是否已经fix掉。  </li>
+<li>分支的命名规则是,fix/bug名，比如解决控制真异常的bug叫，fix/npe；解决数组越界的bug叫fix/IndexOutOfBoundsException  </li>
+<li><p>提交PR时如何写PR的信息  </p>
+<ul>
+<li>复现步骤(方便测试人员复现和reviewer复现)  </li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">Steps to reproduce:</div><div class="line">1. go to a directory with multiple images</div><div class="line">2. open an image by tapping</div><div class="line">3. slide left/right to see other images</div><div class="line">4. rotate screen</div><div class="line">5. the gallery reverts to the image tapped on in step</div></pre></td></tr></table></figure>
+<ul>
+<li><p>怎么引入的<br>caused by<br><code>4d867f6e7e7df395bae0cc84e4ff55e8c9b792ee</code></p>
+</li>
+<li><p>怎么解决的<br><code>fixed by update the list index</code></p>
+</li>
+</ul>
+</li>
+</ol>
+</div><div class="article-meta"></div><div class="article-comment"><div class="ds-thread" id="ds-thread" data-thread-key="ciwbxddkt001febv9ab5nlw4o" data-title="" data-url="https://kevin1202.github.io/2016/12/05/敏捷开发说明/" site-name="kevinbolg"></div><script>var siteName = document.getElementById('ds-thread').getAttribute('site-name');
+var duoshuoQuery = {short_name: siteName};
+(function() {
+  var ds = document.createElement('script');
+  ds.type = 'text/javascript';ds.async = true;
+  ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+  ds.charset = 'UTF-8';
+  (document.getElementsByTagName('head')[0] 
+  || document.getElementsByTagName('body')[0]).appendChild(ds);
+})();</script></div><ul class="navication"><li class="home"><a href="/"><i class="icon icon-home"></i></a></li><li><a href="/2016/12/05/按照特定比列缩放图片的方法/"><i class="icon icon-arror-left"></i></a></li><li><a href="/2016/12/05/测试文档/"><i class="icon icon-arror-right"></i></a></li></ul><div class="page-footer"><div class="top"><ul class="social"><li><a href="https://github.com/kevin1202" title="GitHub" target="_blank"><i class="icon icon-github"></i></a></li><li><a href="http://weibo.com/u/5052645262" title="Weibo" target="_blank"><i class="icon icon-weibo"></i></a></li></ul></div><div class="bottom"><p class="copyright">© 2016 Kevin博客</p></div></div></body></html>

@@ -1,0 +1,496 @@
+<!DOCTYPE html><html lang="zh-cn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"><meta name="format-detection" content="telephone=no"><meta name="format-detection" content="email=no"><meta name="description" content="欢迎大家来到我的博客，希望可以帮到你们，很高兴认识你们。我的github地址：https:github.com/kevin1202"><meta name="keywords" content="Hexo, Gruntjs, Nodejs, Reactjs, Vuejs"><title>Kevin博客 - 梦想还是要有的，万一实现了呢？</title><link rel="stylesheet" href="/css/main_style.min.css"><link rel="icon" href="/favicon.ico"></head><body><div class="page-header"><div class="background"><img src="/default_images/page_background.jpg"></div><div class="author"><div class="head"><img src="/default_images/author_head.gif"></div><h3 class="name">Kevin</h3><p class="signature">梦想还是要有的，万一实现了呢？</p></div></div><ul class="post-list"><li> <p class="date">2016年12月5日</p><div class="no-title"><p>一个可穿透防火墙的快速代理。</p>
+<h2 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h2><h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>Debian / Ubuntu:</p>
+<pre><code>apt-get install python-pip
+pip install shadowsocks
+</code></pre><p>CentOS:</p>
+<pre><code>yum install python-setuptools &amp;&amp; easy_install pip
+pip install shadowsocks
+</code></pre><p>Windows:</p>
+<p>参见 <a href="https://github.com/shadowsocks/shadowsocks/wiki/Install-Shadowsocks-Server-on-Windows" target="_blank" rel="external">在 Windows 上安装服务端</a></p>
+<h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><pre><code>ssserver -p 443 -k password -m rc4-md5
+</code></pre><p>如果要后台运行：</p>
+<pre><code>sudo ssserver -p 443 -k password -m rc4-md5 --user nobody -d start
+</code></pre><p>如果要停止：</p>
+<pre><code>sudo ssserver -d stop
+</code></pre><p>如果要检查日志：</p>
+<pre><code>sudo less /var/log/shadowsocks.log
+</code></pre><p>用 <code>-h</code> 查看所有参数。你也可以使用 <a href="https://github.com/shadowsocks/shadowsocks/wiki/Configuration-via-Config-File" target="_blank" rel="external">配置文件</a> 进行配置。</p>
+<h2 id="服务器搭建"><a href="#服务器搭建" class="headerlink" title="服务器搭建"></a>服务器搭建</h2><p>建议选择 Ubuntu 14.04 LTS 作为服务器以便使用 <a href="https://github.com/clowwindy/shadowsocks/wiki/TCP-Fast-Open" target="_blank" rel="external">TCP Fast Open</a>。除非有明确理由，不建议用对新手不友好的 CentOS。</p>
+<p>为了更好的性能，VPS 尽量选择 XEN 或 KVM，不要使用 OpenVZ。推荐使用以下 VPS：</p>
+<ul>
+<li><a href="https://www.digitalocean.com/?refcode=b1cddd149721" target="_blank" rel="external">Digital Ocean</a> 自带的内核无需自己编译模块即可使用 <a href="https://github.com/shadowsocks/shadowsocks/wiki/Optimizing-Shadowsocks" target="_blank" rel="external">hybla</a> 算法</li>
+<li><a href="https://www.linode.com/?r=e7932c8b03f9abc8aab71663b90b689a676402d1" target="_blank" rel="external">Linode</a> 功能强大，机房较多</li>
+</ul>
+<h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><ul>
+<li><a href="https://github.com/shadowsocks/shadowsocks-windows/wiki/Shadowsocks-Windows-%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E" target="_blank" rel="external">Windows</a> / <a href="https://github.com/shadowsocks/shadowsocks-iOS/wiki/Shadowsocks-for-OSX-Help" target="_blank" rel="external">OS X</a></li>
+<li><a href="https://github.com/shadowsocks/shadowsocks-android" target="_blank" rel="external">Android</a> / <a href="https://github.com/shadowsocks/shadowsocks-iOS/wiki/Help" target="_blank" rel="external">iOS</a></li>
+<li><a href="https://github.com/shadowsocks/openwrt-shadowsocks" target="_blank" rel="external">OpenWRT</a></li>
+</ul>
+<p>在你本地的 PC 或手机上使用图形客户端。具体使用参见它们的使用说明。</p>
+<h2 id="文档"><a href="#文档" class="headerlink" title="文档"></a>文档</h2><p>可以在 <a href="https://github.com/shadowsocks/shadowsocks/wiki" target="_blank" rel="external">Wiki</a> 里找到所有的文档。</p>
+<p>You can use a configuration file instead of command line arguments.</p>
+<p>Create a config file <code>/etc/shadowsocks.json</code>.<br>Example:</p>
+<pre><code>{
+    &quot;server&quot;:&quot;my_server_ip&quot;,
+    &quot;server_port&quot;:8388,
+    &quot;local_address&quot;: &quot;127.0.0.1&quot;,
+    &quot;local_port&quot;:1080,
+    &quot;password&quot;:&quot;mypassword&quot;,
+    &quot;timeout&quot;:300,
+    &quot;method&quot;:&quot;aes-256-cfb&quot;,
+    &quot;fast_open&quot;: false
+}
+</code></pre><p>Explanation of the fields:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>server</td>
+<td>the address your server listens</td>
+</tr>
+<tr>
+<td>server_port</td>
+<td>server port</td>
+</tr>
+<tr>
+<td>local_address</td>
+<td>the address your local listens</td>
+</tr>
+<tr>
+<td>local_port</td>
+<td>local port</td>
+</tr>
+<tr>
+<td>password</td>
+<td>password used for encryption</td>
+</tr>
+<tr>
+<td>timeout</td>
+<td>in seconds</td>
+</tr>
+<tr>
+<td>method</td>
+<td>default: “aes-256-cfb”, see <a href="https://github.com/shadowsocks/shadowsocks/wiki/Encryption" target="_blank" rel="external">Encryption</a></td>
+</tr>
+<tr>
+<td>fast_open</td>
+<td>use <a href="https://github.com/shadowsocks/shadowsocks/wiki/TCP-Fast-Open" target="_blank" rel="external">TCP_FASTOPEN</a>, true / false</td>
+</tr>
+<tr>
+<td>workers</td>
+<td>number of workers, available on Unix/Linux</td>
+</tr>
+</tbody>
+</table>
+<p>To run in the foreground:</p>
+<pre><code>ssserver -c /etc/shadowsocks.json
+</code></pre><p>To run in the background:</p>
+<pre><code>ssserver -c /etc/shadowsocks.json -d start
+ssserver -c /etc/shadowsocks.json -d stop
+</code></pre><h2 id="License"><a href="#License" class="headerlink" title="License"></a>License</h2><p>Copyright 2015 clowwindy</p>
+<p>Licensed under the Apache License, Version 2.0 (the “License”); you may<br>not use this file except in compliance with the License. You may obtain<br>a copy of the License at</p>
+<pre><code>http://www.apache.org/licenses/LICENSE-2.0
+</code></pre><p>Unless required by applicable law or agreed to in writing, software<br>distributed under the License is distributed on an “AS IS” BASIS, WITHOUT<br>WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the<br>License for the specific language governing permissions and limitations<br>under the License.</p>
+<h2 id="Bugs-and-Issues"><a href="#Bugs-and-Issues" class="headerlink" title="Bugs and Issues"></a>Bugs and Issues</h2><ul>
+<li><a href="https://github.com/shadowsocks/shadowsocks/wiki/Troubleshooting" target="_blank" rel="external">Troubleshooting</a></li>
+<li><a href="https://github.com/shadowsocks/shadowsocks/issues?state=open" target="_blank" rel="external">Issue Tracker</a></li>
+<li><a href="https://groups.google.com/group/shadowsocks" target="_blank" rel="external">Mailing list</a></li>
+</ul>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>6 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><h2 id="多姿多彩的Camera"><a href="#多姿多彩的Camera" class="headerlink" title="多姿多彩的Camera"></a>多姿多彩的Camera</h2><ol>
+<li>Intent调用手机内相机程序<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee566e6aeef.jpg" alt=""><br>如果我们设置了照片的存储路径，那么很可能会遇到一下三种问题：</li>
+</ol>
+<p>问题一：onActivityResult方法中的data返回为空（数据表明，93%的机型的data将会是Null，所以如果我们指定了路径，就不要使用data来获取照片，起码在使用前要做空判断）。<br>问题二：照片无法存储。<br>如果自定义存储路径是/mnt/sdcard/lowry/，而手机SD卡下在拍照前没有名为lowry的文件夹，那么部分手机拍照后图片不会保存，导致我们无法获得照片，大多数手机的相机遇到文件夹不存在的情况都会自己创建出不存在的文件夹，而个别手机却不会创建，其代表机型为：三星I8258、华为H30-T00、红米等。</p>
+<p>解决的方法就是在指定存储路径前先判断路径中的文件夹是否都存在，不存在先创建再调用相机。</p>
+<p>问题三：照片可以存储，但是名字不对。<br>file:///mnt/sdcard/123 1.jpg，由于URI的fromFile方法会将路径中的空格用“%20”取代。</p>
+<p>其实对于大多数的手机这都不算事，手机在解析存储路径的时候都会将“%20”替换为空格，这样实际上最终的照片名字还是我们当初指定的名字：123 1.jpg，遗憾的是个别手机（如酷派7260）系统自带的相机没有将“%20”读成空格，拍照后的照片的名字是123%201.jpg，我们用路径“file:///mnt/sdcard/123 1.jpg”能找到照片才怪！<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee567446ec6.jpg" alt=""><br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee56c455fc3.jpg" alt=""><br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee56cc3c251.jpg" alt=""></p>
+<p>总结：</p>
+<p>（1）使用onActivityResult中的intent(data)前要做空判断。<br>（2）指定拍照路径时，先检查路径中的文件夹是否都存在，不存在时先创建文件夹再调用   相机拍照。<br>（3）指定拍照存储路径时，照片的命名中不要包含空格等特殊符号。</p>
+<h2 id="通过Camera的open方法调用手机摄像头"><a href="#通过Camera的open方法调用手机摄像头" class="headerlink" title="通过Camera的open方法调用手机摄像头"></a>通过Camera的open方法调用手机摄像头</h2><p>2.1 连续自动对焦crash</p>
+<p>原因：第一次对焦未结束，应用层又发起的第二次对焦，引起对焦失败。<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee57d42b772_middle.jpg" alt=""><br>解决方案一：传入AutoFocusCallback；<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee585dd32ae.jpg" alt=""><br>解决方案二：延时操作；</p>
+<p>解决方案三：异常捕获。</p>
+<h2 id="UI适配"><a href="#UI适配" class="headerlink" title="UI适配"></a>UI适配</h2><p>有时候布局文件中的某个标签还会引起一些问题，我们先看下面一段布局代码：<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee5b1629003.jpg" alt=""><br>正确结果：<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee5b34bae1a.jpg" alt=""><br>错误结果：<br><img src="http://img.ptcms.csdn.net/article/201509/08/55ee5b050cf58.jpg" alt=""><br>这就是因为Android 3.0以下版本在FrameLayout中使用layout_marginTo标签，必须要设置gravity才能生效。</p>
+<p>那么如何解决这个问题呢？在设置android:layout_marginTop的组件中再设置一下 <code>android:layout_gravity=&quot;top&quot;</code>即可。</p>
+<p><a href="http://www.csdn.net/article/2015-09-08/2825645/3" target="_blank" rel="external">原文链接</a></p>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>2 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><p>网络模块是Android程序重要的部分，如何从网络上下载数据，如何将处理过的数据上传至网络，往往是网络模块的关键环节。<br>在研究网络模块时，如下问题值得思考</p>
+<ol>
+<li>TCP/IP协议、SOCKET、HTTP协议、HTTPS协议都是做什么的，他们之间有关系吗</li>
+<li>你是如何管理网络使用情况的</li>
+<li>常用的HTTP Client有哪些，该如何选择</li>
+<li>假如你需要修改的你网络请求框架，你要动多少代码</li>
+<li>你是怎么进行网络优化的</li>
+</ol>
+<h1 id="网络通信机制"><a href="#网络通信机制" class="headerlink" title="网络通信机制"></a>网络通信机制</h1><p>网络由下往上分为：物理层、数据链路层、网络层、传输层、会话层、表示层和应用层。</p>
+<p>IP协议对应于网络层，TCP协议对应于传输层，而HTTP协议对应于应用层，三者从本质上来说没有可比性，socket则是对TCP/IP协议的封装和应用。<br>也可以说，TPC/IP协议是传输层协议，主要解决数据如何在网络中传输，而HTTP是应用层协议，主要解决如何包装数据。</p>
+<h3 id="TCP-IP协议"><a href="#TCP-IP协议" class="headerlink" title="TCP/IP协议"></a>TCP/IP协议</h3><p>网络编程的目的就是直接或间接地通过网络协议与其他计算机进行通讯。</p>
+<p>网络编程中有两个主要的问题，</p>
+<ol>
+<li>一个是如何准确的定位网络上一台或多台主机；</li>
+<li>另一个就是找到主机后如何可靠高效的进行数据传输。<br>目前使用最广泛的因特网协议是TCP/IP协议。</li>
+</ol>
+<p>在TCP/IP协议中IP层主要负责网络主机的定位，数据传输的路由，由IP地址可以唯一地确定Internet上的一台主机。而TCP层则提供面向应用的可靠的或非可靠的数据传输机制，这是网络编程的主要对象，一般不需要关心IP层是如何处理数据的。</p>
+<h3 id="Socket"><a href="#Socket" class="headerlink" title="Socket"></a>Socket</h3><p>我们知道两个进程如果需要进行通讯最基本的一个前提是能够唯一的标示一个进程。<br>在本地进程通讯中我们可以使用PID来唯一标示一个进程，但PID只在本地唯一，网络中的两个进程PID冲突几率很大，这时候我们需要另辟它径了。<br>我们知道IP层的ip地址可以唯一标示主机，而TCP层协议和端口号可以唯一标示主机的一个进程，这样我们可以利用<code>ip地址＋协议＋端口号</code>唯一标示网络中的一个进程。</p>
+<p>能够唯一标示网络中的进程后，它们就可以利用socket进行通信了，什么是socket呢？我们经常把socket翻译为套接字，socket是在应用层和传输层之间的一个抽象层，它把TCP/IP层复杂的操作抽象为几个简单的接口供应用层调用已实现进程在网络中通信。</p>
+<p>Socket跟TCP/IP协议没有必然的联系。Socket编程接口在设计的时候，就希望也能适应其他的网络协议。所以说，Socket的出现只是使得程序员更方便地使用TCP/IP协议栈而已，是对TCP/IP协议的抽象，</p>
+<h3 id="Http协议"><a href="#Http协议" class="headerlink" title="Http协议"></a>Http协议</h3><p>HTTP协议即超文本传送协议(Hypertext Transfer Protocol )，是Web联网的基础，也是手机联网常用的协议之一，HTTP协议是建立在TCP协议之上的一种应用。</p>
+<p>HTTP连接最显著的特点是客户端发送的每次请求都需要服务器回送响应，在请求结束后，会主动释放连接。从建立连接到关闭连接的过程称为“一次连接”。</p>
+<p>HTTP提供了封装或者显示数据的具体形式。Socket提供了网络通信的能力。</p>
+<h3 id="Https协议"><a href="#Https协议" class="headerlink" title="Https协议"></a>Https协议</h3><p>HTTPS（全称：Hypertext Transfer Protocol over Secure Socket Layer），是以安全为目标的HTTP通道，简单讲是HTTP的安全版。即HTTP下加入SSL层，HTTPS的安全基础是SSL，因此加密的详细内容就需要SSL。 它是一个URI scheme（抽象标识符体系），句法类同http:体系。用于安全的HTTP数据传输。https:URL表明它使用了HTTP，但HTTPS存在不同于HTTP的默认端口及一个加密/身份验证层（在HTTP与TCP之间）。被广泛用于万维网上安全敏感的通讯，例如交易支付方面。</p>
+<h3 id="Android网络权限"><a href="#Android网络权限" class="headerlink" title="Android网络权限"></a>Android网络权限</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;uses-permission android:name=&quot;android.permission.INTERNET&quot; /&gt;&lt;-- 允许应用程序打开网络套接字 --&gt;</div><div class="line">&lt;uses-permission android:name=&quot;android.permission.ACCESS_NETWORK_STATE&quot; /&gt;&lt;-- 允许应用程序访问网络连接信息 --&gt;</div></pre></td></tr></table></figure>
+<h2 id="选择一个HTTP-Client"><a href="#选择一个HTTP-Client" class="headerlink" title="选择一个HTTP Client"></a>选择一个HTTP Client</h2><p>大多数连接网络的 Android app 会使用 HTTP 来发送与接收数据。Android 提供了三种 HTTP client：</p>
+<ul>
+<li>HttpURLConnection</li>
+<li>Apache HttpClient</li>
+<li>okhttp</li>
+</ul>
+<p>Apache HttpClient和okhttp二者均支持 HTTPS、流媒体上传和下载、可配置的超时、IPv6 与连接池（connection pooling）。</p>
+<h3 id="Java-net包中的HttpURLConnection类"><a href="#Java-net包中的HttpURLConnection类" class="headerlink" title="Java.net包中的HttpURLConnection类"></a>Java.net包中的HttpURLConnection类</h3><p>HttpUrlConnection是JDK里提供的联网API，我们知道Android SDK是基于Java的，所以当然优先考虑HttpUrlConnection这种最原始最基本的API，其实大多数开源的联网框架基本上也是基于JDK的HttpUrlConnection进行的封装罢了</p>
+<h3 id="HttpClient"><a href="#HttpClient" class="headerlink" title="HttpClient"></a>HttpClient</h3><p>HttpClient是开源组织Apache提供的Java请求网络框架，其最早是为了方便Java服务器开发而诞生的，是对JDK中的HttpUrlConnection各API进行了封装和简化，提高了性能并且降低了调用API的繁琐，Android因此也引进了这个联网框架，我们再不需要导入任何jar或者类库就可以直接使用，值得注意的是Android官方已经宣布不建议使用HttpClient了，我们再开发的时候尽量少用吧，但是用了也无妨！</p>
+<h3 id="okhttp"><a href="#okhttp" class="headerlink" title="okhttp"></a>okhttp</h3><p>http是现在主流应用使用的网络请求方式, 用来交换数据和内容, 有效的使用HTTP可以使你的APP变的更快和减少流量的使用。</p>
+<p>OkHttp是一个很棒HTTP客户端:</p>
+<ul>
+<li>支持SPDY,可以合并多个到同一个主机的请求</li>
+<li>使用连接池技术减少请求的延迟(如果SPDY是可用的话)</li>
+<li>使用GZIP压缩减少传输的数据量</li>
+<li>缓存响应避免重复的网络请求</li>
+<li>使用OkHttp很容易,同时支持异步阻塞请求和回调.</li>
+</ul>
+<p>当你的网络出现拥挤的时候,就是OKHttp大显身手的时候,它可以避免常见的网络问题,如果你的服务是部署在不同的IP上面的,如果第一个连接失败,OkHTtp会尝试其他的连接。这对现在IPv4+IPv6中常见的把服务冗余部署在不同的数据中心上也是很有必要的。OkHttp将使用现在TLS特性(SNI ALPN)来初始化新的连接，如果握手失败,将切换到TLS 1.0。</p>
+<p>如果你使用OkHttp ,你不用重写你的代码<br>okhttp-urlconnection模块实现了 java.net.HttpURLConnection 中的API, okhttp-apache模块实现了HttpClient中的API</p>
+<h2 id="如何管理网络的使用情况"><a href="#如何管理网络的使用情况" class="headerlink" title="如何管理网络的使用情况"></a>如何管理网络的使用情况</h2><p>如果我们的程序需要执行大量网络操作，那么应该提供用户设置选项，来允许用户控制程序的数据偏好。例如，同步数据的频率，是否只在连接到 WiFi 才进行下载与上传操作，是否在漫游时使用套餐数据流量等等。这样用户才不大可能在快到达流量上限时，禁止我们的程序获取后台数据，因为他们可以精确控制我们的 app 使用多少数据流量。</p>
+<h3 id="检查网络连接"><a href="#检查网络连接" class="headerlink" title="检查网络连接"></a>检查网络连接</h3><p>在执行网络操作之前，检查设备当前连接的网络连接信息是个好习惯。这样可以防止我们的程序在无意间连接使用了非意向的网络频道。如果网络连接不可用，那么我们的应用应该优雅地做出响应。为了检测网络连接，我们需要使用到下面两个类：</p>
+<p>ConnectivityManager：它会回答关于网络连接的查询结果，并在网络连接改变时通知应用程序。</p>
+<p>NetworkInfo：描述一个给定类型（移动网络或 Wi-Fi等）的网络接口状态。</p>
+<p>下面这个方法可以找到的第一个已连接的网络接口，如果返回null，则表示没有已连接的网络接口(意味着网络连接不可用)：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">public boolean isOnline() &#123;</div><div class="line">    ConnectivityManager connMgr = (ConnectivityManager)getSystemServic(Context.CONNECTIVITY_SERVICE);</div><div class="line">    NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();</div><div class="line">    return (networkInfo != null &amp;&amp; networkInfo.isConnected());</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="管理网络的使用情况"><a href="#管理网络的使用情况" class="headerlink" title="管理网络的使用情况"></a>管理网络的使用情况</h3><p>我们可以实现一个偏好设置的选项，使用户能直接设置程序对网络资源的使用情况。例如:<br>可以允许用户仅在连接到 Wi-Fi 时上传视频。<br>可以根据诸如网络可用，时间间隔等条件来选择是否做同步的操作。</p>
+<h3 id="检测网络连接变化"><a href="#检测网络连接变化" class="headerlink" title="检测网络连接变化"></a>检测网络连接变化</h3><p>要检测网络连接的变化需要用到BroadcastReceiver 的子类：<code>NetworkReceiver</code>。<br>当设备网络连接改变时，NetworkReceiver 会监听到 CONNECTIVITY_ACTION，这时需要判断当前网络连接类型并相应的设置好 wifiConnected 与 mobileConnected。</p>
+<p>这里需要注意的是在使用BroadcastReceiver的时候，<strong>不必要的声明注册会浪费系统资源</strong>。<br>最好在 onCreate()中注册 BroadcastReceiver NetworkReceiver，在 onDestroy()中销毁它。这样做会比在 manifest 里面声明 更轻巧。</p>
+<h2 id="在一个单独的线程中执行网络操作"><a href="#在一个单独的线程中执行网络操作" class="headerlink" title="在一个单独的线程中执行网络操作"></a>在一个单独的线程中执行网络操作</h2><p>网络操作会遇到不可预期的延迟。为了避免造成不好的用户体验，确保总是在 UI 线程之外单独的线程中执行网络操作。关于Android中的线程和进程可以参考<a href="http://blog.csdn.net/sdkfjksf/article/details/51556041" target="_blank" rel="external">这里</a>。</p>
+<h2 id="封装网络请求"><a href="#封装网络请求" class="headerlink" title="封装网络请求"></a>封装网络请求</h2><p>有了Http Client，我们需要考虑的是如何优雅的使用这些Http Client进行网络请求。这时候我们可以对Http Clent进行封装来满足我们的需求。封装的基本要点如下：</p>
+<ul>
+<li>支持自定义请求的Header</li>
+<li>支持Http的基本请求方法：GET、POST、PUT、DELETE等</li>
+<li>支持文件上传和下载</li>
+<li>可以加载图片</li>
+<li>支持多任务网络请求操作</li>
+<li>支持缓存</li>
+<li>支持请求回调</li>
+<li>支持session的保持</li>
+</ul>
+<p>具体可以参考<a href="http://a.codekk.com/detail/Android/grumoon/Volley%20%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90" target="_blank" rel="external">Volley源码分析</a>、<a href="http://www.jianshu.com/p/45cb536be2f4" target="_blank" rel="external">Retrofit分析</a>等，看看这些成名已久的框架是如何封装的。</p>
+<h2 id="网络请求框架"><a href="#网络请求框架" class="headerlink" title="网络请求框架"></a>网络请求框架</h2><p>以下是曾经很火或者现在很多的网络请求框架：</p>
+<ul>
+<li>Android Async HTTP</li>
+<li>AndroidAsync</li>
+<li>Volley</li>
+<li>Retrofit</li>
+<li>AsyncHttp是一个较高层的封装，底层使用的是HttpClient。</li>
+</ul>
+<p>Volley是Google推出的Android异步网络请求框架和图片加载框架。底层网络请求可以使用不同的网络库来处理，比如OkHttp，HttpClient。</p>
+<p>Retrofit是一个封装比较好的，相对更面向开发者的rest请求库，它的底层网络请求也可以使用不同的网络库来处理。</p>
+<h3 id="网络请求框架再封装"><a href="#网络请求框架再封装" class="headerlink" title="网络请求框架再封装"></a>网络请求框架再封装</h3><p>我在这些<a href="http://blog.csdn.net/sdkfjksf/article/details/51106335" target="_blank" rel="external">Tips让你的App更容易维护</a> 简单提到过面向接口编程，这对于网络框架再封装很实用。</p>
+<p>我们可以定义一套我们自己的网络请求接口，接口规定我们需要有什么能力的框架。调用的话我们可以直接调用接口方法就好了，这样不管我们换什么网络框架，只要这个框架有网络请求的能力就行。举个例子，定义接口如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">public interface ISender &#123;</div><div class="line"></div><div class="line">    void send(METHOD method, String url, SenderCallback callback);</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>我们写一个类实现这个接口：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">public class BaseSender implements ISender &#123;</div><div class="line">    @Override</div><div class="line">    public synchronized void sender(METHOD method, final String url, final SenderCallback callback) &#123;</div><div class="line">        //volley,retrofit,balabala,用任意网络请求框架实现。</div><div class="line"></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>然后是我们的SendCallback<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">public interface SendCallback &#123;</div><div class="line"></div><div class="line">    //请求成功回调</div><div class="line">    void onSucceeed(String t);</div><div class="line"></div><div class="line">    //请求失败回调</div><div class="line">    void onError(String errorMsg);</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>最后是我们的调用：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">private ISender mHttp;</div><div class="line"></div><div class="line">public void getWeahter(String tag) &#123;</div><div class="line"></div><div class="line">    //调用接口里定义好的方法</div><div class="line">    mHttp.sender();</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这里传入我们需要的参数就好了。</p>
+<h2 id="数据解析"><a href="#数据解析" class="headerlink" title="数据解析"></a>数据解析</h2><p>以下是比较流行的网络数据解析的库：</p>
+<ul>
+<li>Gson</li>
+<li>Jackson</li>
+<li>FastJson</li>
+<li>HtmlPaser</li>
+<li>Jsoup</li>
+</ul>
+<p>网络数据解析比较基础，这里就不过多描述了。</p>
+<h2 id="移动端网络优化"><a href="#移动端网络优化" class="headerlink" title="移动端网络优化"></a>移动端网络优化</h2><p>对于手机程序，网络操作相对来说是比较耗电的行为。优化网络操作能够显著节约电量的消耗。一个网络请求可以简单分为连接服务器和获取数据两个部分。其中连接服务器前还包括 DNS 解析的过程；获取数据后可能会对数据进行缓存。那么我们如果要进行网络优化需要从这两个关键点入手。</p>
+<p>以下是具体可以优化的点：</p>
+<ul>
+<li>不用域名，用IP直连<br>省去 DNS 解析过程，DNS 全名 Domain Name System，解析意指根据域名得到其对应的IP地址。</li>
+<li>服务器合理部署<br>服务器多运营商多地部署，一般至少含三大运营商、南中北三地部署。</li>
+<li>根据当前的网络环境选择当下最佳的策略<br> 主要的实施步骤有两步：第1是检测收集当前的网络环境信息，第2是根据当前收集到的信息进行网络请求行为的调整。</li>
+<li>预取<br> 我们需要预先判断用户在此次操作之后，后续零散的请求是否很有可能会马上被触发，可以把后面几分钟有可能会使用到的零散请求都一次集中执行完毕。</li>
+<li>连接复用<br>节省连接建立时间，如开启 keep-alive。</li>
+<li>用捆绑批量访问的方式来减少访问的频率<br> 预先判定那些可能马上就会使用到的网络资源，捆绑一起集中进行网络请求。这点我们可以考虑按照提前预期后续1-2分钟的数据作为基准。</li>
+<li>分优先级、延迟部分请求<br> 首先我们需要区分哪些网络请求是需要及时返回结果的，哪些是可以延迟执行的。我们可以有针对性的把请求行为捆绑起来，延迟到某个时刻统一发起请求。</li>
+<li>对传输的数据进行压缩<br> 网络传输数据量的大小主要由两部分组成：图片与序列化的数据，那么我们需要做的就是减少这两部分的数据传输大小。</li>
+<li>多连接<br> 对于较大文件，如大图片、文件下载可考虑多连接。 需要控制请求的最大并发量，毕竟移动端网络受限。</li>
+<li>避免不必要的同步操作<br> 应用程序的一个基础功能是能够保持确保界面上呈现的信息是即时最新的，例如呈现最新的新闻，天气，信息流等等信息。但是，过于频繁的促使手机客户端应用去同步最新的服务器数据会对性能产生很大的负面影响，不仅仅使得CPU不停的在工作，内存，网络流量，电量等等都会持续的被消耗，所以在进行网络请求操作的时候一定要避免多度同步操作。</li>
+<li>做好网络数据的缓存<br> 从手机的缓存中直接读取数据肯定比从网络上获取数据要更加的便捷高效，特别是对于那些会被频繁访问到的数据，需要把这些数据缓存到设备上，以便更加快速的进行访问。</li>
+</ul>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>13 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><p><a href="https://git-scm.com/book/en/v2/Git-Basics-Viewing-the-Commit-History" target="_blank" rel="external">https://git-scm.com/book/en/v2/Git-Basics-Viewing-the-Commit-History</a></p>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><h2 id="一周任务管理"><a href="#一周任务管理" class="headerlink" title="一周任务管理"></a>一周任务管理</h2><p>版本号：v2.1.0</p>
+<h2 id="日期：-6月20号-－-6月24号"><a href="#日期：-6月20号-－-6月24号" class="headerlink" title="日期： 6月20号 － 6月24号"></a>日期： 6月20号 － 6月24号</h2><ol>
+<li>红宾 <ul>
+<li>CI部署到生产环境</li>
+<li>完成登录注册功能相关页面的修改</li>
+<li>所有带有“返回按键”的页面，实现手势返回功能</li>
+<li>更改字体测试</li>
+<li>沉浸式状态栏</li>
+<li>在文章详情页，点击表情按钮弹出表情键盘后，点击其它空白区域不会收回键盘</li>
+<li>详情评论和评论消息列表，进入页面时记录查看时间，下拉刷新时更新该时间，调用获取数据接口时传入该时间，后台将仅返回该时间点之前的评论及消息内容。接口见任务32</li>
+<li>加固</li>
+<li>解决友盟统计的问题, 仍然使用混淆</li>
+<li>emoj显示不全</li>
+<li>视频详情页发送表情有时候显示不全</li>
+<li>我的－评论－评论后，如果只有一条内容，评论内容看不到了，listview上拉导致的（我的－消息－评论列表－评论数较少时，弹出键盘会把评论挤出屏幕）</li>
+<li>点击层主评论区域不会调起键盘，点击评论消息页里的“…”，选择回复不会调起键盘</li>
+<li>页面中所有“¥”符号，有两种情况，错误</li>
+<li>解决<a href="https://github.com/nggirl/ngdocs/blob/master/nguser/bugs/bug.md" target="_blank" rel="external">https://github.com/nggirl/ngdocs/blob/master/nguser/bugs/bug.md</a></li>
+<li>weixin取消之后回调</li>
+<li>data manager</li>
+<li>百度测试平台</li>
+</ul>
+</li>
+</ol>
+<ol>
+<li><p>杨凯 </p>
+<ul>
+<li>支持测试版包名，方便支付相关测试</li>
+<li>视频加入第一帧配图</li>
+<li>视屏播放－移动网络下－不显示错误码，最好弹窗显示。（使用蜂窝播放视频时，最好改为弹窗提示，若无法实现，将错误码提示删除）</li>
+<li>美妆沙龙评论晒单有支持5张图</li>
+<li>视频播放过程中，评论层主，评论成功后，一直有显示转圈响应样式</li>
+<li>用户登陆后，需要向后台推送个推的clientId等信息（设备在启动时或者登陆时需要将该设备的相关信息推送给后台 注：个推是推送clientId ）</li>
+<li>视频横屏后返回，返回按钮被遮挡了一半</li>
+<li>举报层中层时，应弹出确认弹窗，内容和功能与举报层主保持一致</li>
+<li>解决视频被削顶的问题</li>
+<li>友盟统计的bug（整理后放到禅道上）</li>
+</ul>
+</li>
+<li><p>高飞 chatActivity类</p>
+<ul>
+<li>环信－表情面板-底部分页器</li>
+<li>专栏列表－没有more的时候，间距40</li>
+<li>2.0.0假数据清理</li>
+<li>关注的化妆师列表没有分割线</li>
+<li>主页－专栏-没有more的时候，右边距40留白</li>
+<li>主页－专栏-banner图阴影效果</li>
+</ul>
+</li>
+<li>待领任务<ul>
+<li>[b端］用户注册时，填入手机号点击“发送验证码”，系统发生错误，跳转到登录页</li>
+<li>B端测试版</li>
+</ul>
+</li>
+</ol>
+<h2 id="日期：-6月13号-－-6月17号"><a href="#日期：-6月13号-－-6月17号" class="headerlink" title="日期： 6月13号 － 6月17号"></a>日期： 6月13号 － 6月17号</h2><ol>
+<li>红宾 <ul>
+<li>CI选型和可行性</li>
+<li>手势关闭页面</li>
+</ul>
+</li>
+<li>杨凯 <ul>
+<li>个推</li>
+<li>debug版</li>
+</ul>
+</li>
+</ol>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>2 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><h1 id="简单的数据库操作答案"><a href="#简单的数据库操作答案" class="headerlink" title="简单的数据库操作答案"></a>简单的数据库操作答案</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">database.delete(GIF_CACHE_TABLE_NAME, GIF_CACHE_COLUMN_DOWNLOAD_LINK + &quot;=?&quot;, new String[]&#123;dlink&#125;);</div></pre></td></tr></table></figure>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><h2 id="上机题"><a href="#上机题" class="headerlink" title="上机题"></a>上机题</h2><h1 id="简单的网络请求和页面刷新"><a href="#简单的网络请求和页面刷新" class="headerlink" title="简单的网络请求和页面刷新"></a>简单的网络请求和页面刷新</h1><ol>
+<li>使用Eclipse或者Android Studio新建一个Android项目，项目名为ReviewDemo.</li>
+<li>新建一个MainActivity作为项目入口。</li>
+</ol>
+<ul>
+<li>该MainActivity页面有一个居中显示的TextView，字体颜色为白色，字号为14号字，内容是“Hello World”</li>
+<li>该MainActivity页面底部有一个Button，内容是”发送”，字号为14号字，按钮背景是绿色，字体颜色为白色。</li>
+</ul>
+<ol>
+<li>点击发送按钮，启动一个网络请求<ul>
+<li>该网络请求使用AsyncTask执行，发送请求的操作用线程睡3秒来代替。</li>
+<li>数据返回后，刷新TextView，把“Hello World”改成”你好，南瓜姑娘”</li>
+</ul>
+</li>
+</ol>
+<h1 id="简单的数据库操作"><a href="#简单的数据库操作" class="headerlink" title="简单的数据库操作"></a>简单的数据库操作</h1><p>在ReviewDemo中新建一个类，DatabaseHelper，然后拷贝如下代码到该类中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * A helper class to manage database creation and version management.</div><div class="line"> */</div><div class="line">public class DatabaseHelper extends SQLiteOpenHelper &#123;</div><div class="line">    private static final String TAG = DatabaseHelper.class.getSimpleName();</div><div class="line"></div><div class="line">    // If you change the database schema, you must increment the database version.</div><div class="line">    public static final int DATABASE_VERSION = 1;</div><div class="line">    public static final String DATABASE_NAME = &quot;nguser.db&quot;;</div><div class="line"></div><div class="line">    // GitCache table</div><div class="line">    private static final String GIF_CACHE_TABLE_NAME = &quot;GifCache&quot;;</div><div class="line"></div><div class="line">    private static final String GIF_CACHE_COLUMN_ID = &quot;id&quot;;</div><div class="line">    private static final String GIF_CACHE_COLUMN_DOWNLOAD_LINK = &quot;dlink&quot;;</div><div class="line">    private static final String GIF_CACHE_COLUMN_LOCAL_PATH = &quot;localPath&quot;;</div><div class="line"></div><div class="line">    private static final String SQL_CREATE_GIF_CACHE_TABLE =</div><div class="line">            &quot;CREATE TABLE &quot; + GIF_CACHE_TABLE_NAME + &quot; (&quot;</div><div class="line">                    + GIF_CACHE_COLUMN_ID + &quot; INTEGER PRIMARY KEY, &quot;</div><div class="line">                    + GIF_CACHE_COLUMN_DOWNLOAD_LINK + &quot; TEXT NOT NULL, &quot;</div><div class="line">                    + GIF_CACHE_COLUMN_LOCAL_PATH + &quot; TEXT NOT NULL);&quot;;</div><div class="line"></div><div class="line"></div><div class="line">    private static DatabaseHelper dbHelper = null;</div><div class="line">    private SQLiteDatabase database = null;</div><div class="line"></div><div class="line">    public static synchronized DatabaseHelper getDatabaseHelper() &#123;</div><div class="line">        if (dbHelper != null) return dbHelper;</div><div class="line">        dbHelper = new DatabaseHelper(MyApplication.applicationContext);</div><div class="line">        dbHelper.database = dbHelper.getWritableDatabase();</div><div class="line">        return dbHelper;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    private DatabaseHelper(Context context) &#123;</div><div class="line">        super(context, DATABASE_NAME, null, DATABASE_VERSION);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public void onCreate(SQLiteDatabase db) &#123;</div><div class="line">        createGifCacheTable(db);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    private void createGifCacheTable(SQLiteDatabase db) &#123;</div><div class="line">        db.execSQL(SQL_CREATE_GIF_CACHE_TABLE);</div><div class="line">        db.execSQL(&quot;CREATE INDEX dlink_index ON &quot; + GIF_CACHE_TABLE_NAME</div><div class="line">                + &quot; (&quot; + GIF_CACHE_COLUMN_DOWNLOAD_LINK + &quot;);&quot;);</div><div class="line">        db.execSQL(&quot;CREATE INDEX localPath_index ON &quot; + GIF_CACHE_TABLE_NAME</div><div class="line">                + &quot; (&quot; + GIF_CACHE_COLUMN_LOCAL_PATH + &quot;);&quot;);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) &#123;</div><div class="line">        // keep the data table unchanged</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) &#123;</div><div class="line">        onUpgrade(db, oldVersion, newVersion);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    public void deleteCache(String dlink) &#123;</div><div class="line">        // TODO, 请完成删除操作</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h1 id="简单的页面实现"><a href="#简单的页面实现" class="headerlink" title="简单的页面实现"></a>简单的页面实现</h1><p>请简单描述下如下页面的实现思路，不需要具体实现，只谈思路即可。<br><img src="https://github.com/nggirl/ngdocs/blob/master/nguser/01%E7%BE%8E%E5%A6%86%E6%B2%99%E9%BE%99720.jpg" alt="设计图"></p>
+<h1 id="进阶题"><a href="#进阶题" class="headerlink" title="进阶题"></a>进阶题</h1><ol>
+<li><p>请简单描述下如下页面的实现思路，不需要具体实现，只谈思路即可。<br><img src="https://github.com/nggirl/ngdocs/blob/236512d93595025aa0469f383fc0b8a20a9bac2c/nguser/04-%E5%8C%96%E5%A6%86%E5%B8%88%E4%B8%BB%E9%A1%B5(%E4%B8%8A%E9%97%A8%E7%BE%8E%E5%A6%86-%E6%97%A0%E5%86%85%E5%AE%B9" alt="设计图">_spec.png)</p>
+</li>
+<li><p>请解决#287</p>
+</li>
+</ol>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>8 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><p>由于popup window默认是转动的展开效果，不符合业务需求，因此这里不使用popup window。<br>采用的是自定义组件加渐入渐出动画。具体实现参加“单类作品列表”，筛选栏的下拉效果。</p>
+<h1 id="实现步骤"><a href="#实现步骤" class="headerlink" title="实现步骤"></a>实现步骤</h1><h2 id="布局样式"><a href="#布局样式" class="headerlink" title="布局样式"></a>布局样式</h2><h2 id="动画效果"><a href="#动画效果" class="headerlink" title="动画效果"></a>动画效果</h2><h3 id="渐入"><a href="#渐入" class="headerlink" title="渐入"></a>渐入</h3><h3 id="渐出"><a href="#渐出" class="headerlink" title="渐出"></a>渐出</h3><h2 id="交互"><a href="#交互" class="headerlink" title="交互"></a>交互</h2><h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><h1 id="复用性"><a href="#复用性" class="headerlink" title="复用性"></a>复用性</h1><ol>
+<li>现在的项目中（2.0）有一个复用性不错的“筛选栏”组件FilterView，只需要在布局中添加该组件，实现其listenter就可以实现筛选功能。而且自带渐入渐出动画效果</li>
+<li></li>
+</ol>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><h2 id="优秀技术博客-资料"><a href="#优秀技术博客-资料" class="headerlink" title="优秀技术博客/资料"></a>优秀技术博客/资料</h2><ul>
+<li><a href="http://blog.daimajia.com/android-library-collection/" target="_blank" rel="external">代码家</a></li>
+<li><a href="http://www.trinea.cn/" target="_blank" rel="external">阿里巴巴大牛Trinea</a></li>
+<li><a href="https://github.com/1sters/material_design_zh_2" target="_blank" rel="external">Material Design 中文版</a></li>
+</ul>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>0 Minutes</li><li><i class="icon icon-category"></i></li></ul></li><li> <p class="date">2016年12月5日</p><div class="no-title"><h2 id="Pixel-Densities"><a href="#Pixel-Densities" class="headerlink" title="Pixel Densities"></a>Pixel Densities</h2><p>Android icons require five separate sizes for different screen pixel densities. Icons for lower resolution are created automatically from the baseline.</p>
+<table>
+<thead>
+<tr>
+<th>尺寸</th>
+<th>dpi</th>
+<th>倍数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mdpi (Baseline)</td>
+<td>160 dpi</td>
+<td>1×</td>
+</tr>
+<tr>
+<td>hdpi</td>
+<td>240 dpi</td>
+<td>1.5×</td>
+</tr>
+<tr>
+<td>xhdpi</td>
+<td>320 dpi</td>
+<td>2×</td>
+</tr>
+<tr>
+<td>xxhdpi</td>
+<td>490 dpi</td>
+<td>3×</td>
+</tr>
+<tr>
+<td>xxxhdpi</td>
+<td>640 dpi</td>
+<td>4×</td>
+</tr>
+</tbody>
+</table>
+<h2 id="Launcher-icons"><a href="#Launcher-icons" class="headerlink" title="Launcher icons"></a>Launcher icons</h2><table>
+<thead>
+<tr>
+<th>Sizes (px)</th>
+<th>Format and naming</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>48 × 48 (mdpi)</td>
+<td>.png</td>
+<td></td>
+</tr>
+<tr>
+<td>72 × 72 (hdpi)</td>
+<td></td>
+</tr>
+<tr>
+<td>96 × 96 (xhdpi)</td>
+<td></td>
+</tr>
+<tr>
+<td>144 × 144 (xxhdpi)</td>
+<td></td>
+</tr>
+<tr>
+<td>192 × 192 (xxxhdpi)</td>
+<td></td>
+</tr>
+<tr>
+<td>512 × 512 (Google Play store)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>NOTO:</strong> Three-dimensional, front view, with a slight perspective as if viewed from above, so that users perceive some depth.</p>
+<h2 id="Action-bar-Dialog-amp-Tab-icons"><a href="#Action-bar-Dialog-amp-Tab-icons" class="headerlink" title="Action bar, Dialog &amp; Tab icons"></a>Action bar, Dialog &amp; Tab icons</h2><table>
+<thead>
+<tr>
+<th>Sizes (px)</th>
+<th>Format and naming</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>24 × 24 area in 32 × 32 (mdpi)</td>
+<td>.png</td>
+<td></td>
+</tr>
+<tr>
+<td>36 × 36 area in 48 × 48 (hdpi)</td>
+<td></td>
+</tr>
+<tr>
+<td>48 × 48 area in 64 × 64 (xhdpi)</td>
+<td></td>
+</tr>
+<tr>
+<td>72 × 72 area in 96 × 96 (xxhdpi)</td>
+<td></td>
+</tr>
+<tr>
+<td>96 × 96 area in 128 × 128 (xxxhdpi)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>NOTE:</strong> These icons are used in the action bar menu. The first number is the size of the icon area, and the second is file size.</p>
+<h2 id="Small-Contextual-Icons"><a href="#Small-Contextual-Icons" class="headerlink" title="Small Contextual Icons"></a>Small Contextual Icons</h2><table>
+<thead>
+<tr>
+<th>Sizes (px)</th>
+<th>Format and naming</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>16 × 16 (mdpi)</td>
+<td>.png</td>
+<td></td>
+</tr>
+<tr>
+<td>24 × 24 (hdpi)</td>
+<td></td>
+</tr>
+<tr>
+<td>32 × 32 (xhdpi)</td>
+<td></td>
+</tr>
+<tr>
+<td>48 × 48 (xxhdpi)</td>
+<td></td>
+</tr>
+<tr>
+<td>64 × 64 (xxxhdpi)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Notes:</strong>  Small icons are used to surface actions and/or provide status for specific items. For example, in the Gmail app, each message has a star icon that marks the message as important.</p>
+<h2 id="Notification-icons"><a href="#Notification-icons" class="headerlink" title="Notification icons"></a>Notification icons</h2><table>
+<thead>
+<tr>
+<th>Sizes (px)</th>
+<th>Format and naming    </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>22 × 22 area in 24 × 24 (mdpi)</td>
+<td>.png</td>
+</tr>
+<tr>
+<td>33 × 33 area in 36 × 36 (hdpi)</td>
+<td></td>
+</tr>
+<tr>
+<td>44 × 44 area in 48 × 48 (xhdpi)</td>
+<td></td>
+</tr>
+<tr>
+<td>66 × 66 area in 72 × 72 (xxhdpi)</td>
+<td></td>
+</tr>
+<tr>
+<td>88 × 88 area in 96 × 96 (xxxhdpi)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Notes:</strong> These are used to represent application notifications in the status bar. They should be flat (no gradients), white and face-on perspective</p>
+<p>See also <a href="http://iconhandbook.co.uk/reference/chart/android/" target="_blank" rel="external">http://iconhandbook.co.uk/reference/chart/android/</a></p>
+</div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>4 Minutes</li><li><i class="icon icon-category"></i></li></ul></li></ul><ul class="pagination"><li class="link"><a href="/archives/2016/"><i class="icon icon-arror-left"></i></a></li><li class="current"><a>2</a></li><li class="link"><a href="/archives/2016/page/3/"><i class="icon icon-arror-right"></i></a></li></ul><div class="page-footer"><div class="top"><ul class="social"><li><a href="https://github.com/kevin1202" title="GitHub" target="_blank"><i class="icon icon-github"></i></a></li><li><a href="http://weibo.com/u/5052645262" title="Weibo" target="_blank"><i class="icon icon-weibo"></i></a></li></ul></div><div class="bottom"><p class="copyright">© 2016 Kevin博客</p></div></div></body></html>

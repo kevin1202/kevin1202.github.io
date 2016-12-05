@@ -1,0 +1,150 @@
+<!DOCTYPE html><html lang="zh-cn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"><meta name="format-detection" content="telephone=no"><meta name="format-detection" content="email=no"><meta name="description" content="欢迎大家来到我的博客，希望可以帮到你们，很高兴认识你们。我的github地址：https:github.com/kevin1202"><meta name="keywords" content="Hexo, Gruntjs, Nodejs, Reactjs, Vuejs"><title>Kevin博客 - 梦想还是要有的，万一实现了呢？</title><link rel="stylesheet" href="/css/main_style.min.css"><link rel="icon" href="/favicon.ico"></head><body><div class="post-header"><img class="background" src="/default_images/post_background.jpg"><div class="post-title"><h1 class="title">随笔</h1><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>9 Minutes</li><li><i class="icon icon-calendar"></i>2016年12月5日</li></ul></div></div><div class="article-content"><p></p><h1>开发规范</h1><br>目录<p></p>
+<ul>
+<li><a href="#1">1.打印调试Log</a></li>
+<li><a href="#2">2.代码缩进，使用四个空格代替一个Tab</a></li>
+<li><a href="#3">3.命名类（classes）</a></li>
+<li><a href="#4">4.命名接口（interface）</a></li>
+<li><a href="#5">5.命名方法（methods）</a></li>
+<li><a href="#6">6.命名变量（variables）</a></li>
+<li><a href="#7">7.命名常量（constants）</a></li>
+<li><a href="#8">8.命名资源文件（drawable folder）</a></li>
+<li><a href="#9">9.命名资源布局文件（XML layout）</a></li>
+<li><a href="#10">10.命名动画文件（anim folder）</a></li>
+<li><a href="#11">11.命名资源ID（resourcesid）</a></li>
+<li><a href="#12">12.命名layout中的id命名</a></li>
+<li><a href="#13">13. 命名styles.xml</a></li>
+<li><a href="#14">14.命名colors.xml</a></li>
+<li><a href="#15">15.约定俗成的英文缩写</a></li>
+<li><a href="#16">16.监听器使用匿名内部类</a></li>
+<li><a href="#17">17.参考链接</a></li>
+</ul>
+<hr>
+<h2 id="1">1. 打印调试Log</h2><br>DEBUG模式下打印调试log时，TAG的值统一使用如下格式<br><br>    public static final String TAG = MyInfoAty.class.getSimpleName();<br><br><br>打印log时，格式如下<br><br>    XLog.d(TAG, “上传图片返回=” + strMsg);<br><br><br><em>注意<code>d</code>表示打印debug信息，<code>e</code>表示打印error信息，相应地还有<code>v</code>, <code>i</code>, <code>wtf</code>等</em><br><h2 id="2">2. 代码缩进，使用四个空格代替一个Tab</h2><br><h2 id="3">3. 命名类（classes）</h2><br>采用大驼峰命名法，尽量避免缩写，除非该缩写是众所周知的， 比如HTML,URL，如果类名称中包含单词缩写，则单词缩写的每个字母均应大写<br><br>类    |描述 |    例如<br>— | — | —<br>activity 类    | Activity为后缀标识 | 欢迎页面类WelcomeActivity<br>fragment类    | Fragment为后缀标识 |    首页列表类HomeListFragment<br>Adapter类    | Adapte 为后缀标识 |    新闻详情适配器NewDetailAdapter<br>解析类    | Hlr为后缀标识    | 首页解析类HomePosterHlr<br>公共方法类 |    Tools或Manager为后缀标识    | 线程池管理类：ThreadPoolManager,日志工具类：LogTools<br>数据库类    | 以DBHelper后缀标识    | 新闻数据库：NewDBHelper<br>Service类 |    以Service为后缀标识    | 时间服务TimeService<br>BroadcastReceive类    | 以Broadcast为后缀标识 |    时间通知TimeBroadcast<br>ContentProvider类    | 以Provider为后缀标识    | 日记DiaryProvider<br>直接写的共享基础类    | 以Base开头 |    BaseActivity,BaseFragment<br><br><h2 id="4">4. 命名接口（interface）</h2><br>命名规则与类一样采用大驼峰命名法，多以Listener结尾，例如：interface LogoutDialogClickListener。<br><br><h2 id="5">5. 命名方法（methods）</h2><br>动词或动名词，采用小驼峰命名法例如:<code>onCreate()</code>, <code>run()</code><br><br>方法    | 说明<br>— | —<br>initXX()    | 初始化相关方法,使用init为前缀标识，如初始化布局initView()<br>isXX()    | checkXX()方法返回值为boolean型的请使用is或check为前缀标识<br>getXX()    | 返回某个值的方法，使用get为前缀标识<br>processXX()    | 对数据进行处理的方法，尽量使用process为前缀标识<br>displayXX()    | 弹出提示框和提示信息，使用display为前缀标识<br>saveXX()    | 与保存数据相关的，使用sav为e前缀标识<br>resetXX()    | 对数据重组的，使用reset前缀标识<br>clearXX()    | 清除数据相关的<br>removeXXX()    | 清除数据相关的<br>drawXXX()    | 绘制数据或效果相关的，使用draw前缀标识<br><br><h2 id="6">6. 命名变量（variables）</h2><br>采用小驼峰命名法。类中控件名称与xml布局id去掉了Activity名称之后的部分保持一致。（组件缩写_view的逻辑名称）<br><br>比如： 组件<code>tv_share_coupon_detailed_txt_part_one</code>对应的变量名<code>tvDetailedTxtPartOne</code>，其中share_coupon是ShareCouponAcitivity中去掉Activity之后的类名。<br><br><h2 id="7">7. 命名常量（constants）</h2><br>全部大写，采用下划线命名法。例如：<code>MIN_WIDTH</code><br>其中常量名开头部分有如下约定<br><em> bundle中传入数值的键值，以<code>EXTRA_</code>开头
+</em> startActivityForResult<br> - 传入的<code>REQUEST_CODE</code>参数，以<code>REQUEST_</code>开头<br> - 返回的结果使用系统默认的常量值即可<br><em> APIKey文件中的常量以<code>KEY_</code>开头
+</em> 网络请求助手类<br> - 请求API的方法中<code>params</code>参数中的键值以<code>PARAM_</code>开头<br> - 返回结果码（一般是整型）常量以<code>RESULT_</code>开头，比如<code>RESULT_ERROR</code><br><em> 刷新的常量以<code>REFRESH_</code>开头以<code>TYPE</code>结尾
+</em> 默认值常量名以<code>DEFAULT_</code>开头<br><br><h2 id="8">8. 命名资源文件（drawable folder）</h2><br>全部小写，采用下划线命名法，加前缀区分。<br>命名模式：activity名称<em>逻辑名称/common</em>逻辑名称<br><em>如果有多种形态(如按钮等)除外,如btn_xx.xml（selector)</em><br><br>名称     | 功能<br>— | —<br>btn<em>xx |     按钮图片使用btn</em>整体效果（selector）<br>btn_xx<em>normal |     按钮图片使用btn</em>正常情况效果<br>btn_xx<em>press     | 按钮图片使用btn</em>点击时候效果<br>bg<em>head     | 背景图片使用bg</em>功能_说明<br>def_search<em>cell |     默认图片使用def</em>功能_说明<br>icon_more<em>help     | 图标图片使用icon</em>功能_说明<br>seg_list<em>line     | 具有分隔特征的图片使用seg</em>功能_说明<br>sel<em>ok     | 选择图标使用se</em>功能<em>说明<br><br>命名后缀<br><br>后缀     | 说明<br>— | —<br>unit     | 在使用xml的tilemode来配图片时，element图片使用此后缀<br>nor     | 图片的状态，代表普通状态<br>hl     | 图片的状态，代表高亮状态<br>press     | 图片的状态，代表按下状态<br>select     | 图片的状态，代表其所占的view被选中<br>unselect     | 图片的状态，代表其所占的view没有被选中<br><br><h2 id="9">9. 命名布局文件（XML layout）</h2><br>全部小写，采用下划线命名法<br><br>1. Contentview命名, Activity默认布局，以去掉后缀的Activity类进行命名。不加后缀：activity</em>功能模块.xml，例如：activity_main.xml、activity_more.xml、activity<em>settings.xml。<br>2. Fragment命名：fragment</em>描述.xml，例如：fragment<em>main.xml。<br>3. Dialog命名：dialog</em>描述.xml，例如：dialog<em>hint.xml。<br>4. PopupWindow命名：ppw</em>描述.xml，例如：ppw_info.xml。<br>5. 列表项命名：list<em>item</em>描述.xml，例如：list_item<em>city.xml。<br>6. 包含项：include</em>模块.xml，例如：include_head.xml、include_bottom.xml。<br><br><h2 id="10">10. 命名动画文件（anim folder）</h2><br>全部小写，采用下划线命名法，加前缀区分<br><br>动画命名例子 |     规范写法<br>— | —<br>fade_in     | 淡入<br>fade_out     | 淡出<br>push_down_in     | 从下方推入<br>push_down_out     | 从下方推出<br>push_left     | 推向左方<br>slide_in_from_top |     从头部滑动进入<br>zoom_enter |     变形进入<br>slide_in     | 滑动进入<br>shrink_to<em>middle |     中间缩小<br><br><h2 id="11">11. 命名资源ID（resourcesid）</h2><br>全部小写，采用下划线命名法<br><br>* strings.xml，dimen.xml等中的id命名<br> - 命名模式：activity名称</em>功能模块名称<em>逻辑名称/activity名称</em>逻辑名称/common<em>逻辑名称 （activity名称是指去掉了Acitivty字眼之后的名称）<br> - 最好可以使用common</em>逻辑名称，因为可以被共用<br> - dimen.xml中，使用activity名称注释，将文件内容区分开来<br> - strings.xml中，使用activity名称注释，将文件内容区分开来<br><br><h2 id="12">12. 命名layout中的id命名</h2><br>命名模式为：组件缩写_模块名称_view的逻辑名称<br><br><del>注意：页面组件名称应该和组件id名保持一致。</del><br>（目前java类中组件使用的是小驼峰命名法）<br><br>组件缩写详情如下<br><br>组件 | 缩写<br>— | —<br>TextView | tv<br>ImageView | iv<br>Button | btn<br>listView            | lv<br>CheckBox            | chk<br>RadioButton         | rb<br>LineaLayout | ll<br>RelativeLayout | rl<br>ImageButton         | imgbtn<br>EditText            | et<br>ExpandableList      | expandablelist<br>toggleButton        | togglebtn<br>Spinner             | spinner<br>ProgressBar  | progressbar<br>WdbView             | webview<br>LayoutView | lv<br>RelativeView | rv<br>analogClock         | analogclock<br>DigtalClock         | digtalclock<br>DatePicker          | datepicker<br>TimePicker          | timepicker<br>SeekBar             | seekbar<br>AutoCompleteTextView | autocompletetv<br>ZoomControls        | zoomctls<br>VideoView           | videoview<br>RantingBar          | rantingbar<br>Tab                 | tab<br>ScrollView           | scrollview<br>MapView             | mapview<br><br><h2 id="13">13. 命名styles.xml</h2><br>将layout中不断重现的style提炼出通用的style通用组件，放到styles.xml中<br><br><h2 id="14">14. 命名colors.xml</h2>
+
+<ul>
+<li>将layout中不断重现的color提炼出来，直接以颜色名称命名，从而方便共用和自定义主题样式</li>
+<li>每个layout中特定使用的color值的命名，使用activity名称_颜色名称命名</li>
+</ul>
+<h2 id="15">15. 约定俗成的英文缩写</h2>
+
+<p><strong>程序中使用单词缩写原则：不要用缩写，除非该缩写是约定俗成的。</strong></p>
+<p>下面为常见的英文单词缩写:</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>缩写</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>average</td>
+<td>avg</td>
+</tr>
+<tr>
+<td>background</td>
+<td>bg（主要用于布局和子布局的背景）</td>
+</tr>
+<tr>
+<td>buffer</td>
+<td>buf</td>
+</tr>
+<tr>
+<td>control</td>
+<td>ctrl</td>
+</tr>
+<tr>
+<td>delete</td>
+<td>del</td>
+</tr>
+<tr>
+<td>document</td>
+<td>doc</td>
+</tr>
+<tr>
+<td>error</td>
+<td>err</td>
+</tr>
+<tr>
+<td>escape</td>
+<td>esc</td>
+</tr>
+<tr>
+<td>increment</td>
+<td>inc</td>
+</tr>
+<tr>
+<td>infomation</td>
+<td>info</td>
+</tr>
+<tr>
+<td>initial</td>
+<td>init </td>
+</tr>
+<tr>
+<td>image</td>
+<td>img</td>
+</tr>
+<tr>
+<td>Internationalization</td>
+<td>i18n </td>
+</tr>
+<tr>
+<td>length</td>
+<td>len </td>
+</tr>
+<tr>
+<td>library</td>
+<td>lib </td>
+</tr>
+<tr>
+<td>message</td>
+<td>msg </td>
+</tr>
+<tr>
+<td>password-</td>
+<td>pwd </td>
+</tr>
+<tr>
+<td>position</td>
+<td>pos </td>
+</tr>
+<tr>
+<td>server</td>
+<td>srv </td>
+</tr>
+<tr>
+<td>string</td>
+<td>str </td>
+</tr>
+<tr>
+<td>temp</td>
+<td>tmp </td>
+</tr>
+<tr>
+<td>window</td>
+<td>win</td>
+</tr>
+</tbody>
+</table>
+<h2 id="16">16.监听器使用匿名内部类</h2>
+
+<p></p><h2 id="17">17. 参考链接</h2><p></p>
+<ul>
+<li><a href="https://github.com/futurice/android-best-practices" target="_blank" rel="external">android best practices</a></li>
+<li><a href="http://blog.csdn.net/vipzjyno1/article/details/23542617" target="_blank" rel="external">http://blog.csdn.net/vipzjyno1/article/details/23542617</a></li>
+<li><a href="http://www.zhihu.com/question/27227425" target="_blank" rel="external">http://www.zhihu.com/question/27227425</a></li>
+</ul>
+</div><div class="article-meta"></div><div class="article-comment"><div class="ds-thread" id="ds-thread" data-thread-key="ciwbxddkq001aebv9wwimimq2" data-title="" data-url="https://kevin1202.github.io/2016/12/05/开发规范/" site-name="kevinbolg"></div><script>var siteName = document.getElementById('ds-thread').getAttribute('site-name');
+var duoshuoQuery = {short_name: siteName};
+(function() {
+  var ds = document.createElement('script');
+  ds.type = 'text/javascript';ds.async = true;
+  ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+  ds.charset = 'UTF-8';
+  (document.getElementsByTagName('head')[0] 
+  || document.getElementsByTagName('body')[0]).appendChild(ds);
+})();</script></div><ul class="navication"><li class="home"><a href="/"><i class="icon icon-home"></i></a></li><li><a href="/2016/12/05/开发中遇到的错误汇总/"><i class="icon icon-arror-left"></i></a></li><li><a href="/2016/12/05/微信SDK使用时遇到的问题汇总/"><i class="icon icon-arror-right"></i></a></li></ul><div class="page-footer"><div class="top"><ul class="social"><li><a href="https://github.com/kevin1202" title="GitHub" target="_blank"><i class="icon icon-github"></i></a></li><li><a href="http://weibo.com/u/5052645262" title="Weibo" target="_blank"><i class="icon icon-weibo"></i></a></li></ul></div><div class="bottom"><p class="copyright">© 2016 Kevin博客</p></div></div></body></html>

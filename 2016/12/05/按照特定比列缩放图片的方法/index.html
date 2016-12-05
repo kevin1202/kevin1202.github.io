@@ -1,0 +1,22 @@
+<!DOCTYPE html><html lang="zh-cn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"><meta name="format-detection" content="telephone=no"><meta name="format-detection" content="email=no"><meta name="description" content="欢迎大家来到我的博客，希望可以帮到你们，很高兴认识你们。我的github地址：https:github.com/kevin1202"><meta name="keywords" content="Hexo, Gruntjs, Nodejs, Reactjs, Vuejs"><title>Kevin博客 - 梦想还是要有的，万一实现了呢？</title><link rel="stylesheet" href="/css/main_style.min.css"><link rel="icon" href="/favicon.ico"></head><body><div class="post-header"><img class="background" src="/default_images/post_background.jpg"><div class="post-title"><h1 class="title">随笔</h1><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>1 Minutes</li><li><i class="icon icon-calendar"></i>2016年12月5日</li></ul></div></div><div class="article-content"><ol>
+<li>本项目使用UIL库加载网络图片</li>
+<li>缩放（或者拉伸）的基本原理是，加载图片获取其bitmap，然后处理bitmap</li>
+<li>具体处理如下<ul>
+<li>获取屏幕宽度<code>width = context.getResources().getDisplayMetrics().widthPixels;</code></li>
+<li>获取bitmap的宽度<code>loadedImage.getWidth()</code></li>
+<li>获取压缩比<code>float scale = width / (float) loadedImage.getWidth();</code></li>
+<li>计算bitmap压缩后的高度<code>height = (int) ((float) bitmap.getHeight() * scale);</code></li>
+</ul>
+</li>
+<li>代码块<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">width = context.getResources().getDisplayMetrics().widthPixels;</div><div class="line"></div><div class="line">float scale = width / (float) bitmap.getWidth();</div><div class="line">float height = bitmap.getHeight() * scale;</div><div class="line">LinearLayout.LayoutParams lpCover = new LinearLayout.LayoutParams((int) width, (int) height);</div><div class="line">lpCover.setMargins(0, Convert.dip2px(context, 13), 0, 0);</div><div class="line">imageView.setLayoutParams(lpCover);</div><div class="line">imageView.setImageBitmap(bitmap);</div></pre></td></tr></table></figure></li>
+</ol>
+</div><div class="article-meta"></div><div class="article-comment"><div class="ds-thread" id="ds-thread" data-thread-key="ciwbxddks001eebv9n5pjw10q" data-title="" data-url="https://kevin1202.github.io/2016/12/05/按照特定比列缩放图片的方法/" site-name="kevinbolg"></div><script>var siteName = document.getElementById('ds-thread').getAttribute('site-name');
+var duoshuoQuery = {short_name: siteName};
+(function() {
+  var ds = document.createElement('script');
+  ds.type = 'text/javascript';ds.async = true;
+  ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+  ds.charset = 'UTF-8';
+  (document.getElementsByTagName('head')[0] 
+  || document.getElementsByTagName('body')[0]).appendChild(ds);
+})();</script></div><ul class="navication"><li class="home"><a href="/"><i class="icon icon-home"></i></a></li><li><a href="/2016/12/05/按照某种比例压缩图片的处理方法/"><i class="icon icon-arror-left"></i></a></li><li><a href="/2016/12/05/敏捷开发说明/"><i class="icon icon-arror-right"></i></a></li></ul><div class="page-footer"><div class="top"><ul class="social"><li><a href="https://github.com/kevin1202" title="GitHub" target="_blank"><i class="icon icon-github"></i></a></li><li><a href="http://weibo.com/u/5052645262" title="Weibo" target="_blank"><i class="icon icon-weibo"></i></a></li></ul></div><div class="bottom"><p class="copyright">© 2016 Kevin博客</p></div></div></body></html>
