@@ -1,0 +1,15 @@
+<!DOCTYPE html><html lang="zh-cn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"><meta name="format-detection" content="telephone=no"><meta name="format-detection" content="email=no"><meta name="description" content="欢迎大家来到我的博客，希望可以帮到你们，很高兴认识你们。我的github地址：https:github.com/kevin1202"><meta name="keywords" content="Hexo, Gruntjs, Nodejs, Reactjs, Vuejs"><title>Kevin博客 - 梦想还是要有的，万一实现了呢？</title><link rel="stylesheet" href="/css/main_style.min.css"><link rel="icon" href="/favicon.ico"></head><body><div class="page-header"><div class="background"><img src="/default_images/page_background.jpg"></div><div class="author"><div class="head"><img src="/default_images/author_head.gif"></div><h3 class="name">Kevin</h3><p class="signature">梦想还是要有的，万一实现了呢？</p></div></div><ul class="post-list"><li> <p class="date">2016年12月5日</p><h4 class="title"><a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/">基于Travis-CI搭建Android自动打包发布工作流</a></h4><div class="excerpt"><p>未自动化前安卓开发总是避免不了这样的工作流程：</p>
+<ol>
+<li>开发一些新功能，提交代码</li>
+<li>完成一部分功能后，打包一个测试版APK</li>
+<li>将测试版APK上传到QQ群 / 网盘 / Fir.im / 蒲公英等</li>
+<li>在QQ群或发布平台解释当前版本所完成的功能</li>
+<li>通知测试人员测试</li>
+</ol>
+<p>实现了这套自动化发布后，工作流程被简化成：</p>
+<ol>
+<li>开发新功能，提交代码</li>
+<li>通过git tag对代码打一个内测版的tag，</li>
+</ol>
+<p>Tag提交后Travis CI会自动编译代码，生成APK文件并分发到Github和fir.im，Github和fir.im中会保持Tag的描述信息，分发完成后会有邮件通知所有参与测试的人员。而作为开发人员，只需要专注于对代码打好一个Tag就可以了。</p>
+<p>整个流程看似做了不少工作，其实体现在Travis CI只有数行指令而已，以下逐一讲解：</p></div><ul class="meta"><li><i class="icon icon-author"></i>Kevin</li><li><i class="icon icon-clock"></i>17 Minutes</li><li><i class="icon icon-category"></i><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/android/">android</a><span class="category-list-count">1</span></li></ul></li></ul></li></ul><ul class="pagination"><li class="current"><a>1</a></li></ul><div class="page-footer"><div class="top"><ul class="social"><li><a href="https://github.com/kevin1202" title="GitHub" target="_blank"><i class="icon icon-github"></i></a></li><li><a href="http://weibo.com/u/5052645262" title="Weibo" target="_blank"><i class="icon icon-weibo"></i></a></li></ul></div><div class="bottom"><p class="copyright">© 2016 Kevin博客</p></div></div></body></html>
