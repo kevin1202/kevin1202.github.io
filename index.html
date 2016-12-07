@@ -201,7 +201,7 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2016/12/05/Android机型适配之痛/" title="Android机型适配之痛" itemprop="url">Android机型适配之痛</a>
+      <a href="/2016/12/05/mac_library_show_hide/" title="解决git status/commit时中文文件名乱码" itemprop="url">解决git status/commit时中文文件名乱码</a>
   </h1>
   <p class="article-author">By
        
@@ -214,18 +214,29 @@
 </header>
     <div class="article-content">
         
-        <p>Android项目中Camera的适配。</p>
+        <p>#不对0x80以上的字符进行quote，解决git status/commit时中文文件名乱码</p>
+<p><code>git config --global core.quotepath false</code></p>
+<p><a href="http://xstarcd.github.io/wiki/shell/git_chinese.html" target="_blank" rel="external">http://xstarcd.github.io/wiki/shell/git_chinese.html</a></p>
+
         
         
         <p class="article-more-link">
-          
-            <a href="/2016/12/05/Android机型适配之痛/#more">阅读全文</a>
           
        </p>
     </div>
     <footer class="article-footer clearfix">
 <div class="article-catetags">
 
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/git/">git</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/git/">git</a>
+  </div>
 
 </div>
 
@@ -235,7 +246,7 @@
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2016/12/05/Android机型适配之痛/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/Android机型适配之痛/" data-count-type="comments">&nbsp;</a>
+		<a href="/2016/12/05/mac_library_show_hide/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/mac_library_show_hide/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -314,7 +325,7 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/" title="使用微信SDK遇到的问题汇总" itemprop="url">使用微信SDK遇到的问题汇总</a>
+      <a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/" title="基于Travis-CI搭建Android自动打包发布工作流" itemprop="url">基于Travis-CI搭建Android自动打包发布工作流</a>
   </h1>
   <p class="article-author">By
        
@@ -327,19 +338,42 @@
 </header>
     <div class="article-content">
         
-        <p>在正式开始之前这里要着啰嗦一下，进来的同学一定要看，在申请应用的时候要填一个签名，这个签名是由应用的签名文件keystore决定的，那么你在填这个签名的时候，一定要把你的应用用正式的keyStore生成apk，安装到手机，然后用微信提供的获取应用签名的apk工具获取你应用的签名，然后这会生成的这个签名才是正确的，千万记得，不要使用dubug的ketStore测试，不然后面虽然可以修改，修改了后要审核，但是审核也是需要时间的，会很麻烦。<br>还有一点，你在测试微信分享的时候可能会直接在Eclipse好或者Studio运行项目，那样使用的肯定是dubug的keyStore了，这样分享的时候会被微信拒绝，微信会生成缓存，就算你这会换了正式的keystore来分享显示的还会是被微信拒绝，就算重启微信重启手机也不管用，那你就要清空微信的数据了；很多东西是不是丢了？好吧，啰嗦够了，正式进入主题。</p>
-<p>今天会提供如果实现微信分享，并且对怎么成功接受回调结果做一个详细的介绍和教程，有回调结果失败的同学，往下看吧</p>
+        <p>未自动化前安卓开发总是避免不了这样的工作流程：</p>
+<ol>
+<li>开发一些新功能，提交代码</li>
+<li>完成一部分功能后，打包一个测试版APK</li>
+<li>将测试版APK上传到QQ群 / 网盘 / Fir.im / 蒲公英等</li>
+<li>在QQ群或发布平台解释当前版本所完成的功能</li>
+<li>通知测试人员测试</li>
+</ol>
+<p>实现了这套自动化发布后，工作流程被简化成：</p>
+<ol>
+<li>开发新功能，提交代码</li>
+<li>通过git tag对代码打一个内测版的tag，</li>
+</ol>
+<p>Tag提交后Travis CI会自动编译代码，生成APK文件并分发到Github和fir.im，Github和fir.im中会保持Tag的描述信息，分发完成后会有邮件通知所有参与测试的人员。而作为开发人员，只需要专注于对代码打好一个Tag就可以了。</p>
+<p>整个流程看似做了不少工作，其实体现在Travis CI只有数行指令而已，以下逐一讲解：</p>
         
         
         <p class="article-more-link">
           
-            <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#more">阅读全文</a>
+            <a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/#more">阅读全文</a>
           
        </p>
     </div>
     <footer class="article-footer clearfix">
 <div class="article-catetags">
 
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Android/">Android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Travis-CI/">Travis-CI</a>
+  </div>
 
 </div>
 
@@ -349,7 +383,7 @@
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/微信SDK使用时遇到的问题汇总/" data-count-type="comments">&nbsp;</a>
+		<a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -427,7 +461,7 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2016/12/05/mac_library_show_hide/" title="解决git status/commit时中文文件名乱码" itemprop="url">解决git status/commit时中文文件名乱码</a>
+      <a href="/2016/12/05/Android机型适配之痛/" title="Android机型适配之痛" itemprop="url">Android机型适配之痛</a>
   </h1>
   <p class="article-author">By
        
@@ -440,29 +474,18 @@
 </header>
     <div class="article-content">
         
-        <p>#不对0x80以上的字符进行quote，解决git status/commit时中文文件名乱码</p>
-<p><code>git config --global core.quotepath false</code></p>
-<p><a href="http://xstarcd.github.io/wiki/shell/git_chinese.html" target="_blank" rel="external">http://xstarcd.github.io/wiki/shell/git_chinese.html</a></p>
-
+        <p>Android项目中Camera的适配。</p>
         
         
         <p class="article-more-link">
+          
+            <a href="/2016/12/05/Android机型适配之痛/#more">阅读全文</a>
           
        </p>
     </div>
     <footer class="article-footer clearfix">
 <div class="article-catetags">
 
-<div class="article-categories">
-  <span></span>
-  <a class="article-category-link" href="/categories/git/">git</a>
-</div>
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/git/">git</a>
-  </div>
 
 </div>
 
@@ -472,7 +495,7 @@
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2016/12/05/mac_library_show_hide/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/mac_library_show_hide/" data-count-type="comments">&nbsp;</a>
+		<a href="/2016/12/05/Android机型适配之痛/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/Android机型适配之痛/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -492,7 +515,7 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/" title="基于Travis-CI搭建Android自动打包发布工作流" itemprop="url">基于Travis-CI搭建Android自动打包发布工作流</a>
+      <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/" title="使用微信SDK遇到的问题汇总" itemprop="url">使用微信SDK遇到的问题汇总</a>
   </h1>
   <p class="article-author">By
        
@@ -505,42 +528,19 @@
 </header>
     <div class="article-content">
         
-        <p>未自动化前安卓开发总是避免不了这样的工作流程：</p>
-<ol>
-<li>开发一些新功能，提交代码</li>
-<li>完成一部分功能后，打包一个测试版APK</li>
-<li>将测试版APK上传到QQ群 / 网盘 / Fir.im / 蒲公英等</li>
-<li>在QQ群或发布平台解释当前版本所完成的功能</li>
-<li>通知测试人员测试</li>
-</ol>
-<p>实现了这套自动化发布后，工作流程被简化成：</p>
-<ol>
-<li>开发新功能，提交代码</li>
-<li>通过git tag对代码打一个内测版的tag，</li>
-</ol>
-<p>Tag提交后Travis CI会自动编译代码，生成APK文件并分发到Github和fir.im，Github和fir.im中会保持Tag的描述信息，分发完成后会有邮件通知所有参与测试的人员。而作为开发人员，只需要专注于对代码打好一个Tag就可以了。</p>
-<p>整个流程看似做了不少工作，其实体现在Travis CI只有数行指令而已，以下逐一讲解：</p>
+        <p>在正式开始之前这里要着啰嗦一下，进来的同学一定要看，在申请应用的时候要填一个签名，这个签名是由应用的签名文件keystore决定的，那么你在填这个签名的时候，一定要把你的应用用正式的keyStore生成apk，安装到手机，然后用微信提供的获取应用签名的apk工具获取你应用的签名，然后这会生成的这个签名才是正确的，千万记得，不要使用dubug的ketStore测试，不然后面虽然可以修改，修改了后要审核，但是审核也是需要时间的，会很麻烦。<br>还有一点，你在测试微信分享的时候可能会直接在Eclipse好或者Studio运行项目，那样使用的肯定是dubug的keyStore了，这样分享的时候会被微信拒绝，微信会生成缓存，就算你这会换了正式的keystore来分享显示的还会是被微信拒绝，就算重启微信重启手机也不管用，那你就要清空微信的数据了；很多东西是不是丢了？好吧，啰嗦够了，正式进入主题。</p>
+<p>今天会提供如果实现微信分享，并且对怎么成功接受回调结果做一个详细的介绍和教程，有回调结果失败的同学，往下看吧</p>
         
         
         <p class="article-more-link">
           
-            <a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/#more">阅读全文</a>
+            <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#more">阅读全文</a>
           
        </p>
     </div>
     <footer class="article-footer clearfix">
 <div class="article-catetags">
 
-<div class="article-categories">
-  <span></span>
-  <a class="article-category-link" href="/categories/Android/">Android</a>
-</div>
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/Travis-CI/">Travis-CI</a>
-  </div>
 
 </div>
 
@@ -550,7 +550,7 @@
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/" data-count-type="comments">&nbsp;</a>
+		<a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/微信SDK使用时遇到的问题汇总/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -839,7 +839,7 @@
 		
 
 		<p class="copyright">
-		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2016 
+		 © 2016 
 		
 		<a href="/about" target="_blank" title="Kevin">Kevin</a>
 		
@@ -851,7 +851,7 @@
   e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
   })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
   
-  _st('install','DBjSFU5kGEcv8E-m-m_m','2.0.0');
+  _st('install','WmBhdpYjRXqu1tsaFYAx','2.0.0');
 </script>
 </div></footer>
     <script src="/js/jquery-2.0.3.min.js"></script>
