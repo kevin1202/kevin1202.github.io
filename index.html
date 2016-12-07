@@ -143,7 +143,7 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2016/12/05/Android最佳实践/" title="Android最佳实践" itemprop="url">Android最佳实践</a>
+      <a href="/2016/12/05/Android机型适配之痛/" title="Android机型适配之痛" itemprop="url">Android机型适配之痛</a>
   </h1>
   <p class="article-author">By
        
@@ -156,17 +156,12 @@
 </header>
     <div class="article-content">
         
-        <ol>
-<li>定义变量时，UI变量单独放一块，数据变量放一块，空行隔开不要掺杂在一块。</li>
-<li><p>使用UIL时，如果只是简单加载一个图片的bitmap，可以使用SimpleImageLoadingListener方法，而不是ImageLoadingListener。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">imageLoader.displayImage(detailModel.getData().getPicture(), </div><div class="line">                        headerBg, </div><div class="line">                        new SimpleImageLoadingListener() &#123;</div><div class="line"></div><div class="line">                    @Override</div><div class="line">                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) &#123;</div><div class="line">                        headerBg.setImageBitmap(loadedImage);</div><div class="line">                        setBitmap(loadedImage);</div><div class="line">                    &#125;</div><div class="line"></div><div class="line">                &#125;);</div></pre></td></tr></table></figure>
-</li>
-<li><p>Activity或Fragment中对adapter.updateDataSet(data);时，<code>notifyDataSetChanged</code>的操作放在adapter的updateDataSet方法内执行。</p>
+        <p>Android项目中Camera的适配。</p>
         
         
         <p class="article-more-link">
           
-            <a href="/2016/12/05/Android最佳实践/#more">阅读全文</a>
+            <a href="/2016/12/05/Android机型适配之痛/#more">阅读全文</a>
           
        </p>
     </div>
@@ -182,7 +177,7 @@
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2016/12/05/Android最佳实践/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/Android最佳实践/" data-count-type="comments">&nbsp;</a>
+		<a href="/2016/12/05/Android机型适配之痛/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/Android机型适配之痛/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -322,64 +317,6 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2016/12/05/处理表情和文字输入的正确姿势/" title="处理表情和文字输入的正确姿势" itemprop="url">处理表情和文字输入的正确姿势</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <ol>
-<li>点击“输入框”以外的区域，如果当前他们显示的话，需要隐藏表情面板或者软键盘。</li>
-<li>点击“输入框”，如果当前表情面板显示的话，需要先隐藏之，然后弹出软键盘。</li>
-<li>输入框中一般会有显示当前输入状态的提示按钮（有的在输入框左边，有的在右边），比如，如果当前是表情输入状态，该提示按钮的图标应该是软键盘，以提示用户点击该按钮切换到文字输入状态。这个提示按钮的图标和点击后的响应要分情况处理，是动态的。</li>
-<li><p>键盘相关操作方法</p>
-        
-        
-        <p class="article-more-link">
-          
-            <a href="/2016/12/05/处理表情和文字输入的正确姿势/#more">阅读全文</a>
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2016/12/05/处理表情和文字输入的正确姿势/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/处理表情和文字输入的正确姿势/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
       <a href="/2016/12/05/开发规范/" title="开发规范" itemprop="url">开发规范</a>
   </h1>
   <p class="article-author">By
@@ -439,7 +376,7 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2016/12/05/Android机型适配之痛/" title="Android机型适配之痛" itemprop="url">Android机型适配之痛</a>
+      <a href="/2016/12/05/处理表情和文字输入的正确姿势/" title="处理表情和文字输入的正确姿势" itemprop="url">处理表情和文字输入的正确姿势</a>
   </h1>
   <p class="article-author">By
        
@@ -452,12 +389,16 @@
 </header>
     <div class="article-content">
         
-        <p>Android项目中Camera的适配。</p>
+        <ol>
+<li>点击“输入框”以外的区域，如果当前他们显示的话，需要隐藏表情面板或者软键盘。</li>
+<li>点击“输入框”，如果当前表情面板显示的话，需要先隐藏之，然后弹出软键盘。</li>
+<li>输入框中一般会有显示当前输入状态的提示按钮（有的在输入框左边，有的在右边），比如，如果当前是表情输入状态，该提示按钮的图标应该是软键盘，以提示用户点击该按钮切换到文字输入状态。这个提示按钮的图标和点击后的响应要分情况处理，是动态的。</li>
+<li><p>键盘相关操作方法</p>
         
         
         <p class="article-more-link">
           
-            <a href="/2016/12/05/Android机型适配之痛/#more">阅读全文</a>
+            <a href="/2016/12/05/处理表情和文字输入的正确姿势/#more">阅读全文</a>
           
        </p>
     </div>
@@ -473,7 +414,66 @@
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2016/12/05/Android机型适配之痛/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/Android机型适配之痛/" data-count-type="comments">&nbsp;</a>
+		<a href="/2016/12/05/处理表情和文字输入的正确姿势/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/处理表情和文字输入的正确姿势/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/Android最佳实践/" title="Android最佳实践" itemprop="url">Android最佳实践</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ol>
+<li>定义变量时，UI变量单独放一块，数据变量放一块，空行隔开不要掺杂在一块。</li>
+<li><p>使用UIL时，如果只是简单加载一个图片的bitmap，可以使用SimpleImageLoadingListener方法，而不是ImageLoadingListener。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">imageLoader.displayImage(detailModel.getData().getPicture(), </div><div class="line">                        headerBg, </div><div class="line">                        new SimpleImageLoadingListener() &#123;</div><div class="line"></div><div class="line">                    @Override</div><div class="line">                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) &#123;</div><div class="line">                        headerBg.setImageBitmap(loadedImage);</div><div class="line">                        setBitmap(loadedImage);</div><div class="line">                    &#125;</div><div class="line"></div><div class="line">                &#125;);</div></pre></td></tr></table></figure>
+</li>
+<li><p>Activity或Fragment中对adapter.updateDataSet(data);时，<code>notifyDataSetChanged</code>的操作放在adapter的updateDataSet方法内执行。</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/12/05/Android最佳实践/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/05/Android最佳实践/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/Android最佳实践/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -883,15 +883,15 @@
 			
 		
 			
+				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/TimerTask/" title="TimerTask">TimerTask<sup>1</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
 			
 		
 			
