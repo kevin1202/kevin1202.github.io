@@ -79,6 +79,134 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2017/02/16/理解Java中的ThreadLocal/" title="" itemprop="url"></a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-02-16T05:55:28.000Z" itemprop="datePublished"> 发表于 2017-02-16</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h1 id="理解Java中的ThreadLocal"><a href="#理解Java中的ThreadLocal" class="headerlink" title="理解Java中的ThreadLocal"></a>理解Java中的ThreadLocal</h1><p>之前面试的时候，面试官问题threadlocal怎么用？当时就懵逼了，只是见过，却不知道如何使用。</p>
+<p>提到ThreadLocal，有些Android或者Java程序员可能有所陌生，可能会提出种种问题，它是做什么的，是不是和线程有关，怎么使用呢？等等问题，本文将总结一下我对ThreadLocal的理解和认识，希望让大家理解ThreadLocal更加透彻一些。</p>
+<h4 id="ThreadLocal是什么？"><a href="#ThreadLocal是什么？" class="headerlink" title="ThreadLocal是什么？"></a>ThreadLocal是什么？</h4><p>ThreadLocal是一个关于创建线程局部变量的类。</p>
+<p>通常情况下，我们创建的变量是可以被任何一个线程访问并修改的。而使用ThreadLocal创建的变量只能被当前线程访问，其他线程则无法访问和修改。</p>
+<h3 id="用法简介"><a href="#用法简介" class="headerlink" title="用法简介"></a>用法简介</h3><ul>
+<li><p>创建，支持泛型</p>
+<p><code>ThreadLocal&lt;String&gt; mStringThreadLocal = new ThreadLocal&lt;&gt;();</code></p>
+</li>
+<li><p>set方法</p>
+<p><code>mStringThreadLocal.set(&quot;droidyue.com&quot;);</code></p>
+</li>
+<li><p>get方法</p>
+<p><code>mStringThreadLocal.get();</code></p>
+</li>
+</ul>
+<h3 id="完整的使用示例"><a href="#完整的使用示例" class="headerlink" title="完整的使用示例"></a>完整的使用示例</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">private void testThreadLocal() &#123;</div><div class="line">    Thread t = new Thread() &#123;</div><div class="line">        ThreadLocal&lt;String&gt; mStringThreadLocal = new ThreadLocal&lt;&gt;();</div><div class="line"></div><div class="line">        @Override</div><div class="line">        public void run() &#123;</div><div class="line">            super.run();</div><div class="line">            mStringThreadLocal.set(&quot;droidyue.com&quot;);</div><div class="line">            mStringThreadLocal.get();</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    t.start();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h3><ul>
+<li>实现单个线程单例以及单个线程上下文信息存储，比如交易id等</li>
+<li>实现线程安全，非线程安全的对象使用ThreadLocal之后就会变得线程安全，因为每个线程都会有一个对应的实例</li>
+<li>承载一些线程相关的数据，避免在方法中来回传递参数</li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/02/16/理解Java中的ThreadLocal/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/02/16/理解Java中的ThreadLocal/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/15/Java之数组array和集合list、set、map/" title="" itemprop="url"></a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-02-15T09:16:28.000Z" itemprop="datePublished"> 发表于 2017-02-15</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="Java之数组array和集合list、set、map"><a href="#Java之数组array和集合list、set、map" class="headerlink" title="Java之数组array和集合list、set、map"></a>Java之数组array和集合list、set、map</h2><p>最基础的是array,所有的集合都是通过array实现的。</p>
+<p>在代码中进行随机访问和存储，array的效率是最高的，但是array是固定的，不能动态改变，且一个array只能存放同一种数据类型。针对以上缺点，就出现了集合就是list,set,map。</p>
+<p>java集合可以存储和操作不固定的一组数据，但是只能存放引用类型的数据，不能放基本数据类型。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/02/15/Java之数组array和集合list、set、map/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/02/15/Java之数组array和集合list、set、map/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2016/12/08/git命令使用大全/" title="Git命令使用大全" itemprop="url">Git命令使用大全</a>
   </h1>
   <p class="article-author">By
@@ -242,6 +370,61 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/" title="使用微信SDK遇到的问题汇总" itemprop="url">使用微信SDK遇到的问题汇总</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>在正式开始之前这里要着啰嗦一下，进来的同学一定要看，在申请应用的时候要填一个签名，这个签名是由应用的签名文件keystore决定的，那么你在填这个签名的时候，一定要把你的应用用正式的keyStore生成apk，安装到手机，然后用微信提供的获取应用签名的apk工具获取你应用的签名，然后这会生成的这个签名才是正确的，千万记得，不要使用dubug的ketStore测试，不然后面虽然可以修改，修改了后要审核，但是审核也是需要时间的，会很麻烦。<br>还有一点，你在测试微信分享的时候可能会直接在Eclipse好或者Studio运行项目，那样使用的肯定是dubug的keyStore了，这样分享的时候会被微信拒绝，微信会生成缓存，就算你这会换了正式的keystore来分享显示的还会是被微信拒绝，就算重启微信重启手机也不管用，那你就要清空微信的数据了；很多东西是不是丢了？好吧，啰嗦够了，正式进入主题。</p>
+<p>今天会提供如果实现微信分享，并且对怎么成功接受回调结果做一个详细的介绍和教程，有回调结果失败的同学，往下看吧</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/微信SDK使用时遇到的问题汇总/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2016/12/05/mac_library_show_hide/" title="解决git status/commit时中文文件名乱码" itemprop="url">解决git status/commit时中文文件名乱码</a>
   </h1>
   <p class="article-author">By
@@ -307,7 +490,7 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/" title="使用微信SDK遇到的问题汇总" itemprop="url">使用微信SDK遇到的问题汇总</a>
+      <a href="/2016/12/05/处理表情和文字输入的正确姿势/" title="处理表情和文字输入的正确姿势" itemprop="url">处理表情和文字输入的正确姿势</a>
   </h1>
   <p class="article-author">By
        
@@ -320,13 +503,16 @@
 </header>
     <div class="article-content">
         
-        <p>在正式开始之前这里要着啰嗦一下，进来的同学一定要看，在申请应用的时候要填一个签名，这个签名是由应用的签名文件keystore决定的，那么你在填这个签名的时候，一定要把你的应用用正式的keyStore生成apk，安装到手机，然后用微信提供的获取应用签名的apk工具获取你应用的签名，然后这会生成的这个签名才是正确的，千万记得，不要使用dubug的ketStore测试，不然后面虽然可以修改，修改了后要审核，但是审核也是需要时间的，会很麻烦。<br>还有一点，你在测试微信分享的时候可能会直接在Eclipse好或者Studio运行项目，那样使用的肯定是dubug的keyStore了，这样分享的时候会被微信拒绝，微信会生成缓存，就算你这会换了正式的keystore来分享显示的还会是被微信拒绝，就算重启微信重启手机也不管用，那你就要清空微信的数据了；很多东西是不是丢了？好吧，啰嗦够了，正式进入主题。</p>
-<p>今天会提供如果实现微信分享，并且对怎么成功接受回调结果做一个详细的介绍和教程，有回调结果失败的同学，往下看吧</p>
+        <ol>
+<li>点击“输入框”以外的区域，如果当前他们显示的话，需要隐藏表情面板或者软键盘。</li>
+<li>点击“输入框”，如果当前表情面板显示的话，需要先隐藏之，然后弹出软键盘。</li>
+<li>输入框中一般会有显示当前输入状态的提示按钮（有的在输入框左边，有的在右边），比如，如果当前是表情输入状态，该提示按钮的图标应该是软键盘，以提示用户点击该按钮切换到文字输入状态。这个提示按钮的图标和点击后的响应要分情况处理，是动态的。</li>
+<li><p>键盘相关操作方法</p>
         
         
         <p class="article-more-link">
           
-            <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#more">阅读全文</a>
+            <a href="/2016/12/05/处理表情和文字输入的正确姿势/#more">阅读全文</a>
           
        </p>
     </div>
@@ -342,7 +528,7 @@
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/微信SDK使用时遇到的问题汇总/" data-count-type="comments">&nbsp;</a>
+		<a href="/2016/12/05/处理表情和文字输入的正确姿势/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/处理表情和文字输入的正确姿势/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -397,64 +583,6 @@
 	
 	  	<span></span>
 		<a href="/2016/12/05/Android机型适配之痛/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/Android机型适配之痛/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/12/05/处理表情和文字输入的正确姿势/" title="处理表情和文字输入的正确姿势" itemprop="url">处理表情和文字输入的正确姿势</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <ol>
-<li>点击“输入框”以外的区域，如果当前他们显示的话，需要隐藏表情面板或者软键盘。</li>
-<li>点击“输入框”，如果当前表情面板显示的话，需要先隐藏之，然后弹出软键盘。</li>
-<li>输入框中一般会有显示当前输入状态的提示按钮（有的在输入框左边，有的在右边），比如，如果当前是表情输入状态，该提示按钮的图标应该是软键盘，以提示用户点击该按钮切换到文字输入状态。这个提示按钮的图标和点击后的响应要分情况处理，是动态的。</li>
-<li><p>键盘相关操作方法</p>
-        
-        
-        <p class="article-more-link">
-          
-            <a href="/2016/12/05/处理表情和文字输入的正确姿势/#more">阅读全文</a>
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2016/12/05/处理表情和文字输入的正确姿势/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/处理表情和文字输入的正确姿势/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -538,6 +666,65 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2016/12/05/开发规范/" title="开发规范" itemprop="url">开发规范</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>Android 开发中类、方法、变量、资源等命名规则。</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/12/05/开发规范/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Android/">Android</a>
+</div>
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/05/开发规范/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/开发规范/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/" title="基于Travis-CI搭建Android自动打包发布工作流" itemprop="url">基于Travis-CI搭建Android自动打包发布工作流</a>
   </h1>
   <p class="article-author">By
@@ -597,65 +784,6 @@
 	
 	  	<span></span>
 		<a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/12/05/开发规范/" title="开发规范" itemprop="url">开发规范</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>Android 开发中类、方法、变量、资源等命名规则。</p>
-        
-        
-        <p class="article-more-link">
-          
-            <a href="/2016/12/05/开发规范/#more">阅读全文</a>
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-<div class="article-categories">
-  <span></span>
-  <a class="article-category-link" href="/categories/Android/">Android</a>
-</div>
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2016/12/05/开发规范/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/开发规范/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -975,15 +1103,15 @@
 		<ul class="clearfix">
 		
 			
+				<li><a href="/tags/git/" title="git">git<sup>1</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/git/" title="git">git<sup>1</sup></a></li>
 			
 		
 			
@@ -999,11 +1127,11 @@
 			
 		
 			
-				<li><a href="/tags/size/" title="size">size<sup>1</sup></a></li>
+				<li><a href="/tags/Travis-CI/" title="Travis-CI">Travis-CI<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Travis-CI/" title="Travis-CI">Travis-CI<sup>1</sup></a></li>
+				<li><a href="/tags/size/" title="size">size<sup>1</sup></a></li>
 			
 		
 		</ul>
@@ -1074,7 +1202,7 @@
 		
 
 		<p class="copyright">
-		 © 2016 
+		 © 2017 
 		
 		<a href="/about" target="" title="Kevin">Kevin</a> bolg
 		
