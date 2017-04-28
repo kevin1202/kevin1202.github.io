@@ -1,0 +1,641 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>RxJava开发精要7 - Schedulers-解决Android主线程问题 | Kevin博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Kevin">
+    
+
+    
+    <meta name="description" content="原文出自《RxJava Essentials》
+
+原文作者 : Ivan Morgillo
+译文出自 : 开发技术前线 www.devtf.cn
+转载声明: 本译文已授权开发者头条享有独家转载权，未经允许，不得转载!
+译者 : yuxingxin 
+项目地址 : RxJava-Essentials-CN
+
+前面一章是最后一章关于RxJava的Observable的创建和操作的章节。我们学习到了如何">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RxJava开发精要7 - Schedulers-解决Android主线程问题">
+<meta property="og:url" content="https://kevin1202.github.io/2017/04/27/chap7/index.html">
+<meta property="og:site_name" content="Kevin博客">
+<meta property="og:description" content="原文出自《RxJava Essentials》
+
+原文作者 : Ivan Morgillo
+译文出自 : 开发技术前线 www.devtf.cn
+转载声明: 本译文已授权开发者头条享有独家转载权，未经允许，不得转载!
+译者 : yuxingxin 
+项目地址 : RxJava-Essentials-CN
+
+前面一章是最后一章关于RxJava的Observable的创建和操作的章节。我们学习到了如何">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter7_1.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter7_2.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter7_3.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter7_4.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter7_5.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter7_6.png">
+<meta property="og:updated_time" content="2017-04-28T06:08:49.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RxJava开发精要7 - Schedulers-解决Android主线程问题">
+<meta name="twitter:description" content="原文出自《RxJava Essentials》
+
+原文作者 : Ivan Morgillo
+译文出自 : 开发技术前线 www.devtf.cn
+转载声明: 本译文已授权开发者头条享有独家转载权，未经允许，不得转载!
+译者 : yuxingxin 
+项目地址 : RxJava-Essentials-CN
+
+前面一章是最后一章关于RxJava的Observable的创建和操作的章节。我们学习到了如何">
+<meta name="twitter:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter7_1.png">
+
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/pacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/pacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="Kevin博客" title="Kevin博客"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Kevin博客">Kevin博客</a></h1>
+				<h2 class="blog-motto">梦想还是要有的，万一实现了呢？</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" class="st-default-search-input" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/chap7/" title="RxJava开发精要7 - Schedulers-解决Android主线程问题" itemprop="url">RxJava开发精要7 - Schedulers-解决Android主线程问题</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#StrictMode"><span class="toc-number">1.</span> <span class="toc-text">StrictMode</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#避免阻塞I-O的操作"><span class="toc-number">2.</span> <span class="toc-text">避免阻塞I/O的操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Schedulers"><span class="toc-number">3.</span> <span class="toc-text">Schedulers</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Schedulers-io"><span class="toc-number">4.</span> <span class="toc-text">Schedulers.io()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Schedulers-computation"><span class="toc-number">5.</span> <span class="toc-text">Schedulers.computation()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Schedulers-immediate"><span class="toc-number">6.</span> <span class="toc-text">Schedulers.immediate()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Schedulers-newThread"><span class="toc-number">7.</span> <span class="toc-text">Schedulers.newThread()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Schedulers-trampoline"><span class="toc-number">8.</span> <span class="toc-text">Schedulers.trampoline()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#非阻塞I-O操作"><span class="toc-number">9.</span> <span class="toc-text">非阻塞I/O操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SubscribeOn-and-ObserveOn"><span class="toc-number">10.</span> <span class="toc-text">SubscribeOn and ObserveOn</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#处理耗时的任务"><span class="toc-number">11.</span> <span class="toc-text">处理耗时的任务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#执行网络任务"><span class="toc-number">12.</span> <span class="toc-text">执行网络任务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">13.</span> <span class="toc-text">总结</span></a></li></ol>
+		
+		</div>
+		
+		<p>原文出自《RxJava Essentials》</p>
+<ul>
+<li>原文作者 : <a href="https://www.packtpub.com/books/info/authors/ivan-morgillo" target="_blank" rel="external">Ivan Morgillo</a></li>
+<li>译文出自 : <a href="http://www.devtf.cn" target="_blank" rel="external">开发技术前线 www.devtf.cn</a></li>
+<li>转载声明: 本译文已授权<a href="http://toutiao.io/download" target="_blank" rel="external">开发者头条</a>享有独家转载权，未经允许，不得转载!</li>
+<li>译者 : <a href="https://github.com/yuxingxin" target="_blank" rel="external">yuxingxin</a> </li>
+<li>项目地址 : <a href="https://github.com/yuxingxin/RxJava-Essentials-CN" target="_blank" rel="external">RxJava-Essentials-CN</a></li>
+</ul>
+<p>前面一章是最后一章关于RxJava的Observable的创建和操作的章节。我们学习到了如何将两个或更多的Observables合并在一起，<code>join</code>它们，<code>zip</code>它们，<code>merge</code>它们以及如何创建一个新的Observable来满足我们特殊的需求。</p>
+<p>本章中，我们提升标准看看如何使用RxJava的调度器来处理多线程和并发编程的问题。我们将学习到如何以响应式的方式创建网络操作，内存访问，以及耗时任务。</p>
+<h2 id="StrictMode"><a href="#StrictMode" class="headerlink" title="StrictMode"></a>StrictMode</h2><p>为了获得更多出现在代码中的关于公共问题的信息，我们激活了<code>StrictMode</code>模式。</p>
+<p><code>StrictMode</code>帮助我们侦测敏感的活动，如我们无意的在主线程执行磁盘访问或者网络调用。正如你所知道的，在主线程执行繁重的或者长时的任务是不可取的。因为Android应用的主线程时UI线程，它被用来处理和UI相关的操作：这也是获得更平滑的动画体验和响应式App的唯一方法。</p>
+<p>为了在我们的App中激活<code>StrictMode</code>，我们只需要在<code>MainActivity</code>中添加几行代码，即<code>onCreate()</code>方法中这样：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123; </div><div class="line">    <span class="keyword">super</span>.onCreate();</div><div class="line">    <span class="keyword">if</span> (BuildConfig.DEBUG) &#123;</div><div class="line">        StrictMode.setThreadPolicy(<span class="keyword">new</span> StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build()); </div><div class="line">        StrictMode.setVmPolicy(<span class="keyword">new</span> StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());</div><div class="line">    &#125; </div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>我们并不想它总是激活着，因此我们只在debug构建时使用。这种配置将报告每一种关于主线程用法的违规做法，并且这些做法都可能与内存泄露有关：<code>Activities</code>、<code>BroadcastReceivers</code>、<code>Sqlite</code>等对象。</p>
+<p>选择了<code>penaltyLog()</code>，当违规做法发生时，<code>StrictMode</code>将会在logcat打印一条信息。</p>
+<h2 id="避免阻塞I-O的操作"><a href="#避免阻塞I-O的操作" class="headerlink" title="避免阻塞I/O的操作"></a>避免阻塞I/O的操作</h2><p>阻塞I/O的操作将使App能够进行下一步操作前会强制使其等待结果的返回。在UI线程上执行一个阻塞操作将强制使UI卡住，这将直接产生不好的用户体验。</p>
+<p>我们激活<code>StrictMode</code>后，我们开始收到了关于我们的App错误操作磁盘I/O的不友好信息。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">D/StrictMode  StrictMode policy violation; ~duration=<span class="number">998</span> ms: android.os.StrictMode$StrictModeDiskReadViolation: policy=<span class="number">31</span> violation=<span class="number">2</span></div><div class="line">at android.os.StrictMode$AndroidBlockGuardPolicy.onReadFromDisk (StrictMode.java:<span class="number">1135</span>)</div><div class="line">at libcore.io.BlockGuardOs.open(BlockGuardOs.java:<span class="number">106</span>) at libcore.io.IoBridge.open(IoBridge.java:<span class="number">393</span>)</div><div class="line">at java.io.FileOutputStream.&lt;init&gt;(FileOutputStream.java:<span class="number">88</span>) </div><div class="line">at android.app.ContextImpl.openFileOutput(ContextImpl.java:<span class="number">918</span>) </div><div class="line">at android.content.ContextWrapper.openFileOutput(ContextWrapper. java:<span class="number">185</span>)</div><div class="line">at com.packtpub.apps.rxjava_essentials.Utils.storeBitmap (Utils.java:<span class="number">30</span>)</div></pre></td></tr></table></figure>
+<p>上一条信息告诉我们<code>Utils.storeBitmap()</code>函数执行完耗时998ms：在UI线程上近1秒的不必要的工作和App上近1秒不必要的迟钝。这是因为我们以阻塞的方式访问磁盘。我们的<code>storeBitmap()</code>函数包含了：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">FileOutputStream fOut = context.openFileOutput(filename, Context.MODE_PRIVATE);</div></pre></td></tr></table></figure></p>
+<p>它直接访问智能手机的固态存储然后就慢了。我们该如何提高访问速度呢？<code>storeBitmap()</code>函数保存了已安装App的图标。他返回了<code>void</code>，因此在执行下一个操作前我们毫无理由去等待直到它完成。我们可以启动它并让它执行在不同的线程。Android中这些年线程管理的变化产生了App诡异的行为。我们可以使用<code>AsyncTask</code>，但是我们要避免掉入前几章里的<code>onPrehttps://github.com/yuxingxin/RxJava-Essentials-CN/raw/master. onPosthttps://github.com/yuxingxin/RxJava-Essentials-CN/raw/master.doInBackGround</code>地狱。我们将使用RxJava的方式;万岁的调度器！</p>
+<h2 id="Schedulers"><a href="#Schedulers" class="headerlink" title="Schedulers"></a>Schedulers</h2><p>调度器以一种最简单的方式将多线程用在你的Apps的中。它们时RxJava重要的一部分并能很好地与Observables协同工作。它们无需处理实现、同步、线程、平台限制、平台变化而可以提供一种灵活的方式来创建并发程序。</p>
+<p>RxJava提供了5种调度器：</p>
+<ul>
+<li><code>.io()</code></li>
+<li><code>.computation()</code></li>
+<li><code>.immediate()</code></li>
+<li><code>.newThread()</code></li>
+<li><code>.trampoline()</code></li>
+</ul>
+<p>让我们一个一个的来看下它们：</p>
+<h2 id="Schedulers-io"><a href="#Schedulers-io" class="headerlink" title="Schedulers.io()"></a>Schedulers.io()</h2><p>这个调度器时用于I/O操作。它基于根据需要，增长或缩减来自适应的线程池。我们将使用它来修复我们之前看到的<code>StrictMode</code>违规做法。由于它专用于I/O操作，所以并不是RxJava的默认方法；正确的使用它是由开发者决定的。</p>
+<p>重点需要注意的是线程池是无限制的，大量的I/O调度操作将创建许多个线程并占用内存。一如既往的是，我们需要在性能和简捷两者之间找到一个有效的平衡点。</p>
+<h2 id="Schedulers-computation"><a href="#Schedulers-computation" class="headerlink" title="Schedulers.computation()"></a>Schedulers.computation()</h2><p>这个是计算工作默认的调度器，它与I/O操作无关。它也是许多RxJava方法的默认调度器：<code>buffer()</code>,<code>debounce()</code>,<code>delay()</code>,<code>interval()</code>,<code>sample()</code>,<code>skip()</code>。</p>
+<h2 id="Schedulers-immediate"><a href="#Schedulers-immediate" class="headerlink" title="Schedulers.immediate()"></a>Schedulers.immediate()</h2><p>这个调度器允许你立即在当前线程执行你指定的工作。它是<code>timeout()</code>,<code>timeInterval()</code>,以及<code>timestamp()</code>方法默认的调度器。</p>
+<h2 id="Schedulers-newThread"><a href="#Schedulers-newThread" class="headerlink" title="Schedulers.newThread()"></a>Schedulers.newThread()</h2><p>这个调度器正如它所看起来的那样：它为指定任务启动一个新的线程。</p>
+<h2 id="Schedulers-trampoline"><a href="#Schedulers-trampoline" class="headerlink" title="Schedulers.trampoline()"></a>Schedulers.trampoline()</h2><p>当我们想在当前线程执行一个任务时，并不是立即，我们可以用<code>.trampoline()</code>将它入队。这个调度器将会处理它的队列并且按序运行队列中每一个任务。它是<code>repeat()</code>和<code>retry()</code>方法默认的调度器。</p>
+<h2 id="非阻塞I-O操作"><a href="#非阻塞I-O操作" class="headerlink" title="非阻塞I/O操作"></a>非阻塞I/O操作</h2><p>现在我们知道如何在一个指定I/O调度器上来调度一个任务，我们可以修改<code>storeBitmap()</code>函数并再次检查<code>StrictMode</code>的不合规做法。为了这个例子，我们可以在新的<code>blockingStoreBitmap()</code>函数中重排代码。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">blockingStoreBitmap</span><span class="params">(Context context, Bitmap bitmap, String filename)</span> </span>&#123;</div><div class="line">    FileOutputStream fOut = <span class="keyword">null</span>; </div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        fOut = context.openFileOutput(filename, Context.MODE_PRIVATE);</div><div class="line">        bitmap.compress(Bitmap.CompressFormat.PNG, <span class="number">100</span>, fOut); </div><div class="line">        fOut.flush();</div><div class="line">        fOut.close();</div><div class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(e);</div><div class="line">    &#125; <span class="keyword">finally</span> &#123; </div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="keyword">if</span> (fOut != <span class="keyword">null</span>) &#123;</div><div class="line">                fOut.close();</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(e); </div><div class="line">        &#125;</div><div class="line">    &#125; </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在我们可以使用<code>Schedulers.io()</code>创建非阻塞的版本：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">storeBitmap</span><span class="params">(Context context, Bitmap bitmap, String filename)</span> </span>&#123;</div><div class="line">    Schedulers.io().createWorker().schedule(() -&gt; &#123;</div><div class="line">        blockingStoreBitmap(context, bitmap, filename);</div><div class="line">    &#125;); </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>每次我们调用<code>storeBitmap()</code>，RxJava处理创建所有它需要从I / O线程池一个特定的I/ O线程执行我们的任务。所有要执行的操作都避免在UI线程执行并且我们的App比之前要快上1秒：logcat上也不再有<code>StrictMode</code>的不合规做法。</p>
+<p>下图展示了我们在<code>storeBitmap()</code>场景看到的两种方法的不同：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter7_1.png" alt=""></p>
+<h2 id="SubscribeOn-and-ObserveOn"><a href="#SubscribeOn-and-ObserveOn" class="headerlink" title="SubscribeOn and ObserveOn"></a>SubscribeOn and ObserveOn</h2><p>我们学到了如何在一个调度器上运行一个任务。但是我们如何利用它来和Observables一起工作呢？RxJava提供了<code>subscribeOn()</code>方法来用于每个Observable对象。<code>subscribeOn()</code>方法用<code>Scheduler</code>来作为参数并在这个Scheduler上执行Observable调用。</p>
+<p>在“真实世界”这个例子中，我们调整<code>loadList()</code>函数。首先，我们需要一个新的<code>getApps()</code>方法来检索已安装的应用列表：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> Observable&lt;AppInfo&gt; <span class="title">getApps</span><span class="params">()</span> </span>&#123; </div><div class="line">    <span class="keyword">return</span> Observable.create(subscriber -&gt; &#123;</div><div class="line">        List&lt;AppInfo&gt; apps = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);</div><div class="line">        Type appInfoType = <span class="keyword">new</span> TypeToken&lt;List&lt;AppInfo&gt;&gt;()&#123;&#125;.getType();</div><div class="line">        String serializedApps = sharedPref.getString(<span class="string">"APPS"</span>, <span class="string">""</span>);</div><div class="line">        <span class="keyword">if</span> (!<span class="string">""</span>.equals(serializedApps)) &#123;</div><div class="line">            apps = <span class="keyword">new</span> Gson().fromJson(serializedApps,appInfoType); </div><div class="line">        &#125;</div><div class="line">        <span class="keyword">for</span> (AppInfo app : apps) &#123;</div><div class="line">            subscriber.onNext(app);</div><div class="line">        &#125;</div><div class="line">        subscriber.onCompleted(); </div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>getApps()</code>方法返回一个<code>AppInfo</code>的Observable。它先从Android的SharePreferences读取到已安装的应用程序列表。反序列化，并一个接一个的发射AppInfo数据。使用新的方法来检索列表，<code>loadList()</code>函数改成下面这样：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">loadList</span><span class="params">()</span> </span>&#123;</div><div class="line">    mRecyclerView.setVisibility(View.VISIBLE);</div><div class="line">    getApps().subscribe(<span class="keyword">new</span> Observer&lt;AppInfo&gt;() &#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123;</div><div class="line">            mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">            Toast.makeText(getActivity(), <span class="string">"Here is the list!"</span>, Toast.LENGTH_LONG).show();</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">            Toast.makeText(getActivity(), <span class="string">"Something went wrong!"</span>, Toast.LENGTH_SHORT).show();</div><div class="line">            mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(AppInfo appInfo)</span> </span>&#123;</div><div class="line">            mAddedApps.add(appInfo);</div><div class="line">                mAdapter.addApplication(mAddedApps.size() - <span class="number">1</span>, appInfo);</div><div class="line">        &#125; </div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果我们运行代码，<code>StrictMode</code>将会报告一个不合规操作，这是因为<code>SharePreferences</code>会减慢I/O操作。我们所需要做的是指定<code>getApps()</code>需要在调度器上执行：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">getApps().subscribeOn(Schedulers.io())</div><div class="line">        .subscribe(<span class="keyword">new</span> Observer&lt;AppInfo&gt;() &#123; [https:<span class="comment">//github.com/yuxingxin/RxJava-Essentials-CN/raw/master.]</span></div></pre></td></tr></table></figure>
+<p><code>Schedulers.io()</code>将会去掉<code>StrictMode</code>的不合规操作，但是我们的App现在崩溃了是因为：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">at rx.internal.schedulers.ScheduledAction.run(ScheduledAction.jav a:<span class="number">58</span>)</div><div class="line">at java.util.concurrent.Executors$RunnableAdapter.call(Executors. java:<span class="number">422</span>)</div><div class="line">at java.util.concurrent.FutureTask.run(FutureTask.java:<span class="number">237</span>) </div><div class="line">at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutu reTask.access$<span class="number">201</span>(ScheduledThreadPoolExecutor.java:<span class="number">152</span>)</div><div class="line">at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutu reTask.run(ScheduledThreadPoolExecutor.java:<span class="number">265</span>)</div><div class="line">at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolEx ecutor.java:<span class="number">1112</span>)</div><div class="line">at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolE xecutor.java:<span class="number">587</span>)</div><div class="line">at java.lang.Thread.run(Thread.java:<span class="number">841</span>) Caused by:</div><div class="line">    android.view.ViewRootImpl$CalledFromWrongThreadException: Only the original thread that created a view hierarchy can touch its views.</div></pre></td></tr></table></figure></p>
+<p>Only the original thread that created a view hierarchy can touch its views.</p>
+<p>我们再次回到Android的世界。这条信息简单的告诉我们我们试图在一个非UI线程来修改UI操作。意思是我们需要在I/O调度器上执行我们的代码。因此我们需要和I/O调度器一起执行代码，但是当结果返回时我们需要在UI线程上操作。RxJava让你能够订阅一个指定的调度器并观察它。我们只需在<code>loadList()</code>函数添加几行代码，那么每一项就都准备好了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">getApps()</div><div class="line">.onBackpressureBuffer()</div><div class="line">.subscribeOn(Schedulers.io())</div><div class="line">.observeOn(AndroidSchedulers.mainThread())</div><div class="line">.subscribe(<span class="keyword">new</span> Observer&lt;AppInfo&gt;() &#123; [https:<span class="comment">//github.com/yuxingxin/RxJava-Essentials-CN/raw/master.]</span></div></pre></td></tr></table></figure>
+<p><code>observeOn()</code>方法将会在指定的调度器上返回结果：如例子中的UI线程。<code>onBackpressureBuffer()</code>方法将告诉Observable发射的数据如果比观察者消费的数据要更快的话，它必须把它们存储在缓存中并提供一个合适的时间给它们。做完这些工作之后，如果我们运行App，就会出现已安装的程序列表：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter7_2.png" width="240"></p>
+<h2 id="处理耗时的任务"><a href="#处理耗时的任务" class="headerlink" title="处理耗时的任务"></a>处理耗时的任务</h2><p>我们已经知道如何处理缓慢的I/O操作。让我们看一个与I/O无关的耗时的任务。例如，我们修改<code>loadList()</code>函数并创建一个新的<code>slow</code>函数发射我们已安装的app数据。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> Observable&lt;AppInfo&gt; <span class="title">getObservableApps</span><span class="params">(List&lt;AppInfo&gt; apps)</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> Observable .create(subscriber -&gt; &#123;</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">double</span> i = <span class="number">0</span>; i &lt; <span class="number">1000000000</span>; i++) &#123;</div><div class="line">            <span class="keyword">double</span> y = i * i;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">for</span> (AppInfo app : apps) &#123;</div><div class="line">            subscriber.onNext(app);</div><div class="line">        &#125;</div><div class="line">        subscriber.onCompleted(); </div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>正如你看到的，这个函数执行了一些毫无意义的计算，只是针对这个例子消耗时间，然后从<code>List&lt;AppInfo&gt;</code>对象中发射我们的<code>AppInfo</code>数据，现在，我们重排<code>loadList()</code>函数如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">loadList</span><span class="params">(List&lt;AppInfo&gt; apps)</span> </span>&#123;</div><div class="line">    mRecyclerView.setVisibility(View.VISIBLE);</div><div class="line">    getObservableApps(apps)</div><div class="line">        .subscribe(<span class="keyword">new</span> Observer&lt;AppInfo&gt;() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123;</div><div class="line">                mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">                Toast.makeText(getActivity(), <span class="string">"Here is the list!"</span>, Toast.LENGTH_LONG).show();</div><div class="line">            &#125;</div><div class="line">            </div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">                Toast.makeText(getActivity(), <span class="string">"Something went wrong!"</span>, Toast.LENGTH_SHORT).show();</div><div class="line">                mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">            &#125;</div><div class="line">            </div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(AppInfo appInfo)</span> </span>&#123; </div><div class="line">                mAddedApps.add(appInfo);  </div><div class="line">                mAdapter.addApplication(mAddedApps.size() - <span class="number">1</span>, appInfo);</div><div class="line">            &#125; </div><div class="line">        &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果我们运行这段代码，当我们点击<code>Navigation Drawer</code>菜单项时App将会卡住一会，然后你能看到下图中半关闭的菜单:</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter7_3.png" width="240"></p>
+<p>如果我们不够走运的话，我们可以看到下图中经典的ANR信息框：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter7_4.png" width="240"></p>
+<p>可以确定的是，我们将会看到下面在logcat中不愉快的信息：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">I/Choreographer  Skipped <span class="number">598</span> frames! The application may be doing too much work on its main thread.</div></pre></td></tr></table></figure>
+<p>这条信息比较清楚，Android在告诉我们用户体验非常差的原因是我们用不必要的工作量阻塞了UI线程。但是我们已经知道了如何处理它：我们有调度器！我们只须添加几行代码到我们的Observable链中就能去掉加载慢和<code>Choreographer</code>信息：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">getObservableApps(apps)</div><div class="line">    .onBackpressureBuffer()</div><div class="line">    .subscribeOn(Schedulers.computation())</div><div class="line">    .observeOn(AndroidSchedulers.mainThread())</div><div class="line">    .subscribe(<span class="keyword">new</span> Observer&lt;AppInfo&gt;() &#123; [https:<span class="comment">//github.com/yuxingxin/RxJava-Essentials-CN/raw/master.]</span></div></pre></td></tr></table></figure>
+<p>用这几行代码，我们将可以快速关掉<code>Navigation Drawer</code>,一个漂亮的进度条，一个工作在独立的线程缓慢执行的计算任务，并在主线程返回结果让我们更新已安装的应用列表。</p>
+<h2 id="执行网络任务"><a href="#执行网络任务" class="headerlink" title="执行网络任务"></a>执行网络任务</h2><p>网络在今天是99%的移动应用的一部分：我们总是连接远端服务器来检索我们App需要的信息。</p>
+<p>作为网络访问的第一个方法，我们将创建下面这样一个场景:</p>
+<ul>
+<li>加载一个进度条。</li>
+<li>用一个按钮开始文件下载。</li>
+<li>下载过程中更新进度条。</li>
+<li>下载完后开始视频播放。</li>
+</ul>
+<p>我们的用户界面非常简单，我们只需要一个有趣的进度条和一个下载按钮。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter7_5.png" width="240"></p>
+<p>首先，我们创建<code>mDownloadProgress</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> PublishSubject&lt;Integer&gt;mDownloadProgress = PublishSubject.create();</div></pre></td></tr></table></figure>
+<p>这个主题我们用来管理进度的更新，它和<code>download</code>函数协同工作。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">downloadFile</span><span class="params">(String source, String destination)</span> </span>&#123;</div><div class="line">    <span class="keyword">boolean</span> result = <span class="keyword">false</span>;</div><div class="line">    InputStream input = <span class="keyword">null</span>; </div><div class="line">    OutputStream output = <span class="keyword">null</span>; </div><div class="line">    HttpURLConnection connection = <span class="keyword">null</span>;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        URL url = <span class="keyword">new</span> URL(source);</div><div class="line">        connection = (HttpURLConnection) url.openConnection(); </div><div class="line">        connection.connect();</div><div class="line">        <span class="keyword">if</span> (connection.getResponseCode() != HttpURLConnection.HTTP_OK) &#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">int</span> fileLength = connection.getContentLength();</div><div class="line">        input = connection.getInputStream();</div><div class="line">        output = <span class="keyword">new</span> FileOutputStream(destination);</div><div class="line">        <span class="keyword">byte</span> data[] = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">4096</span>];</div><div class="line">        <span class="keyword">long</span> total = <span class="number">0</span>;</div><div class="line">        <span class="keyword">int</span> count;</div><div class="line">        <span class="keyword">while</span> ((count = input.read(data)) != -<span class="number">1</span>) &#123;</div><div class="line">            total += count;</div><div class="line">            <span class="keyword">if</span> (fileLength &gt;<span class="number">0</span>) &#123;</div><div class="line">                <span class="keyword">int</span> percentage = (<span class="keyword">int</span>) (total * <span class="number">100</span> / fileLength);</div><div class="line">                mDownloadProgress.onNext(percentage);</div><div class="line">            &#125;</div><div class="line">            output.write(data, <span class="number">0</span>, count); </div><div class="line">        &#125;</div><div class="line">        mDownloadProgress.onCompleted(); </div><div class="line">        result = <span class="keyword">true</span>;</div><div class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123; </div><div class="line">        mDownloadProgress.onError(e);</div><div class="line">    &#125; <span class="keyword">finally</span> &#123; </div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="keyword">if</span> (output != <span class="keyword">null</span>) &#123; </div><div class="line">                output.close();</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (input != <span class="keyword">null</span>) &#123;</div><div class="line">                input.close(); </div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;    </div><div class="line">            mDownloadProgress.onError(e);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (connection != <span class="keyword">null</span>) &#123;</div><div class="line">            connection.disconnect();</div><div class="line">            mDownloadProgress.onCompleted();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> result;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>上面的这段代码将会触发<code>NetworkOnMainThreadException</code>异常。我们可以创建RxJava版本的函数进入我们挚爱的响应式世界来解决这个问题：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> Observable&lt;Boolean&gt; <span class="title">obserbableDownload</span><span class="params">(String source, String destination)</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> Observable.create(subscriber -&gt; &#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="keyword">boolean</span> result = downloadFile(source, destination); </div><div class="line">            <span class="keyword">if</span> (result) &#123;</div><div class="line">                subscriber.onNext(<span class="keyword">true</span>);</div><div class="line">                subscriber.onCompleted(); </div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                subscriber.onError(<span class="keyword">new</span> Throwable(<span class="string">"Download failed."</span>));</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123; </div><div class="line">            subscriber.onError(e);</div><div class="line">        &#125; </div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在我们需要触发下载操作，点击下载按钮:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@OnClick</span>(R.id.button_download)</div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">download</span><span class="params">()</span> </span>&#123;</div><div class="line">    mButton.setText(getString(R.string.downloading));</div><div class="line">    mButton.setClickable(<span class="keyword">false</span>);</div><div class="line">    mDownloadProgress.distinct()</div><div class="line">    .observeOn(AndroidSchedulers.mainThread())</div><div class="line">    .subscribe(<span class="keyword">new</span> Observer&lt;Integer&gt;() &#123;</div><div class="line">    </div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123;  </div><div class="line">            App.L.debug(<span class="string">"Completed"</span>);</div><div class="line">        &#125;</div><div class="line">    </div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">            App.L.error(e.toString()); </div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(Integer progress)</span> </span>&#123;</div><div class="line">            mArcProgress.setProgress(progress);</div><div class="line">        &#125; </div><div class="line">    &#125;);</div><div class="line">    </div><div class="line">    String destination = <span class="string">"sdcardsoftboy.avi"</span>;</div><div class="line">    obserbableDownload(<span class="string">"http://archive.blender.org/fileadmin/movies/softboy.avi"</span>, destination)</div><div class="line">        .subscribeOn(Schedulers.io())</div><div class="line">        .observeOn(AndroidSchedulers.mainThread())</div><div class="line">        .subscribe(success -&gt; &#123;</div><div class="line">            resetDownloadButton();</div><div class="line">            Intent intent = <span class="keyword">new</span> Intent(android.content.Intent.ACTION_VIEW);</div><div class="line">            File file = <span class="keyword">new</span> File(destination);</div><div class="line">            intent.setDataAndType(Uri.fromFile(file),<span class="string">"video/avi"</span>);</div><div class="line">            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); </div><div class="line">            startActivity(intent);</div><div class="line">        &#125;, error -&gt; &#123;</div><div class="line">            Toast.makeText(getActivity(), <span class="string">"Something went south"</span>, Toast.LENGTH_SHORT).show();</div><div class="line">            resetDownloadButton();</div><div class="line">        &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我们使用Butter Knife的注解<code>@OnClick</code>来绑定按钮的方法并更新按钮信息和点击状态：我们不想让用户点击多次从而触发多次下载事件。</p>
+<p>然后，我们创建一个subscription来观察下载进度并相应的更新进度条。很明显，我们我们观测主线程是因为进度条是UI元素。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">obserbableDownload(<span class="string">"http://archive.blender.org/fileadmin/movies/softboy.avi"</span>, <span class="string">"sdcardsoftboy.avi"</span>;)</div></pre></td></tr></table></figure>
+<p>这是一个下载Observable。网络调用是一个I/O任务和我们预料的那样使用I/O调度器。当下载完成时，我们在<code>onNext()</code>启动视频播放器，并且播放器将会在目的URL找到下载的文件.。</p>
+<p>下图展示了下载进度和视频播放器对话框：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter7_6.png" width="240"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这一章中，我们学习了如何简单的将多线程应用在我们的App中。RxJava为此提供了极其有用的工具：调度器。调度器来自不同的指定优化场景并且我们也不避免了<code>StrictMode</code>不合法操作以及阻塞I/O函数。我们现在可以用简单的，响应式的并在整个App中保持一致的方式来访问内存和网络。</p>
+<p>下一章中，我们将会提高风险并创建一个<code>真实世界</code>App，并使用Square公司开源的REST API库Retrofit从不同的远程资源获取数据来创建一个复杂的material design UI。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://kevin1202.github.io/2017/04/27/chap7/" data-title="RxJava开发精要7 - Schedulers-解决Android主线程问题 | Kevin博客" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/04/27/chap8/" title="RxJava开发精要8 - 与REST无缝结合-RxJava和Retrofit">
+  <strong>上一篇：</strong><br/>
+  <span>
+  RxJava开发精要8 - 与REST无缝结合-RxJava和Retrofit</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/04/27/2015-Google-IO带来的新Android开发工具 /"  title="2015 Google IO带来的新 Android 开发工具">
+ <strong>下一篇：</strong><br/> 
+ <span>2015 Google IO带来的新 Android 开发工具
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2017/04/27/chap7/" data-title="RxJava开发精要7 - Schedulers-解决Android主线程问题" data-url="https://kevin1202.github.io/2017/04/27/chap7/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#StrictMode"><span class="toc-number">1.</span> <span class="toc-text">StrictMode</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#避免阻塞I-O的操作"><span class="toc-number">2.</span> <span class="toc-text">避免阻塞I/O的操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Schedulers"><span class="toc-number">3.</span> <span class="toc-text">Schedulers</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Schedulers-io"><span class="toc-number">4.</span> <span class="toc-text">Schedulers.io()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Schedulers-computation"><span class="toc-number">5.</span> <span class="toc-text">Schedulers.computation()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Schedulers-immediate"><span class="toc-number">6.</span> <span class="toc-text">Schedulers.immediate()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Schedulers-newThread"><span class="toc-number">7.</span> <span class="toc-text">Schedulers.newThread()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Schedulers-trampoline"><span class="toc-number">8.</span> <span class="toc-text">Schedulers.trampoline()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#非阻塞I-O操作"><span class="toc-number">9.</span> <span class="toc-text">非阻塞I/O操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SubscribeOn-and-ObserveOn"><span class="toc-number">10.</span> <span class="toc-text">SubscribeOn and ObserveOn</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#处理耗时的任务"><span class="toc-number">11.</span> <span class="toc-text">处理耗时的任务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#执行网络任务"><span class="toc-number">12.</span> <span class="toc-text">执行网络任务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">13.</span> <span class="toc-text">总结</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="carrie1217" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Android/" title="Android">Android<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/git/" title="git">git<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/mac/" title="mac">mac<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/TimerTask/" title="TimerTask">TimerTask<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/size/" title="size">size<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Travis-CI/" title="Travis-CI">Travis-CI<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://coderq.com" target="_blank" title="一个面向程序员交流分享的新一代社区">码农圈</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://wuchong.me" target="_blank" title="Jark&#39;s Blog">Jark&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> 活着就要学习，学习不是为了活着。 <br/>
+			情况是在不断的变化，要使自己的思想适应新的情况，就得学习。</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/carrie1217" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Kevin">Kevin</a>
+		
+		
+		</p>
+		<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','DBjSFU5kGEcv8E-m-m_m','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"kevinbolg"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

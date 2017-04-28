@@ -1,0 +1,622 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>上传拍下的照片、视频到服务器 | Kevin博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Kevin">
+    
+
+    
+    <meta name="description" content="原文链接 : Android Uploading Camera Image, Video to Server with Progress Bar
+
+我在上一篇教程中给大家讲解了怎么通过进度条下载文件，今天，我将在这篇文章中给大家讲解如果在弹出进度条的同时上传一个文件到服务器。通过阅读这篇文章，并学习其中的知识，你能做出一个类似 Instagram 的App，在你做出的 App 里，你能够像在 I">
+<meta property="og:type" content="article">
+<meta property="og:title" content="上传拍下的照片、视频到服务器">
+<meta property="og:url" content="https://kevin1202.github.io/2017/04/27/上传拍下的照片、视频到服务器/index.html">
+<meta property="og:site_name" content="Kevin博客">
+<meta property="og:description" content="原文链接 : Android Uploading Camera Image, Video to Server with Progress Bar
+
+我在上一篇教程中给大家讲解了怎么通过进度条下载文件，今天，我将在这篇文章中给大家讲解如果在弹出进度条的同时上传一个文件到服务器。通过阅读这篇文章，并学习其中的知识，你能做出一个类似 Instagram 的App，在你做出的 App 里，你能够像在 I">
+<meta property="og:image" content="http://cdn4.androidhive.info/wp-content/uploads/2014/12/android-file-upload-camera-screen.jpg?6141f6">
+<meta property="og:image" content="http://cdn2.androidhive.info/wp-content/uploads/2014/12/android-file-upload-camera-taking-camera-picture.jpg?6141f6">
+<meta property="og:image" content="http://cdn3.androidhive.info/wp-content/uploads/2014/12/wamp-server-editing-php.ini-file1.png?6141f6">
+<meta property="og:image" content="http://cdn2.androidhive.info/wp-content/uploads/2014/12/android-uploading-camera-picture-to-server.jpg?6141f6">
+<meta property="og:image" content="http://cdn2.androidhive.info/wp-content/uploads/2014/12/android-uploading-camera-picture-to-server1.jpg?6141f6">
+<meta property="og:image" content="http://cdn2.androidhive.info/wp-content/uploads/2014/12/android-uploading-camera-picture-to-server2.jpg?6141f6">
+<meta property="og:updated_time" content="2017-04-28T05:27:22.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="上传拍下的照片、视频到服务器">
+<meta name="twitter:description" content="原文链接 : Android Uploading Camera Image, Video to Server with Progress Bar
+
+我在上一篇教程中给大家讲解了怎么通过进度条下载文件，今天，我将在这篇文章中给大家讲解如果在弹出进度条的同时上传一个文件到服务器。通过阅读这篇文章，并学习其中的知识，你能做出一个类似 Instagram 的App，在你做出的 App 里，你能够像在 I">
+<meta name="twitter:image" content="http://cdn4.androidhive.info/wp-content/uploads/2014/12/android-file-upload-camera-screen.jpg?6141f6">
+
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/pacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/pacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="Kevin博客" title="Kevin博客"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Kevin博客">Kevin博客</a></h1>
+				<h2 class="blog-motto">梦想还是要有的，万一实现了呢？</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" class="st-default-search-input" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/上传拍下的照片、视频到服务器/" title="上传拍下的照片、视频到服务器" itemprop="url">上传拍下的照片、视频到服务器</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#准备工作"><span class="toc-number">1.</span> <span class="toc-text">准备工作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建-Android-工程"><span class="toc-number">2.</span> <span class="toc-text">创建 Android 工程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-安装与配置-WAMP-Server"><span class="toc-number">3.</span> <span class="toc-text">2.安装与配置 WAMP Server</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-创建一个-PHP-项目"><span class="toc-number">4.</span> <span class="toc-text">3.创建一个 PHP 项目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-测试上传文件功能（本地）"><span class="toc-number">5.</span> <span class="toc-text">4.测试上传文件功能（本地）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#引用"><span class="toc-number">6.</span> <span class="toc-text">引用</span></a></li></ol>
+		
+		</div>
+		
+		<ul>
+<li>原文链接 : <a href="http://www.androidhive.info/2014/12/android-uploading-camera-image-video-to-server-with-progress-bar/" target="_blank" rel="external">Android Uploading Camera Image, Video to Server with Progress Bar</a></li>
+</ul>
+<p>我在上一篇教程中给大家讲解了怎么通过进度条下载文件，今天，我将在这篇文章中给大家讲解如果在弹出进度条的同时上传一个文件到服务器。通过阅读这篇文章，并学习其中的知识，你能做出一个类似 Instagram 的App，在你做出的 App 里，你能够像在 Instagram 里那样用摄像头拍照/视频，然后把它们上传到服务器。在服务器端，我使用 PHP 读取上传的文件，并把文件移动到一个特殊的位置。</p>
+<p>这篇文章最精华的部分在于：即使是上传大文件，它也能很好地运行，而不是产生许多内存不足的错误。我能有这样的自信，是因为我进行了许多的测试。在测试过程中，即便我上传了一个 50MB 的文件，这个功能仍然运行得很完美，不会出现错误。</p>
+<p><a href="http://download.androidhive.info/" target="_blank" rel="external">源码下载</a></p>
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>由于这篇文章需要上传摄像头拍下来的照片/视频，因此你需要先了解有关 Android 摄像头模块的知识。所以我建议你最好先去阅读我之前的一篇有关 Android 是如何操作摄像头的讲解文章，通过阅读这篇文章你能大概了解怎么在你的 Android App 中使用摄像头。</p>
+<h2 id="创建-Android-工程"><a href="#创建-Android-工程" class="headerlink" title="创建 Android 工程"></a>创建 Android 工程</h2><p>1、 在 Eclipse 中创建一个新的 Android 工程，具体流程如下：New ⇒ Android Application Project，然后在里面填好一些必要的信息。</p>
+<p>2、 打开 res 文件夹中的 strings.xml,然后把下面的内容添加进去：</p>
+<p><strong>strings.xml</strong></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8"?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">resources</span>&gt;</span></div><div class="line"> </div><div class="line">	 <span class="tag">&lt;<span class="name">string</span> <span class="attr">name</span>=<span class="string">"app_name"</span>&gt;</span>Camera File Upload<span class="tag">&lt;/<span class="name">string</span>&gt;</span></div><div class="line">	 <span class="tag">&lt;<span class="name">string</span> <span class="attr">name</span>=<span class="string">"btnTakePicture"</span>&gt;</span>Capture Image<span class="tag">&lt;/<span class="name">string</span>&gt;</span></div><div class="line">	 <span class="tag">&lt;<span class="name">string</span> <span class="attr">name</span>=<span class="string">"btnRecordVideo"</span>&gt;</span>Record Video<span class="tag">&lt;/<span class="name">string</span>&gt;</span></div><div class="line">	 <span class="tag">&lt;<span class="name">string</span> <span class="attr">name</span>=<span class="string">"or"</span>&gt;</span>(or)<span class="tag">&lt;/<span class="name">string</span>&gt;</span></div><div class="line">	 <span class="tag">&lt;<span class="name">string</span> <span class="attr">name</span>=<span class="string">"btnUploadToServer"</span>&gt;</span>Upload to Server<span class="tag">&lt;/<span class="name">string</span>&gt;</span></div><div class="line"> </div><div class="line"><span class="tag">&lt;/<span class="name">resources</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>3、 向 res 文件夹添加 colors.xml，并把下面的内容添加进去：</p>
+<p><strong>colors.xml</strong></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8"?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">resources</span>&gt;</span></div><div class="line"> </div><div class="line">	<span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"view_background"</span>&gt;</span>#e8ecfa<span class="tag">&lt;/<span class="name">color</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"btn_bg"</span>&gt;</span>#277bec<span class="tag">&lt;/<span class="name">color</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"white"</span>&gt;</span>#ffffff<span class="tag">&lt;/<span class="name">color</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"txt_font"</span>&gt;</span>#4e5572<span class="tag">&lt;/<span class="name">color</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"action_bar"</span>&gt;</span>#1f2649<span class="tag">&lt;/<span class="name">color</span>&gt;</span></div><div class="line"> </div><div class="line"><span class="tag">&lt;/<span class="name">resources</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>4、 在 src 目录下创建一个叫做 Config 的类。这个类用于保存文件上传所送到的 URL 地址，还有在移动设备中存储图片/视频的目录名称。你可能需要在测试 App 时使用你自己的 URL 地址进行上传操作。</p>
+<p>5、 创建一个叫做 AndroidMultiPartEntity 的类，并把下面的代码复制进去。这个类是一个自定义的 MultipartEntity 类，主要用于提供这个工程中需要用到的关键功能，例如进度条的进度增量。</p>
+<p><strong>AndroidMultiPartEntity.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div></pre></td><td class="code"><pre><div class="line">   <span class="keyword">package</span> info.androidhive.camerafileupload;</div><div class="line">    </div><div class="line">   <span class="keyword">import</span> java.io.FilterOutputStream;</div><div class="line">   <span class="keyword">import</span> java.io.IOException;</div><div class="line">   <span class="keyword">import</span> java.io.OutputStream;</div><div class="line">   <span class="keyword">import</span> java.nio.charset.Charset;</div><div class="line">    </div><div class="line">   <span class="keyword">import</span> org.apache.http.entity.mime.HttpMultipartMode;</div><div class="line">   <span class="keyword">import</span> org.apache.http.entity.mime.MultipartEntity;</div><div class="line">    </div><div class="line">   <span class="meta">@SuppressWarnings</span>(<span class="string">"deprecation"</span>)</div><div class="line">   <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AndroidMultiPartEntity</span> <span class="keyword">extends</span> <span class="title">MultipartEntity</span></span></div><div class="line">    </div><div class="line">   &#123;</div><div class="line">    </div><div class="line">   	<span class="keyword">private</span> <span class="keyword">final</span> ProgressListener listener;</div><div class="line">    </div><div class="line">   	<span class="function"><span class="keyword">public</span> <span class="title">AndroidMultiPartEntity</span><span class="params">(<span class="keyword">final</span> ProgressListener listener)</span> </span>&#123;</div><div class="line">   		<span class="keyword">super</span>();</div><div class="line">   		<span class="keyword">this</span>.listener = listener;</div><div class="line">   	&#125;</div><div class="line">    </div><div class="line">   	<span class="function"><span class="keyword">public</span> <span class="title">AndroidMultiPartEntity</span><span class="params">(<span class="keyword">final</span> HttpMultipartMode mode,</span></span></div><div class="line">   		<span class="keyword">final</span> ProgressListener listener) &#123;</div><div class="line">   		<span class="keyword">super</span>(mode);</div><div class="line">   		<span class="keyword">this</span>.listener = listener;</div><div class="line">   	&#125;</div><div class="line">    </div><div class="line">   	<span class="function"><span class="keyword">public</span> <span class="title">AndroidMultiPartEntity</span><span class="params">(HttpMultipartMode mode, <span class="keyword">final</span> String boundary,</span></span></div><div class="line">   		<span class="keyword">final</span> Charset charset, <span class="keyword">final</span> ProgressListener listener) &#123;</div><div class="line">   		<span class="keyword">super</span>(mode, boundary, charset);</div><div class="line">   		<span class="keyword">this</span>.listener = listener;</div><div class="line">   	&#125;</div><div class="line">    </div><div class="line">   	<span class="meta">@Override</span></div><div class="line">   	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">writeTo</span><span class="params">(<span class="keyword">final</span> OutputStream outstream)</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">   		<span class="keyword">super</span>.writeTo(<span class="keyword">new</span> CountingOutputStream(outstream, <span class="keyword">this</span>.listener));</div><div class="line">   	&#125;</div><div class="line">    </div><div class="line">   	<span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">interface</span> <span class="title">ProgressListener</span> </span>&#123;</div><div class="line">   		<span class="function"><span class="keyword">void</span> <span class="title">transferred</span><span class="params">(<span class="keyword">long</span> num)</span></span>;</div><div class="line">   	&#125;</div><div class="line">    </div><div class="line">   	<span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">CountingOutputStream</span> <span class="keyword">extends</span> <span class="title">FilterOutputStream</span> </span>&#123;</div><div class="line">    </div><div class="line">   		<span class="keyword">private</span> <span class="keyword">final</span> ProgressListener listener;</div><div class="line">   		<span class="keyword">private</span> <span class="keyword">long</span> transferred;</div><div class="line">    </div><div class="line">   		<span class="function"><span class="keyword">public</span> <span class="title">CountingOutputStream</span><span class="params">(<span class="keyword">final</span> OutputStream out,</span></span></div><div class="line">   			<span class="keyword">final</span> ProgressListener listener) &#123;</div><div class="line">   				<span class="keyword">super</span>(out);</div><div class="line">   				<span class="keyword">this</span>.listener = listener;</div><div class="line">   				<span class="keyword">this</span>.transferred = <span class="number">0</span>;</div><div class="line">   		&#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(<span class="keyword">byte</span>[] b, <span class="keyword">int</span> off, <span class="keyword">int</span> len)</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">    	out.write(b, off, len);</div><div class="line">    	<span class="keyword">this</span>.transferred += len;</div><div class="line">    	<span class="keyword">this</span>.listener.transferred(<span class="keyword">this</span>.transferred);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(<span class="keyword">int</span> b)</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">    	out.write(b);</div><div class="line">    	<span class="keyword">this</span>.transferred++;</div><div class="line">    	<span class="keyword">this</span>.listener.transferred(<span class="keyword">this</span>.transferred);</div><div class="line">    &#125;</div><div class="line">  	  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在我们需要通过在 App 中添加一个简单的页面来添加摄像头功能，在这里我们将使用两个 Button 来调用我们的摄像头为我们的 App 拍照/视频。</p>
+<p>6、 在你的 AndroidManifest.xml 中添加相应的权限。你会注意到 UploadActivity 也需要被添加到 AndroidManifest.xml 文件中，我们会在后面提到这个。</p>
+<p><strong>INTERNET</strong> – 联网权限</p>
+<p><strong>WRITE_EXTERNAL_STORAGE</strong> – 存储照片/视频到本地的权限</p>
+<p><strong>RECORD_AUDIO</strong> – 拍摄权限</p>
+<p><strong>AndroidManifest.xml</strong></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8"?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">manifest</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line"> <span class="attr">package</span>=<span class="string">"info.androidhive.camerafileupload"</span></div><div class="line"> <span class="attr">android:versionCode</span>=<span class="string">"1"</span></div><div class="line"> <span class="attr">android:versionName</span>=<span class="string">"1.0"</span> &gt;</div><div class="line">	 </div><div class="line"> <span class="tag">&lt;<span class="name">uses-sdk</span></span></div><div class="line">     <span class="attr">android:minSdkVersion</span>=<span class="string">"11"</span></div><div class="line">     <span class="attr">android:targetSdkVersion</span>=<span class="string">"21"</span> /&gt;</div><div class="line">	 </div><div class="line"> <span class="tag">&lt;<span class="name">uses-permission</span> <span class="attr">android:name</span>=<span class="string">"android.permission.INTERNET"</span> /&gt;</span></div><div class="line"> <span class="tag">&lt;<span class="name">uses-permission</span> <span class="attr">android:name</span>=<span class="string">"android.permission.WRITE_EXTERNAL_STORAGE"</span> /&gt;</span></div><div class="line"> <span class="tag">&lt;<span class="name">uses-permission</span> <span class="attr">android:name</span>=<span class="string">"android.permission.RECORD_AUDIO"</span> /&gt;</span></div><div class="line">	 </div><div class="line"> <span class="tag">&lt;<span class="name">application</span></span></div><div class="line">     <span class="attr">android:allowBackup</span>=<span class="string">"true"</span></div><div class="line">     <span class="attr">android:icon</span>=<span class="string">"@drawable/ic_launcher"</span></div><div class="line">     <span class="attr">android:label</span>=<span class="string">"@string/app_name"</span></div><div class="line">     <span class="attr">android:theme</span>=<span class="string">"@style/AppTheme"</span> &gt;</div><div class="line">     <span class="tag">&lt;<span class="name">activity</span></span></div><div class="line">         <span class="attr">android:name</span>=<span class="string">"info.androidhive.camerafileupload.MainActivity"</span></div><div class="line">         <span class="attr">android:label</span>=<span class="string">"@string/app_name"</span></div><div class="line">         <span class="attr">android:screenOrientation</span>=<span class="string">"portrait"</span> &gt;</div><div class="line">         <span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></div><div class="line">             <span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"android.intent.action.MAIN"</span> /&gt;</span></div><div class="line">	 </div><div class="line">             <span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.LAUNCHER"</span> /&gt;</span></div><div class="line">         <span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></div><div class="line">     <span class="tag">&lt;/<span class="name">activity</span>&gt;</span></div><div class="line">     <span class="tag">&lt;<span class="name">activity</span></span></div><div class="line">         <span class="attr">android:name</span>=<span class="string">"info.androidhive.camerafileupload.UploadActivity"</span></div><div class="line">         <span class="attr">android:screenOrientation</span>=<span class="string">"portrait"</span> &gt;</div><div class="line">     <span class="tag">&lt;/<span class="name">activity</span>&gt;</span></div><div class="line"> <span class="tag">&lt;/<span class="name">application</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>7、打开你 MainActivity 的布局文件（activity_main.xml)，并添加下面的代码，这样做能让你的布局拥有两个 Button。</p>
+<p><strong>activity_main.xml</strong></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8"?&gt;</div><div class="line">	<span class="tag">&lt;<span class="name">RelativeLayout</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">    <span class="attr">xmlns:tools</span>=<span class="string">"http://schemas.android.com/tools"</span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"fill_parent"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"fill_parent"</span></div><div class="line">    <span class="attr">android:background</span>=<span class="string">"@color/view_background"</span></div><div class="line">    <span class="attr">android:baselineAligned</span>=<span class="string">"false"</span></div><div class="line">    <span class="attr">android:orientation</span>=<span class="string">"vertical"</span> &gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">LinearLayout</span></span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"fill_parent"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">        <span class="attr">android:layout_centerInParent</span>=<span class="string">"true"</span></div><div class="line">        <span class="attr">android:gravity</span>=<span class="string">"center"</span></div><div class="line">        <span class="attr">android:orientation</span>=<span class="string">"vertical"</span> &gt;</div><div class="line"> </div><div class="line">        <span class="comment">&lt;!-- Capture picture button --&gt;</span></div><div class="line"> </div><div class="line">        <span class="tag">&lt;<span class="name">Button</span></span></div><div class="line">            <span class="attr">android:id</span>=<span class="string">"@+id/btnCapturePicture"</span></div><div class="line">            <span class="attr">android:layout_width</span>=<span class="string">"wrap_content"</span></div><div class="line">            <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">            <span class="attr">android:layout_marginBottom</span>=<span class="string">"20dp"</span></div><div class="line">            <span class="attr">android:background</span>=<span class="string">"@color/btn_bg"</span></div><div class="line">            <span class="attr">android:paddingLeft</span>=<span class="string">"20dp"</span></div><div class="line">            <span class="attr">android:paddingRight</span>=<span class="string">"20dp"</span></div><div class="line">            <span class="attr">android:text</span>=<span class="string">"@string/btnTakePicture"</span></div><div class="line">            <span class="attr">android:textColor</span>=<span class="string">"@color/white"</span> /&gt;</div><div class="line"> </div><div class="line">        <span class="tag">&lt;<span class="name">TextView</span></span></div><div class="line">            <span class="attr">android:layout_width</span>=<span class="string">"wrap_content"</span></div><div class="line">            <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">            <span class="attr">android:layout_marginBottom</span>=<span class="string">"20dp"</span></div><div class="line">            <span class="attr">android:gravity</span>=<span class="string">"center_horizontal"</span></div><div class="line">            <span class="attr">android:text</span>=<span class="string">"@string/or"</span></div><div class="line">            <span class="attr">android:textColor</span>=<span class="string">"@color/txt_font"</span> /&gt;</div><div class="line"> </div><div class="line">        <span class="comment">&lt;!-- Record video button --&gt;</span></div><div class="line"> </div><div class="line">        <span class="tag">&lt;<span class="name">Button</span></span></div><div class="line">            <span class="attr">android:id</span>=<span class="string">"@+id/btnRecordVideo"</span></div><div class="line">            <span class="attr">android:layout_width</span>=<span class="string">"wrap_content"</span></div><div class="line">            <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">            <span class="attr">android:background</span>=<span class="string">"@color/btn_bg"</span></div><div class="line">            <span class="attr">android:paddingLeft</span>=<span class="string">"20dp"</span></div><div class="line">            <span class="attr">android:paddingRight</span>=<span class="string">"20dp"</span></div><div class="line">            <span class="attr">android:text</span>=<span class="string">"@string/btnRecordVideo"</span></div><div class="line">            <span class="attr">android:textColor</span>=<span class="string">"@color/white"</span> /&gt;</div><div class="line">    <span class="tag">&lt;/<span class="name">LinearLayout</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;/<span class="name">RelativeLayout</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>8、在你的 MainActivity 中添加使用摄像头的相关代码，这些代码和这个系列的教程中使用的代码是一样的。简单来说，这个 Activity 主要会完成下面的工作：</p>
+<ul>
+<li><p>这个 App 在安装并打开后，能够通过点击 Button 拍照/视频。</p>
+</li>
+<li><p>只要照片/视频被拍下来，就会保存在移动设备的 SD 卡上</p>
+</li>
+<li><p>最后， 通过传递 SD 卡中储存媒体文件的对应路径，UploadActivity 会被打开，然后执行上传的流程。</p>
+</li>
+</ul>
+<p><strong>MainActivity.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div><div class="line">222</div><div class="line">223</div><div class="line">224</div><div class="line">225</div><div class="line">226</div><div class="line">227</div><div class="line">228</div><div class="line">229</div><div class="line">230</div><div class="line">231</div><div class="line">232</div><div class="line">233</div><div class="line">234</div><div class="line">235</div><div class="line">236</div><div class="line">237</div><div class="line">238</div><div class="line">239</div><div class="line">240</div><div class="line">241</div><div class="line">242</div><div class="line">243</div><div class="line">244</div><div class="line">245</div><div class="line">246</div><div class="line">247</div><div class="line">248</div><div class="line">249</div><div class="line">250</div><div class="line">251</div><div class="line">252</div><div class="line">253</div><div class="line">254</div><div class="line">255</div><div class="line">256</div><div class="line">257</div><div class="line">258</div><div class="line">259</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> info.androidhive.camerafileupload;</div><div class="line"> </div><div class="line"><span class="keyword">import</span> java.io.File;</div><div class="line"><span class="keyword">import</span> java.text.SimpleDateFormat;</div><div class="line"><span class="keyword">import</span> java.util.Date;</div><div class="line"><span class="keyword">import</span> java.util.Locale;</div><div class="line"> </div><div class="line"><span class="keyword">import</span> android.app.Activity;</div><div class="line"><span class="keyword">import</span> android.content.Intent;</div><div class="line"><span class="keyword">import</span> android.content.pm.PackageManager;</div><div class="line"><span class="keyword">import</span> android.graphics.Color;</div><div class="line"><span class="keyword">import</span> android.graphics.drawable.ColorDrawable;</div><div class="line"><span class="keyword">import</span> android.net.Uri;</div><div class="line"><span class="keyword">import</span> android.os.Bundle;</div><div class="line"><span class="keyword">import</span> android.os.Environment;</div><div class="line"><span class="keyword">import</span> android.provider.MediaStore;</div><div class="line"><span class="keyword">import</span> android.util.Log;</div><div class="line"><span class="keyword">import</span> android.view.View;</div><div class="line"><span class="keyword">import</span> android.widget.Button;</div><div class="line"><span class="keyword">import</span> android.widget.Toast;</div><div class="line"> </div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span> </span>&#123;</div><div class="line">     </div><div class="line">    <span class="comment">// LogCat tag</span></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TAG = MainActivity.class.getSimpleName();</div><div class="line">     </div><div class="line">  </div><div class="line">    <span class="comment">// Camera activity request codes</span></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> CAMERA_CAPTURE_IMAGE_REQUEST_CODE = <span class="number">100</span>;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> CAMERA_CAPTURE_VIDEO_REQUEST_CODE = <span class="number">200</span>;</div><div class="line">     </div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MEDIA_TYPE_IMAGE = <span class="number">1</span>;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MEDIA_TYPE_VIDEO = <span class="number">2</span>;</div><div class="line">  </div><div class="line">    <span class="keyword">private</span> Uri fileUri; <span class="comment">// file url to store image/video</span></div><div class="line">     </div><div class="line">    <span class="keyword">private</span> Button btnCapturePicture, btnRecordVideo;</div><div class="line">  </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line">         </div><div class="line">        <span class="comment">// Changing action bar background color</span></div><div class="line">        <span class="comment">// These two lines are not needed</span></div><div class="line">        getActionBar().setBackgroundDrawable(<span class="keyword">new</span> ColorDrawable(Color.parseColor(getResources().getString(R.color.action_bar))));</div><div class="line">  </div><div class="line">        btnCapturePicture = (Button) findViewById(R.id.btnCapturePicture);</div><div class="line">        btnRecordVideo = (Button) findViewById(R.id.btnRecordVideo);</div><div class="line">  </div><div class="line">        <span class="comment">/**</span></div><div class="line">         * Capture image button click event</div><div class="line">         */</div><div class="line">        btnCapturePicture.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line">  </div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">                <span class="comment">// capture picture</span></div><div class="line">                captureImage();</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">  </div><div class="line">        <span class="comment">/**</span></div><div class="line">         * Record video button click event</div><div class="line">         */</div><div class="line">        btnRecordVideo.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line">  </div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">                <span class="comment">// record video</span></div><div class="line">                recordVideo();</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">  </div><div class="line">        <span class="comment">// Checking camera availability</span></div><div class="line">        <span class="keyword">if</span> (!isDeviceSupportCamera()) &#123;</div><div class="line">            Toast.makeText(getApplicationContext(),</div><div class="line">                    <span class="string">"Sorry! Your device doesn't support camera"</span>,</div><div class="line">                    Toast.LENGTH_LONG).show();</div><div class="line">            <span class="comment">// will close the app if the device does't have camera</span></div><div class="line">            finish();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">  </div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Checking device has camera hardware or not</div><div class="line">     * */</div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isDeviceSupportCamera</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (getApplicationContext().getPackageManager().hasSystemFeature(</div><div class="line">                PackageManager.FEATURE_CAMERA)) &#123;</div><div class="line">            <span class="comment">// this device has a camera</span></div><div class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            <span class="comment">// no camera on this device</span></div><div class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">  </div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Launching camera app to capture image</div><div class="line">     */</div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">captureImage</span><span class="params">()</span> </span>&#123;</div><div class="line">        Intent intent = <span class="keyword">new</span> Intent(MediaStore.ACTION_IMAGE_CAPTURE);</div><div class="line">  </div><div class="line">        fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);</div><div class="line">  </div><div class="line">        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);</div><div class="line">  </div><div class="line">        <span class="comment">// start the image capture Intent</span></div><div class="line">        startActivityForResult(intent, CAMERA_CAPTURE_IMAGE_REQUEST_CODE);</div><div class="line">    &#125;</div><div class="line">     </div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Launching camera app to record video</div><div class="line">     */</div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">recordVideo</span><span class="params">()</span> </span>&#123;</div><div class="line">        Intent intent = <span class="keyword">new</span> Intent(MediaStore.ACTION_VIDEO_CAPTURE);</div><div class="line">  </div><div class="line">        fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);</div><div class="line">  </div><div class="line">        <span class="comment">// set video quality</span></div><div class="line">        intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, <span class="number">1</span>);</div><div class="line">  </div><div class="line">        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri); <span class="comment">// set the image file</span></div><div class="line">                                                            <span class="comment">// name</span></div><div class="line">  </div><div class="line">        <span class="comment">// start the video capture Intent</span></div><div class="line">        startActivityForResult(intent, CAMERA_CAPTURE_VIDEO_REQUEST_CODE);</div><div class="line">    &#125;</div><div class="line">  </div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Here we store the file url as it will be null after returning from camera</div><div class="line">     * app</div><div class="line">     */</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onSaveInstanceState</span><span class="params">(Bundle outState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onSaveInstanceState(outState);</div><div class="line">  </div><div class="line">        <span class="comment">// save file url in bundle as it will be null on screen orientation</span></div><div class="line">        <span class="comment">// changes</span></div><div class="line">        outState.putParcelable(<span class="string">"file_uri"</span>, fileUri);</div><div class="line">    &#125;</div><div class="line">  </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onRestoreInstanceState</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onRestoreInstanceState(savedInstanceState);</div><div class="line">  </div><div class="line">        <span class="comment">// get the file url</span></div><div class="line">        fileUri = savedInstanceState.getParcelable(<span class="string">"file_uri"</span>);</div><div class="line">    &#125;</div><div class="line">  </div><div class="line">     </div><div class="line">  </div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Receiving activity result method will be called after closing the camera</div><div class="line">     * */</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onActivityResult</span><span class="params">(<span class="keyword">int</span> requestCode, <span class="keyword">int</span> resultCode, Intent data)</span> </span>&#123;</div><div class="line">        <span class="comment">// if the result is capturing Image</span></div><div class="line">        <span class="keyword">if</span> (requestCode == CAMERA_CAPTURE_IMAGE_REQUEST_CODE) &#123;</div><div class="line">            <span class="keyword">if</span> (resultCode == RESULT_OK) &#123;</div><div class="line">                 </div><div class="line">                <span class="comment">// successfully captured the image</span></div><div class="line">                <span class="comment">// launching upload activity</span></div><div class="line">                launchUploadActivity(<span class="keyword">true</span>);</div><div class="line">                 </div><div class="line">                 </div><div class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (resultCode == RESULT_CANCELED) &#123;</div><div class="line">                 </div><div class="line">                <span class="comment">// user cancelled Image capture</span></div><div class="line">                Toast.makeText(getApplicationContext(),</div><div class="line">                        <span class="string">"User cancelled image capture"</span>, Toast.LENGTH_SHORT)</div><div class="line">                        .show();</div><div class="line">             </div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                <span class="comment">// failed to capture image</span></div><div class="line">                Toast.makeText(getApplicationContext(),</div><div class="line">                        <span class="string">"Sorry! Failed to capture image"</span>, Toast.LENGTH_SHORT)</div><div class="line">                        .show();</div><div class="line">            &#125;</div><div class="line">         </div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (requestCode == CAMERA_CAPTURE_VIDEO_REQUEST_CODE) &#123;</div><div class="line">            <span class="keyword">if</span> (resultCode == RESULT_OK) &#123;</div><div class="line">                 </div><div class="line">                <span class="comment">// video successfully recorded</span></div><div class="line">                <span class="comment">// launching upload activity</span></div><div class="line">                launchUploadActivity(<span class="keyword">false</span>);</div><div class="line">             </div><div class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (resultCode == RESULT_CANCELED) &#123;</div><div class="line">                 </div><div class="line">                <span class="comment">// user cancelled recording</span></div><div class="line">                Toast.makeText(getApplicationContext(),</div><div class="line">                        <span class="string">"User cancelled video recording"</span>, Toast.LENGTH_SHORT)</div><div class="line">                        .show();</div><div class="line">             </div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                <span class="comment">// failed to record video</span></div><div class="line">                Toast.makeText(getApplicationContext(),</div><div class="line">                        <span class="string">"Sorry! Failed to record video"</span>, Toast.LENGTH_SHORT)</div><div class="line">                        .show();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">     </div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">launchUploadActivity</span><span class="params">(<span class="keyword">boolean</span> isImage)</span></span>&#123;</div><div class="line">        Intent i = <span class="keyword">new</span> Intent(MainActivity.<span class="keyword">this</span>, UploadActivity.class);</div><div class="line">        i.putExtra(<span class="string">"filePath"</span>, fileUri.getPath());</div><div class="line">        i.putExtra(<span class="string">"isImage"</span>, isImage);</div><div class="line">        startActivity(i);</div><div class="line">    &#125;</div><div class="line">      </div><div class="line">    <span class="comment">/**</span></div><div class="line">     * ------------ Helper Methods ---------------------- </div><div class="line">     * */</div><div class="line">  </div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Creating file uri to store image/video</div><div class="line">     */</div><div class="line">    <span class="function"><span class="keyword">public</span> Uri <span class="title">getOutputMediaFileUri</span><span class="params">(<span class="keyword">int</span> type)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> Uri.fromFile(getOutputMediaFile(type));</div><div class="line">    &#125;</div><div class="line">  </div><div class="line">    <span class="comment">/**</span></div><div class="line">     * returning image / video</div><div class="line">     */</div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> File <span class="title">getOutputMediaFile</span><span class="params">(<span class="keyword">int</span> type)</span> </span>&#123;</div><div class="line">  </div><div class="line">        <span class="comment">// External sdcard location</span></div><div class="line">        File mediaStorageDir = <span class="keyword">new</span> File(</div><div class="line">                Environment</div><div class="line">                        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),</div><div class="line">                Config.IMAGE_DIRECTORY_NAME);</div><div class="line">  </div><div class="line">        <span class="comment">// Create the storage directory if it does not exist</span></div><div class="line">        <span class="keyword">if</span> (!mediaStorageDir.exists()) &#123;</div><div class="line">            <span class="keyword">if</span> (!mediaStorageDir.mkdirs()) &#123;</div><div class="line">                Log.d(TAG, <span class="string">"Oops! Failed create "</span></div><div class="line">                        + Config.IMAGE_DIRECTORY_NAME + <span class="string">" directory"</span>);</div><div class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">  </div><div class="line">        <span class="comment">// Create a media file name</span></div><div class="line">        String timeStamp = <span class="keyword">new</span> SimpleDateFormat(<span class="string">"yyyyMMdd_HHmmss"</span>,</div><div class="line">                Locale.getDefault()).format(<span class="keyword">new</span> Date());</div><div class="line">        File mediaFile;</div><div class="line">        <span class="keyword">if</span> (type == MEDIA_TYPE_IMAGE) &#123;</div><div class="line">            mediaFile = <span class="keyword">new</span> File(mediaStorageDir.getPath() + File.separator</div><div class="line">                    + <span class="string">"IMG_"</span> + timeStamp + <span class="string">".jpg"</span>);</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (type == MEDIA_TYPE_VIDEO) &#123;</div><div class="line">            mediaFile = <span class="keyword">new</span> File(mediaStorageDir.getPath() + File.separator</div><div class="line">                    + <span class="string">"VID_"</span> + timeStamp + <span class="string">".mp4"</span>);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">        &#125;</div><div class="line">  </div><div class="line">        <span class="keyword">return</span> mediaFile;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果你现在运行你的 App，你会看到类似下面这样的输出结果。</p>
+<p><img src="http://cdn4.androidhive.info/wp-content/uploads/2014/12/android-file-upload-camera-screen.jpg?6141f6" alt=""></p>
+<p><img src="http://cdn2.androidhive.info/wp-content/uploads/2014/12/android-file-upload-camera-taking-camera-picture.jpg?6141f6" alt=""></p>
+<p>只要你能够打开摄像头并拍着照片/视频，我们就能继续今天的学习，也就是接下来要讲的——创建实现上传功能的 Activity。</p>
+<p>9、在 res 文件夹中创建一个 activity_upload.xml 文件，这个布局提供了 ImageView、VideoView 用以预览拍下来的照片/视频，此外，还有一个 ProgressBar 被用于展现上传进度。</p>
+<p><strong>activity_upload.xml</strong></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8"?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">LinearLayout</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"fill_parent"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"fill_parent"</span></div><div class="line">    <span class="attr">android:background</span>=<span class="string">"@color/view_background"</span></div><div class="line">    <span class="attr">android:orientation</span>=<span class="string">"vertical"</span></div><div class="line">    <span class="attr">android:padding</span>=<span class="string">"10dp"</span> &gt;</div><div class="line"> </div><div class="line">     </div><div class="line"> </div><div class="line">    <span class="comment">&lt;!-- To display picture taken --&gt;</span></div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">ImageView</span></span></div><div class="line">        <span class="attr">android:id</span>=<span class="string">"@+id/imgPreview"</span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"fill_parent"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"200dp"</span></div><div class="line">        <span class="attr">android:visibility</span>=<span class="string">"gone"</span></div><div class="line">        <span class="attr">android:layout_marginTop</span>=<span class="string">"15dp"</span>/&gt;</div><div class="line"> </div><div class="line">    <span class="comment">&lt;!-- Videoview to preview recorded video --&gt;</span></div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">VideoView</span></span></div><div class="line">        <span class="attr">android:id</span>=<span class="string">"@+id/videoPreview"</span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"fill_parent"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"400dp"</span></div><div class="line">        <span class="attr">android:visibility</span>=<span class="string">"gone"</span></div><div class="line">        <span class="attr">android:layout_marginTop</span>=<span class="string">"15dp"</span>/&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">TextView</span></span></div><div class="line">        <span class="attr">android:id</span>=<span class="string">"@+id/txtPercentage"</span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"wrap_content"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">        <span class="attr">android:layout_gravity</span>=<span class="string">"center_horizontal"</span></div><div class="line">        <span class="attr">android:layout_marginBottom</span>=<span class="string">"15dp"</span></div><div class="line">        <span class="attr">android:layout_marginTop</span>=<span class="string">"15dp"</span></div><div class="line">        <span class="attr">android:textColor</span>=<span class="string">"@color/txt_font"</span></div><div class="line">        <span class="attr">android:textSize</span>=<span class="string">"30dp"</span> /&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">ProgressBar</span></span></div><div class="line">        <span class="attr">android:id</span>=<span class="string">"@+id/progressBar"</span></div><div class="line">        <span class="attr">style</span>=<span class="string">"?android:attr/progressBarStyleHorizontal"</span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"fill_parent"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"20dp"</span></div><div class="line">        <span class="attr">android:layout_marginBottom</span>=<span class="string">"35dp"</span></div><div class="line">        <span class="attr">android:visibility</span>=<span class="string">"gone"</span>/&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">Button</span></span></div><div class="line">        <span class="attr">android:id</span>=<span class="string">"@+id/btnUpload"</span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"wrap_content"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">        <span class="attr">android:layout_gravity</span>=<span class="string">"center_horizontal"</span></div><div class="line">        <span class="attr">android:background</span>=<span class="string">"@color/btn_bg"</span></div><div class="line">        <span class="attr">android:paddingLeft</span>=<span class="string">"20dp"</span></div><div class="line">        <span class="attr">android:paddingRight</span>=<span class="string">"20dp"</span></div><div class="line">        <span class="attr">android:text</span>=<span class="string">"@string/btnUploadToServer"</span></div><div class="line">        <span class="attr">android:textColor</span>=<span class="string">"@color/white"</span></div><div class="line">        <span class="attr">android:layout_marginBottom</span>=<span class="string">"20dp"</span>/&gt;</div><div class="line"> </div><div class="line"><span class="tag">&lt;/<span class="name">LinearLayout</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>10、创建一个叫做 UploadActivity 的类，并把下面的代码复制进去。在这个类里，我们主要完成下面两项工作：</p>
+<ul>
+<li><p>接收 MainActivity 传过来的媒体文件路径，并把媒体文件显示在我们的视图中供以预览。</p>
+</li>
+<li><p>通过 UploadFileToServer()方法我们异步处理了上传文件到服务器和更新进度条进度两项工作。</p>
+</li>
+</ul>
+<p><strong>UploadActivity.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div><div class="line">222</div><div class="line">223</div><div class="line">224</div><div class="line">225</div><div class="line">226</div><div class="line">227</div><div class="line">228</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> info.androidhive.camerafileupload;</div><div class="line"> </div><div class="line"><span class="keyword">import</span> info.androidhive.camerafileupload.AndroidMultiPartEntity.ProgressListener;</div><div class="line"> </div><div class="line"><span class="keyword">import</span> java.io.File;</div><div class="line"><span class="keyword">import</span> java.io.IOException;</div><div class="line"> </div><div class="line"><span class="keyword">import</span> org.apache.http.HttpEntity;</div><div class="line"><span class="keyword">import</span> org.apache.http.HttpResponse;</div><div class="line"><span class="keyword">import</span> org.apache.http.client.ClientProtocolException;</div><div class="line"><span class="keyword">import</span> org.apache.http.client.HttpClient;</div><div class="line"><span class="keyword">import</span> org.apache.http.client.methods.HttpPost;</div><div class="line"><span class="keyword">import</span> org.apache.http.entity.mime.content.FileBody;</div><div class="line"><span class="keyword">import</span> org.apache.http.entity.mime.content.StringBody;</div><div class="line"><span class="keyword">import</span> org.apache.http.impl.client.DefaultHttpClient;</div><div class="line"><span class="keyword">import</span> org.apache.http.util.EntityUtils;</div><div class="line"> </div><div class="line"><span class="keyword">import</span> android.app.Activity;</div><div class="line"><span class="keyword">import</span> android.app.AlertDialog;</div><div class="line"><span class="keyword">import</span> android.content.DialogInterface;</div><div class="line"><span class="keyword">import</span> android.content.Intent;</div><div class="line"><span class="keyword">import</span> android.graphics.Bitmap;</div><div class="line"><span class="keyword">import</span> android.graphics.BitmapFactory;</div><div class="line"><span class="keyword">import</span> android.graphics.Color;</div><div class="line"><span class="keyword">import</span> android.graphics.drawable.ColorDrawable;</div><div class="line"><span class="keyword">import</span> android.os.AsyncTask;</div><div class="line"><span class="keyword">import</span> android.os.Bundle;</div><div class="line"><span class="keyword">import</span> android.util.Log;</div><div class="line"><span class="keyword">import</span> android.view.View;</div><div class="line"><span class="keyword">import</span> android.widget.Button;</div><div class="line"><span class="keyword">import</span> android.widget.ImageView;</div><div class="line"><span class="keyword">import</span> android.widget.ProgressBar;</div><div class="line"><span class="keyword">import</span> android.widget.TextView;</div><div class="line"><span class="keyword">import</span> android.widget.Toast;</div><div class="line"><span class="keyword">import</span> android.widget.VideoView;</div><div class="line"> </div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UploadActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span> </span>&#123;</div><div class="line">    <span class="comment">// LogCat tag</span></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TAG = MainActivity.class.getSimpleName();</div><div class="line"> </div><div class="line">    <span class="keyword">private</span> ProgressBar progressBar;</div><div class="line">    <span class="keyword">private</span> String filePath = <span class="keyword">null</span>;</div><div class="line">    <span class="keyword">private</span> TextView txtPercentage;</div><div class="line">    <span class="keyword">private</span> ImageView imgPreview;</div><div class="line">    <span class="keyword">private</span> VideoView vidPreview;</div><div class="line">    <span class="keyword">private</span> Button btnUpload;</div><div class="line">    <span class="keyword">long</span> totalSize = <span class="number">0</span>;</div><div class="line"> </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_upload);</div><div class="line">        txtPercentage = (TextView) findViewById(R.id.txtPercentage);</div><div class="line">        btnUpload = (Button) findViewById(R.id.btnUpload);</div><div class="line">        progressBar = (ProgressBar) findViewById(R.id.progressBar);</div><div class="line">        imgPreview = (ImageView) findViewById(R.id.imgPreview);</div><div class="line">        vidPreview = (VideoView) findViewById(R.id.videoPreview);</div><div class="line"> </div><div class="line">        <span class="comment">// Changing action bar background color</span></div><div class="line">        getActionBar().setBackgroundDrawable(</div><div class="line">                <span class="keyword">new</span> ColorDrawable(Color.parseColor(getResources().getString(</div><div class="line">                        R.color.action_bar))));</div><div class="line"> </div><div class="line">        <span class="comment">// Receiving the data from previous activity</span></div><div class="line">        Intent i = getIntent();</div><div class="line"> </div><div class="line">        <span class="comment">// image or video path that is captured in previous activity</span></div><div class="line">        filePath = i.getStringExtra(<span class="string">"filePath"</span>);</div><div class="line"> </div><div class="line">        <span class="comment">// boolean flag to identify the media type, image or video</span></div><div class="line">        <span class="keyword">boolean</span> isImage = i.getBooleanExtra(<span class="string">"isImage"</span>, <span class="keyword">true</span>);</div><div class="line"> </div><div class="line">        <span class="keyword">if</span> (filePath != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="comment">// Displaying the image or video on the screen</span></div><div class="line">            previewMedia(isImage);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            Toast.makeText(getApplicationContext(),</div><div class="line">                    <span class="string">"Sorry, file path is missing!"</span>, Toast.LENGTH_LONG).show();</div><div class="line">        &#125;</div><div class="line"> </div><div class="line">        btnUpload.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line"> </div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">                <span class="comment">// uploading the file to server</span></div><div class="line">                <span class="keyword">new</span> UploadFileToServer().execute();</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line"> </div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Displaying captured image/video on the screen</div><div class="line">     * */</div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">previewMedia</span><span class="params">(<span class="keyword">boolean</span> isImage)</span> </span>&#123;</div><div class="line">        <span class="comment">// Checking whether captured media is image or video</span></div><div class="line">        <span class="keyword">if</span> (isImage) &#123;</div><div class="line">            imgPreview.setVisibility(View.VISIBLE);</div><div class="line">            vidPreview.setVisibility(View.GONE);</div><div class="line">            <span class="comment">// bimatp factory</span></div><div class="line">            BitmapFactory.Options options = <span class="keyword">new</span> BitmapFactory.Options();</div><div class="line"> </div><div class="line">            <span class="comment">// down sizing image as it throws OutOfMemory Exception for larger</span></div><div class="line">            <span class="comment">// images</span></div><div class="line">            options.inSampleSize = <span class="number">8</span>;</div><div class="line"> </div><div class="line">            <span class="keyword">final</span> Bitmap bitmap = BitmapFactory.decodeFile(filePath, options);</div><div class="line"> </div><div class="line">            imgPreview.setImageBitmap(bitmap);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            imgPreview.setVisibility(View.GONE);</div><div class="line">            vidPreview.setVisibility(View.VISIBLE);</div><div class="line">            vidPreview.setVideoPath(filePath);</div><div class="line">            <span class="comment">// start playing</span></div><div class="line">            vidPreview.start();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Uploading the file to server</div><div class="line">     * */</div><div class="line">    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">UploadFileToServer</span> <span class="keyword">extends</span> <span class="title">AsyncTask</span>&lt;<span class="title">Void</span>, <span class="title">Integer</span>, <span class="title">String</span>&gt; </span>&#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onPreExecute</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="comment">// setting progress bar to zero</span></div><div class="line">            progressBar.setProgress(<span class="number">0</span>);</div><div class="line">            <span class="keyword">super</span>.onPreExecute();</div><div class="line">        &#125;</div><div class="line"> </div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onProgressUpdate</span><span class="params">(Integer... progress)</span> </span>&#123;</div><div class="line">            <span class="comment">// Making progress bar visible</span></div><div class="line">            progressBar.setVisibility(View.VISIBLE);</div><div class="line"> </div><div class="line">            <span class="comment">// updating progress bar value</span></div><div class="line">            progressBar.setProgress(progress[<span class="number">0</span>]);</div><div class="line"> </div><div class="line">            <span class="comment">// updating percentage value</span></div><div class="line">            txtPercentage.setText(String.valueOf(progress[<span class="number">0</span>]) + <span class="string">"%"</span>);</div><div class="line">        &#125;</div><div class="line"> </div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">protected</span> String <span class="title">doInBackground</span><span class="params">(Void... params)</span> </span>&#123;</div><div class="line">            <span class="keyword">return</span> uploadFile();</div><div class="line">        &#125;</div><div class="line"> </div><div class="line">        <span class="meta">@SuppressWarnings</span>(<span class="string">"deprecation"</span>)</div><div class="line">        <span class="function"><span class="keyword">private</span> String <span class="title">uploadFile</span><span class="params">()</span> </span>&#123;</div><div class="line">            String responseString = <span class="keyword">null</span>;</div><div class="line"> </div><div class="line">            HttpClient httpclient = <span class="keyword">new</span> DefaultHttpClient();</div><div class="line">            HttpPost httppost = <span class="keyword">new</span> HttpPost(Config.FILE_UPLOAD_URL);</div><div class="line"> </div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                AndroidMultiPartEntity entity = <span class="keyword">new</span> AndroidMultiPartEntity(</div><div class="line">                        <span class="keyword">new</span> ProgressListener() &#123;</div><div class="line"> </div><div class="line">                            <span class="meta">@Override</span></div><div class="line">                            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">transferred</span><span class="params">(<span class="keyword">long</span> num)</span> </span>&#123;</div><div class="line">                                publishProgress((<span class="keyword">int</span>) ((num / (<span class="keyword">float</span>) totalSize) * <span class="number">100</span>));</div><div class="line">                            &#125;</div><div class="line">                        &#125;);</div><div class="line"> </div><div class="line">                File sourceFile = <span class="keyword">new</span> File(filePath);</div><div class="line"> </div><div class="line">                <span class="comment">// Adding file data to http body</span></div><div class="line">                entity.addPart(<span class="string">"image"</span>, <span class="keyword">new</span> FileBody(sourceFile));</div><div class="line"> </div><div class="line">                <span class="comment">// Extra parameters if you want to pass to server</span></div><div class="line">                entity.addPart(<span class="string">"website"</span>,</div><div class="line">                        <span class="keyword">new</span> StringBody(<span class="string">"www.androidhive.info"</span>));</div><div class="line">                entity.addPart(<span class="string">"email"</span>, <span class="keyword">new</span> StringBody(<span class="string">"abc@gmail.com"</span>));</div><div class="line"> </div><div class="line">                totalSize = entity.getContentLength();</div><div class="line">                httppost.setEntity(entity);</div><div class="line"> </div><div class="line">                <span class="comment">// Making server call</span></div><div class="line">                HttpResponse response = httpclient.execute(httppost);</div><div class="line">                HttpEntity r_entity = response.getEntity();</div><div class="line"> </div><div class="line">                <span class="keyword">int</span> statusCode = response.getStatusLine().getStatusCode();</div><div class="line">                <span class="keyword">if</span> (statusCode == <span class="number">200</span>) &#123;</div><div class="line">                    <span class="comment">// Server response</span></div><div class="line">                    responseString = EntityUtils.toString(r_entity);</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    responseString = <span class="string">"Error occurred! Http Status Code: "</span></div><div class="line">                            + statusCode;</div><div class="line">                &#125;</div><div class="line"> </div><div class="line">            &#125; <span class="keyword">catch</span> (ClientProtocolException e) &#123;</div><div class="line">                responseString = e.toString();</div><div class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</div><div class="line">                responseString = e.toString();</div><div class="line">            &#125;</div><div class="line"> </div><div class="line">            <span class="keyword">return</span> responseString;</div><div class="line"> </div><div class="line">        &#125;</div><div class="line"> </div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onPostExecute</span><span class="params">(String result)</span> </span>&#123;</div><div class="line">            Log.e(TAG, <span class="string">"Response from server: "</span> + result);</div><div class="line"> </div><div class="line">            <span class="comment">// showing the server response in an alert dialog</span></div><div class="line">            showAlert(result);</div><div class="line"> </div><div class="line">            <span class="keyword">super</span>.onPostExecute(result);</div><div class="line">        &#125;</div><div class="line"> </div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="comment">/**</span></div><div class="line">     * Method to show alert dialog</div><div class="line">     * */</div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">showAlert</span><span class="params">(String message)</span> </span>&#123;</div><div class="line">        AlertDialog.Builder builder = <span class="keyword">new</span> AlertDialog.Builder(<span class="keyword">this</span>);</div><div class="line">        builder.setMessage(message).setTitle(<span class="string">"Response from Servers"</span>)</div><div class="line">                .setCancelable(<span class="keyword">false</span>)</div><div class="line">                .setPositiveButton(<span class="string">"OK"</span>, <span class="keyword">new</span> DialogInterface.OnClickListener() &#123;</div><div class="line">                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(DialogInterface dialog, <span class="keyword">int</span> id)</span> </span>&#123;</div><div class="line">                        <span class="comment">// do nothing</span></div><div class="line">                    &#125;</div><div class="line">                &#125;);</div><div class="line">        AlertDialog alert = builder.create();</div><div class="line">        alert.show();</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>到这里，我们已经把 Android 项目构建好了，现在让我们来快速地创建一个 PHP工程以用于接收我们 App 发送过来的文件，就能看到这个项目的实际想过啦。但在那之前，我们可能需要为 WAMP Server做一点点简单的配置。</p>
+<h2 id="2-安装与配置-WAMP-Server"><a href="#2-安装与配置-WAMP-Server" class="headerlink" title="2.安装与配置 WAMP Server"></a>2.安装与配置 WAMP Server</h2><p>1、下载并安装 WAMP，在 Windows 系统中，WAMP 将会被安装在 C:\wamp location。</p>
+<p>2、打开 php,ini 文件，并修改下列值。在 WAMP Server 中，上传文件的最大值默认为 2MB，通过修改下列值，我们能够让上传文件的最大值达到 50MB。</p>
+<p><img src="http://cdn3.androidhive.info/wp-content/uploads/2014/12/wamp-server-editing-php.ini-file1.png?6141f6" alt=""></p>
+<blockquote>
+<p>upload_max_filesize = 50M<br>post_max_size = 50M<br>max_input_time = 300<br>max_execution_time = 300</p>
+</blockquote>
+<p>3、配置完成后重启 WAMP Server 即可。</p>
+<h2 id="3-创建一个-PHP-项目"><a href="#3-创建一个-PHP-项目" class="headerlink" title="3.创建一个 PHP 项目"></a>3.创建一个 PHP 项目</h2><p>1、到 C:\wamp\www 目录中创建一个名为 AndroidFileUpload 的文件夹，这将会是我们 PHP 项目的根目录</p>
+<p>2、进入这个文件夹中创建一个叫作 uploads 的文件夹，用以储存所有上传到服务器的文件</p>
+<p>3、创建一个叫做 fileUpload.php 的文件，并把下面的内容复制进去。这些 PHP 代码的作用是：接收我们 Android App 上传的文件，并把它们储存在 uploads 文件夹中。一旦上传完成，服务器就会返回一个 JSON。</p>
+<p><strong>fileUpload.php</strong></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div></pre></td><td class="code"><pre><div class="line"><span class="meta">&lt;?php</span></div><div class="line"> </div><div class="line"><span class="comment">// Path to move uploaded files</span></div><div class="line">$target_path = <span class="string">"uploads/"</span>;</div><div class="line"> </div><div class="line"><span class="comment">// array for final json respone</span></div><div class="line">$response = <span class="keyword">array</span>();</div><div class="line"> </div><div class="line"><span class="comment">// getting server ip address</span></div><div class="line">$server_ip = gethostbyname(gethostname());</div><div class="line"> </div><div class="line"><span class="comment">// final file url that is being uploaded</span></div><div class="line">$file_upload_url = <span class="string">'http://'</span> . $server_ip . <span class="string">'/'</span> . <span class="string">'AndroidFileUpload'</span> . <span class="string">'/'</span> . $target_path;</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>($_FILES[<span class="string">'image'</span>][<span class="string">'name'</span>])) &#123;</div><div class="line">    $target_path = $target_path . basename($_FILES[<span class="string">'image'</span>][<span class="string">'name'</span>]);</div><div class="line"> </div><div class="line">    <span class="comment">// reading other post parameters</span></div><div class="line">    $email = <span class="keyword">isset</span>($_POST[<span class="string">'email'</span>]) ? $_POST[<span class="string">'email'</span>] : <span class="string">''</span>;</div><div class="line">    $website = <span class="keyword">isset</span>($_POST[<span class="string">'website'</span>]) ? $_POST[<span class="string">'website'</span>] : <span class="string">''</span>;</div><div class="line"> </div><div class="line">    $response[<span class="string">'file_name'</span>] = basename($_FILES[<span class="string">'image'</span>][<span class="string">'name'</span>]);</div><div class="line">    $response[<span class="string">'email'</span>] = $email;</div><div class="line">    $response[<span class="string">'website'</span>] = $website;</div><div class="line"> </div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        <span class="comment">// Throws exception incase file is not being moved</span></div><div class="line">        <span class="keyword">if</span> (!move_uploaded_file($_FILES[<span class="string">'image'</span>][<span class="string">'tmp_name'</span>], $target_path)) &#123;</div><div class="line">            <span class="comment">// make error flag true</span></div><div class="line">            $response[<span class="string">'error'</span>] = <span class="keyword">true</span>;</div><div class="line">            $response[<span class="string">'message'</span>] = <span class="string">'Could not move the file!'</span>;</div><div class="line">        &#125;</div><div class="line"> </div><div class="line">        <span class="comment">// File successfully uploaded</span></div><div class="line">        $response[<span class="string">'message'</span>] = <span class="string">'File uploaded successfully!'</span>;</div><div class="line">        $response[<span class="string">'error'</span>] = <span class="keyword">false</span>;</div><div class="line">        $response[<span class="string">'file_path'</span>] = $file_upload_url . basename($_FILES[<span class="string">'image'</span>][<span class="string">'name'</span>]);</div><div class="line">    &#125; <span class="keyword">catch</span> (<span class="keyword">Exception</span> $e) &#123;</div><div class="line">        <span class="comment">// Exception occurred. Make error flag true</span></div><div class="line">        $response[<span class="string">'error'</span>] = <span class="keyword">true</span>;</div><div class="line">        $response[<span class="string">'message'</span>] = $e-&gt;getMessage();</div><div class="line">    &#125;</div><div class="line">&#125; <span class="keyword">else</span> &#123;</div><div class="line">    <span class="comment">// File parameter is missing</span></div><div class="line">    $response[<span class="string">'error'</span>] = <span class="keyword">true</span>;</div><div class="line">    $response[<span class="string">'message'</span>] = <span class="string">'Not received any file!F'</span>;</div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="comment">// Echo final json response to client</span></div><div class="line"><span class="keyword">echo</span> json_encode($response);</div><div class="line"><span class="meta">?&gt;</span></div></pre></td></tr></table></figure>
+<p>Below is the sample JSON response if the file is uploaded successfully. You can use error value to verify the upload on android side.</p>
+<p>如果文件成功被上传，就会得到类似下面这个简单的 JSON 返回值范例。你可以使用错误代码来确认 Android 端的上传结果。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">    <span class="string">"file_name"</span>: <span class="string">"DSC_0021.JPG"</span>,</div><div class="line">    <span class="string">"email"</span>: <span class="string">"admin@androidhive.info"</span>,</div><div class="line">    <span class="string">"website"</span>: <span class="string">"www.androidhive.info"</span>,</div><div class="line">    <span class="string">"message"</span>: <span class="string">"File uploaded successfully!"</span>,</div><div class="line">    <span class="string">"error"</span>: <span class="keyword">false</span>,</div><div class="line">    <span class="string">"file_path"</span>: <span class="string">"http://192.168.0.104/AndroidFileUpload/uploads/DSC_0021.JPG"</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="4-测试上传文件功能（本地）"><a href="#4-测试上传文件功能（本地）" class="headerlink" title="4.测试上传文件功能（本地）"></a>4.测试上传文件功能（本地）</h2><p>你可以通过完成下面的步骤在本地测试 App 的功能</p>
+<ol>
+<li><p>运行必要的设备（这里指的是运行 WAMP server 和 Android 手机），并将它们连在同一个 WIFI 网络中</p>
+</li>
+<li><p>开启 WAMP server</p>
+</li>
+<li><p>在电脑上运行 PHP 工程，并获取本机的 IP 地址。你可以通过在控制台中输入 ipconfig 命令获得你的 IP 地址。（在 Mac Os 系统中，你需要使用 ifconfig 获得 IP 地址）</p>
+</li>
+<li><p>把 Config 类中的 IP 地址换成你的 IP 地址（创建 Android 项目的第四步）</p>
+</li>
+<li><p>把我们的 Android App 安装到手机上，并运行它</p>
+</li>
+</ol>
+<p><img src="http://cdn2.androidhive.info/wp-content/uploads/2014/12/android-uploading-camera-picture-to-server.jpg?6141f6" alt=""></p>
+<p><img src="http://cdn2.androidhive.info/wp-content/uploads/2014/12/android-uploading-camera-picture-to-server1.jpg?6141f6" alt=""></p>
+<p><img src="http://cdn2.androidhive.info/wp-content/uploads/2014/12/android-uploading-camera-picture-to-server2.jpg?6141f6" alt=""></p>
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><ol>
+<li><p><a href="http://stackoverflow.com/questions/22874735/upload-large-file-with-progress-bar-and-without-outofmemory-error-in-android" target="_blank" rel="external">Stackoverflow</a> 上有一个相关的使用进度条上传文件的问题</p>
+</li>
+<li><p>我在 App 中使用的<a href="https://www.iconfinder.com/icons/66782/file_upload_icon#size=128" target="_blank" rel="external">图标</a></p>
+</li>
+</ol>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://kevin1202.github.io/2017/04/27/上传拍下的照片、视频到服务器/" data-title="上传拍下的照片、视频到服务器 | Kevin博客" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/04/27/优化android-studio编译效率的方法/" title="优化android studio编译效率的方法">
+  <strong>上一篇：</strong><br/>
+  <span>
+  优化android studio编译效率的方法</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/04/27/使用Android-Studio进行单元测试/"  title="使用Android Studio进行单元测试">
+ <strong>下一篇：</strong><br/> 
+ <span>使用Android Studio进行单元测试
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2017/04/27/上传拍下的照片、视频到服务器/" data-title="上传拍下的照片、视频到服务器" data-url="https://kevin1202.github.io/2017/04/27/上传拍下的照片、视频到服务器/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#准备工作"><span class="toc-number">1.</span> <span class="toc-text">准备工作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建-Android-工程"><span class="toc-number">2.</span> <span class="toc-text">创建 Android 工程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-安装与配置-WAMP-Server"><span class="toc-number">3.</span> <span class="toc-text">2.安装与配置 WAMP Server</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-创建一个-PHP-项目"><span class="toc-number">4.</span> <span class="toc-text">3.创建一个 PHP 项目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-测试上传文件功能（本地）"><span class="toc-number">5.</span> <span class="toc-text">4.测试上传文件功能（本地）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#引用"><span class="toc-number">6.</span> <span class="toc-text">引用</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="carrie1217" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Android/" title="Android">Android<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/git/" title="git">git<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/mac/" title="mac">mac<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/TimerTask/" title="TimerTask">TimerTask<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/size/" title="size">size<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Travis-CI/" title="Travis-CI">Travis-CI<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://coderq.com" target="_blank" title="一个面向程序员交流分享的新一代社区">码农圈</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://wuchong.me" target="_blank" title="Jark&#39;s Blog">Jark&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> 活着就要学习，学习不是为了活着。 <br/>
+			情况是在不断的变化，要使自己的思想适应新的情况，就得学习。</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/carrie1217" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Kevin">Kevin</a>
+		
+		
+		</p>
+		<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','DBjSFU5kGEcv8E-m-m_m','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"kevinbolg"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

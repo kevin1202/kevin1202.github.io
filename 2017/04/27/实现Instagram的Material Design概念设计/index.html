@@ -1,0 +1,640 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>实现Instagram的Material Design概念设计 | Kevin博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Kevin">
+    
+
+    
+    <meta name="description" content="原文链接:Instagram with Material Design concept is getting real 
+
+几个月前（这篇文章的日期是2014 年11月10日），google发布了app和web应用的Material Design设计准则之后，设计师Emmanuel Pacamalan在youtube上发布了一则概念视频，演示了Instagram如果做成Material风格会是什">
+<meta property="og:type" content="article">
+<meta property="og:title" content="实现Instagram的Material Design概念设计">
+<meta property="og:url" content="https://kevin1202.github.io/2017/04/27/实现Instagram的Material Design概念设计/index.html">
+<meta property="og:site_name" content="Kevin博客">
+<meta property="og:description" content="原文链接:Instagram with Material Design concept is getting real 
+
+几个月前（这篇文章的日期是2014 年11月10日），google发布了app和web应用的Material Design设计准则之后，设计师Emmanuel Pacamalan在youtube上发布了一则概念视频，演示了Instagram如果做成Material风格会是什">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150204/1423058817102389.png">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150204/1423059082492283.png">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150204/1423059083822681.png">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150204/1423059084110006.png">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150204/1423059085109860.png">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150204/1423059086107717.png">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150204/1423059082492283.png">
+<meta property="og:updated_time" content="2017-04-28T05:28:31.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="实现Instagram的Material Design概念设计">
+<meta name="twitter:description" content="原文链接:Instagram with Material Design concept is getting real 
+
+几个月前（这篇文章的日期是2014 年11月10日），google发布了app和web应用的Material Design设计准则之后，设计师Emmanuel Pacamalan在youtube上发布了一则概念视频，演示了Instagram如果做成Material风格会是什">
+<meta name="twitter:image" content="http://jcodecraeer.com/uploads/20150204/1423058817102389.png">
+
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/pacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/pacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="Kevin博客" title="Kevin博客"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Kevin博客">Kevin博客</a></h1>
+				<h2 class="blog-motto">梦想还是要有的，万一实现了呢？</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" class="st-default-search-input" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/实现Instagram的Material Design概念设计/" title="实现Instagram的Material Design概念设计" itemprop="url">实现Instagram的Material Design概念设计</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<ul>
+<li>原文链接:<a href="http://frogermcs.github.io/Instagram-with-Material-Design-concept-is-getting-real/" target="_blank" rel="external">Instagram with Material Design concept is getting real </a></li>
+</ul>
+<p>几个月前（这篇文章的日期是2014 年11月10日），google发布了app和web应用的Material Design设计准则之后，设计师Emmanuel Pacamalan在youtube上发布了一则概念视频，演示了Instagram如果做成Material风格会是什么样子：</p>
+<p>视频地址在这里 <a href="http://v.youku.com/v_show/id_XODg2NDQ1NDQ4.html" target="_blank" rel="external">http://v.youku.com/v_show/id_XODg2NDQ1NDQ4.html</a> ps:markdown不支持播放优酷视频</p>
+<p>这 仅仅是停留在图像上的设计，是美好的愿景，估计很多人都会问，能否使用相对简单的办法将它实现出来呢？答案是：yes，不仅仅能实现，而且无须要求在 Lillipop版本，实际上几年前4.0发布之后我们就可以实现这些效果了。ps 读到这里我们应该反思这几年开发者是不是都吃屎去了。</p>
+<p>鉴于这个原因，我决定开始撰写一个新的课题-如何将<a href="https://www.youtube.com/watch?v=ojwdmgmdR_Q" target="_blank" rel="external">INSTAGRAM with Material Design</a> 视频中的效果转变成现实。当然，我们并不是真的要做一个Instagram应用，只是将界面做出来而已，并且尽量减少一些不必要的细节。</p>
+<p>##开始</p>
+<p>本文将要实现的是视频中前7秒钟的效果。我觉得对于第一次尝试来说已经足够了。我想要提醒诸位的是，里面的实现方法不仅仅是能实现，也是我个人最喜欢的实现方式。还有，我不是一个美工，因此项目中的所有图片是直接从网上公开的渠道获取的。（主要是从   <a href="http://www.google.com/design/spec/resources/sticker-sheets-icons.html" target="_blank" rel="external">resources page</a> ）。</p>
+<p>好了，下面是最终效果的两组截图和视频（很短的视频，就是那7秒钟的效果，可以在上面的视频中看到，这里因为没法直接引用youtube的视频就略了）（分别从Android 4 和5上获得的）：</p>
+<p><img src="http://jcodecraeer.com/uploads/20150204/1423058817102389.png" alt=""></p>
+<p><img src="http://jcodecraeer.com/uploads/20150204/1423059082492283.png" alt=""></p>
+<p>##准备<br>在我们的项目中，将使用一些热门的android开发工具和库。并不是所有这些东西本篇文章都会用到，我只是将它们准备好以备不时之需。<br>初始化项目</p>
+<p>首先我们需要创建一个新的android项目。我使用的是Android Studio和gradle的build方式。最低版本的sdk是15（即Android 4.0.4）。然后我们将添加一些依赖。没什么好讲的，下面是build.gradle以及app/build.gradle文件的代码：</p>
+<p>build.gradle<br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">buildscript</span> &#123;</div><div class="line">    <span class="keyword">repositories</span> &#123;</div><div class="line">        jcenter()</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">dependencies</span> &#123;</div><div class="line">        <span class="keyword">classpath</span> <span class="string">'com.android.tools.build:gradle:0.14.0'</span></div><div class="line">        <span class="keyword">classpath</span> <span class="string">'com.jakewharton.hugo:hugo-plugin:1.1.+'</span></div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line">  </div><div class="line"><span class="keyword">allprojects</span> &#123;</div><div class="line">    <span class="keyword">repositories</span> &#123;</div><div class="line">        jcenter()</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>app/build.gradle<br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">apply plugin: <span class="string">'com.android.application'</span></div><div class="line">apply plugin: <span class="string">'hugo'</span></div><div class="line">  </div><div class="line">android &#123;</div><div class="line">    compileSdkVersion <span class="number">21</span></div><div class="line">    buildToolsVersion <span class="string">"21.1"</span></div><div class="line">      </div><div class="line">    defaultConfig &#123;</div><div class="line">        applicationId <span class="string">"io.github.froger.instamaterial"</span></div><div class="line">        minSdkVersion <span class="number">15</span></div><div class="line">        targetSdkVersion <span class="number">21</span></div><div class="line">        versionCode <span class="number">1</span></div><div class="line">        versionName <span class="string">"1.0"</span></div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line">  </div><div class="line"><span class="keyword">dependencies</span> &#123;</div><div class="line">    <span class="keyword">compile</span> <span class="keyword">fileTree</span>(dir: <span class="string">'libs'</span>, <span class="keyword">include</span>: [<span class="string">'*.jar'</span>])</div><div class="line">      </div><div class="line">    <span class="keyword">compile</span> <span class="string">"com.android.support:appcompat-v7:21.0.0"</span></div><div class="line">    <span class="keyword">compile</span> <span class="string">'com.android.support:support-v13:21.+'</span></div><div class="line">    <span class="keyword">compile</span> <span class="string">'com.android.support:support-v4:21.+'</span></div><div class="line">    <span class="keyword">compile</span> <span class="string">'com.android.support:palette-v7:+'</span></div><div class="line">    <span class="keyword">compile</span> <span class="string">'com.android.support:recyclerview-v7:+'</span></div><div class="line">    <span class="keyword">compile</span> <span class="string">'com.android.support:cardview-v7:21.0.+'</span></div><div class="line">    <span class="keyword">compile</span> <span class="string">'com.jakewharton:butterknife:5.1.2'</span></div><div class="line">    <span class="keyword">compile</span> <span class="string">'com.jakewharton.timber:timber:2.5.0'</span></div><div class="line">    <span class="keyword">compile</span> <span class="string">'com.facebook.rebound:rebound:0.3.6'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>简而言之，我们有如下工具：</p>
+<p>一些兼容包（CardView, RecyclerView, Palette, AppCompat）-我喜欢使用最新的控件。当然你完全可以使用ListView Actionbar甚至View/FrameView来替代，但是为什么要这么折腾？😉</p>
+<p><a href="http://jakewharton.github.io/butterknife/" target="_blank" rel="external">ButterKnife</a> - view注入工具简化我们的代码。（比方说不再需要写findViewById()来引用view，以及一些更强大的功能）。</p>
+<p><a href="http://facebook.github.io/rebound/" target="_blank" rel="external">Rebound</a>  - 我们目前还没有用到，但是我以后肯定会用它。这个facebook开发的动画库可以让你的动画效果看起来更自然。</p>
+<p><a href="https://github.com/JakeWharton/timber" target="_blank" rel="external">Timber</a>  和 <a href="https://github.com/JakeWharton/hugo" target="_blank" rel="external">Hugo</a>   - 对这个项目而言并不是必须，我仅仅是用他们打印log。</p>
+<p>##图片资源</p>
+<p>本项目中将使用到一些Material Design的图标资源。App 图标来自于 <a href="https://www.youtube.com/watch?v=ojwdmgmdR_Q" target="_blank" rel="external">NSTAGRAM with Material Design</a> 视频，<a href="https://github.com/frogermcs/frogermcs.github.io/raw/master/files/2/resources.zip" target="_blank" rel="external">这里</a>  是项目的全套资源。</p>
+<p>##样式</p>
+<p>我们从定义app的默认样式开始。同时为Android 4和5定义Material Desing样式的最简单的方式是直接继承Theme.AppCompat.NoActionBar 或者 Theme.AppCompat.Light.NoActionBar主题。为什么是NoActionBar？因为新的sdk中为我们提供了实现Actionbar功能的新模式。本例中我们将使用Toolbar控件，基于这个原因-Toolbar是ActionBar更好更灵活的解决方案。我们不会深入讲解这个问题，但你可以去阅读android开发者博客<a href="http://android-developers.blogspot.com/2014/10/appcompat-v21-material-design-for-pre.html" target="_blank" rel="external">AppCompat v21</a>  。</p>
+<p>根据概念视频中的效果，我们在AppTheme中定义了三个基本颜色（基色调）：</p>
+<p>styles.xml<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="php"><span class="meta">&lt;?</span>xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span><span class="meta">?&gt;</span></span></div><div class="line"><span class="comment">&lt;!-- styles.xml--&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">resources</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">style</span> <span class="attr">name</span>=<span class="string">"AppTheme"</span> <span class="attr">parent</span>=<span class="string">"Theme.AppCompat.Light.NoActionBar"</span>&gt;</span><span class="xml"></span></div><div class="line">        <span class="tag">&lt;<span class="name">item</span> <span class="attr">name</span>=<span class="string">"colorPrimary"</span>&gt;</span>@color/style_color_primary<span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">item</span> <span class="attr">name</span>=<span class="string">"colorPrimaryDark"</span>&gt;</span>@color/style_color_primary_dark<span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">item</span> <span class="attr">name</span>=<span class="string">"colorAccent"</span>&gt;</span>@color/style_color_accent<span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">resources</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>colors1.xml<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="php"><span class="meta">&lt;?</span>xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span><span class="meta">?&gt;</span></span></div><div class="line"><span class="comment">&lt;!--colors.xml--&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">resources</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"style_color_primary"</span>&gt;</span>#2d5d82<span class="tag">&lt;/<span class="name">color</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"style_color_primary_dark"</span>&gt;</span>#21425d<span class="tag">&lt;/<span class="name">color</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"style_color_accent"</span>&gt;</span>#01bcd5<span class="tag">&lt;/<span class="name">color</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">resources</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>关于这三个颜色的意义，你可以在这里找到Material <a href="http://developer.android.com/training/material/theme.html#ColorPalette" target="_blank" rel="external">Theme Color Palette documentation</a> 。 </p>
+<p>##布局<br>项目目前主要使用了3个主要的布局元素</p>
+<pre><code>*Toolbar* - 包含导航图标和applogo的顶部bar
+
+*TRecyclerView*T - 用于显示feed
+
+*TFloating Action Button* - 一个实现了Material Design中[action button pattern](http://www.google.com/design/spec/components/buttons.html#buttons-flat-raised-buttons)的ImageButton。
+</code></pre><p>在开始实现布局之前，我们先在res/values/dimens.xml文件中定义一些默认值：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="php"><span class="meta">&lt;?</span>xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span><span class="meta">?&gt;</span></span></div><div class="line"><span class="comment">&lt;!--dimens.xml--&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">resources</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">dimen</span> <span class="attr">name</span>=<span class="string">"btn_fab_size"</span>&gt;</span>56dp<span class="tag">&lt;/<span class="name">dimen</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">dimen</span> <span class="attr">name</span>=<span class="string">"btn_fab_margins"</span>&gt;</span>16dp<span class="tag">&lt;/<span class="name">dimen</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">dimen</span> <span class="attr">name</span>=<span class="string">"default_elevation"</span>&gt;</span>8dp<span class="tag">&lt;/<span class="name">dimen</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">resources</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>这些值的大小是基于Material Design设计准则中的介绍。</p>
+<p>现在我们来实现MainActivity中的layout：</p>
+<p>activity_main.xml<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">RelativeLayout</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">    <span class="attr">xmlns:tools</span>=<span class="string">"http://schemas.android.com/tools"</span></div><div class="line">    <span class="attr">android:id</span>=<span class="string">"@+id/root"</span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">    <span class="attr">tools:context</span>=<span class="string">".MainActivity"</span>&gt;</div><div class="line">  </div><div class="line">    <span class="tag">&lt;<span class="name">android.support.v7.widget.Toolbar</span></span></div><div class="line">        <span class="attr">android:id</span>=<span class="string">"@+id/toolbar"</span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"?attr/actionBarSize"</span></div><div class="line">        <span class="attr">android:background</span>=<span class="string">"?attr/colorPrimary"</span>&gt;</div><div class="line">      </div><div class="line">        <span class="tag">&lt;<span class="name">ImageView</span></span></div><div class="line">            <span class="attr">android:id</span>=<span class="string">"@+id/ivLogo"</span></div><div class="line">            <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">            <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">            <span class="attr">android:layout_gravity</span>=<span class="string">"center"</span></div><div class="line">            <span class="attr">android:scaleType</span>=<span class="string">"center"</span></div><div class="line">            <span class="attr">android:src</span>=<span class="string">"@drawable/img_toolbar_logo"</span> /&gt;</div><div class="line">    <span class="tag">&lt;/<span class="name">android.support.v7.widget.Toolbar</span>&gt;</span></div><div class="line">      </div><div class="line">    <span class="tag">&lt;<span class="name">android.support.v7.widget.RecyclerView</span></span></div><div class="line">        <span class="attr">android:id</span>=<span class="string">"@+id/rvFeed"</span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">        <span class="attr">android:layout_below</span>=<span class="string">"@id/toolbar"</span></div><div class="line">        <span class="attr">android:scrollbars</span>=<span class="string">"none"</span> /&gt;</div><div class="line">      </div><div class="line">    <span class="tag">&lt;<span class="name">ImageButton</span></span></div><div class="line">        <span class="attr">android:id</span>=<span class="string">"@+id/btnCreate"</span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"@dimen/btn_fab_size"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"@dimen/btn_fab_size"</span></div><div class="line">        <span class="attr">android:layout_alignParentBottom</span>=<span class="string">"true"</span></div><div class="line">        <span class="attr">android:layout_alignParentRight</span>=<span class="string">"true"</span></div><div class="line">        <span class="attr">android:layout_marginBottom</span>=<span class="string">"@dimen/btn_fab_margins"</span></div><div class="line">        <span class="attr">android:layout_marginRight</span>=<span class="string">"@dimen/btn_fab_margins"</span></div><div class="line">        <span class="attr">android:background</span>=<span class="string">"@drawable/btn_fab_default"</span></div><div class="line">        <span class="attr">android:elevation</span>=<span class="string">"@dimen/default_elevation"</span></div><div class="line">        <span class="attr">android:src</span>=<span class="string">"@drawable/ic_instagram_white"</span></div><div class="line">        <span class="attr">android:textSize</span>=<span class="string">"28sp"</span> /&gt;</div><div class="line">  </div><div class="line"><span class="tag">&lt;/<span class="name">RelativeLayout</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>以上代码的解释:</p>
+<pre><code>关于Toolbar最重要的特征是他现在是activity layout的一部分，而且继承自ViewGroup，因此我们可以在里面放一些UI元素（它们将利用剩余空间）。本例中，它被用来放置logo图片。同时，因为Toolbar是比Actionbar更灵活的控件，我们可以自定义更多的东西，比如设置背景颜色为colorPrimary（否则Toolbar将是透明的）。
+
+RecyclerView虽然在xml中用起来非常简单，但是如果java代码中没有设置正确，app是不能启动的，会报java.lang.NullPointerException。
+
+
+Elevation（ImageButton中）属性不兼容api21以前的版本。所以如果我们想做到Floating Action Button的效果需要在Lollipop和Lollipop之前的设备上使用不同的background。
+</code></pre><p><em>Floating Action Button</em></p>
+<p>为了简化FAB的使用，我们将用对Lollipop以及Lollipop之前的设备使用不同的样式：</p>
+<p><em>FAB for Android v21:</em></p>
+<p><img src="http://jcodecraeer.com/uploads/20150204/1423059083822681.png" alt=""></p>
+<p><em>FAB for Android pre-21:</em></p>
+<p><img src="http://jcodecraeer.com/uploads/20150204/1423059084110006.png" alt=""></p>
+<p>我们需要创建两个不同的xml文件来设置button的background：/res/drawable-v21/btn_fab_default.xml（Lollipop设备） ，/res/drawable/btn_fab_default.xml（Lollipop之前的设备）：</p>
+<p>btn_fab_default2.xml<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="php"><span class="meta">&lt;?</span>xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span><span class="meta">?&gt;</span></span></div><div class="line"><span class="comment">&lt;!--drawable-v21/btn_fab_default.xml--&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">ripple</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">    <span class="attr">android:color</span>=<span class="string">"@color/fab_color_shadow"</span>&gt;</div><div class="line">    <span class="tag">&lt;<span class="name">item</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">shape</span> <span class="attr">android:shape</span>=<span class="string">"oval"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">solid</span> <span class="attr">android:color</span>=<span class="string">"@color/style_color_accent"</span> /&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">shape</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">ripple</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>btn_fab_default1.xml<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="php"><span class="meta">&lt;?</span>xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span><span class="meta">?&gt;</span></span></div><div class="line"><span class="comment">&lt;!--drawable/btn_fab_default.xml--&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">selector</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">item</span> <span class="attr">android:state_pressed</span>=<span class="string">"false"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">layer-list</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">item</span> <span class="attr">android:bottom</span>=<span class="string">"0dp"</span> <span class="attr">android:left</span>=<span class="string">"2dp"</span> <span class="attr">android:right</span>=<span class="string">"2dp"</span> <span class="attr">android:top</span>=<span class="string">"2dp"</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">shape</span> <span class="attr">android:shape</span>=<span class="string">"oval"</span>&gt;</span></div><div class="line">                    <span class="tag">&lt;<span class="name">solid</span> <span class="attr">android:color</span>=<span class="string">"@color/fab_color_shadow"</span> /&gt;</span></div><div class="line">                <span class="tag">&lt;/<span class="name">shape</span>&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line">              </div><div class="line">            <span class="tag">&lt;<span class="name">item</span> <span class="attr">android:bottom</span>=<span class="string">"2dp"</span> <span class="attr">android:left</span>=<span class="string">"2dp"</span> <span class="attr">android:right</span>=<span class="string">"2dp"</span> <span class="attr">android:top</span>=<span class="string">"2dp"</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">shape</span> <span class="attr">android:shape</span>=<span class="string">"oval"</span>&gt;</span></div><div class="line">                    <span class="tag">&lt;<span class="name">solid</span> <span class="attr">android:color</span>=<span class="string">"@color/style_color_accent"</span> /&gt;</span></div><div class="line">                <span class="tag">&lt;/<span class="name">shape</span>&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">layer-list</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">item</span> <span class="attr">android:state_pressed</span>=<span class="string">"true"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">shape</span> <span class="attr">android:bottom</span>=<span class="string">"2dp"</span> <span class="attr">android:left</span>=<span class="string">"2dp"</span> <span class="attr">android:right</span>=<span class="string">"2dp"</span> <span class="attr">android:shape</span>=<span class="string">"oval"</span> <span class="attr">android:top</span>=<span class="string">"2dp"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">solid</span> <span class="attr">android:color</span>=<span class="string">"@color/fab_color_pressed"</span> /&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">shape</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">item</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">selector</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>上面的代码涉及到两个颜色的定义,在res/values/colors.xml中添加：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"btn_default_light_normal"</span>&gt;</span>#00000000<span class="tag">&lt;/<span class="name">color</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"btn_default_light_pressed"</span>&gt;</span>#40ffffff<span class="tag">&lt;/<span class="name">color</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>可以看到在 21之前的设备商制造阴影比较复杂。不幸的是在xml中达到真实的阴影效果没有渐变方法。其他的办法是使用图片的方式，或者通过java代码实现（参见<a href="http://stackoverflow.com/questions/24480425/android-l-fab-button-shadow" target="_blank" rel="external">creating fab shadow</a>）。</p>
+<p>##Toolbar</p>
+<p>现在我们来完成Toolbar。我们已经有了background和应用的logo，现在还剩下navigation以及menu菜单图标了。关于navigation，非常不幸的是，在xml中app:navigationIcon=””是不起作用的，而android:navigationIcon=””又只能在Lollipop上有用，所以只能使用代码的方式了：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">toolbar.setNavigationIcon(R.drawable.ic_menu_white);</div></pre></td></tr></table></figure></p>
+<p>注：app:navigationIcon=””的意思是使用兼容包appcompat的属性，而android:navigationIcon=””是标准的sdk属性。</p>
+<p>至于menu图标我们使用标准的定义方式就好了：</p>
+<p>在res/menu/menu_main.xml中<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="comment">&lt;!--menu_main.xml--&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">menu</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">    <span class="attr">xmlns:app</span>=<span class="string">"http://schemas.android.com/apk/res-auto"</span></div><div class="line">    <span class="attr">xmlns:tools</span>=<span class="string">"http://schemas.android.com/tools"</span></div><div class="line">    <span class="attr">tools:context</span>=<span class="string">".MainActivity"</span>&gt;</div><div class="line">        <span class="tag">&lt;<span class="name">item</span></span></div><div class="line">            <span class="attr">android:id</span>=<span class="string">"@+id/action_inbox"</span></div><div class="line">            <span class="attr">android:icon</span>=<span class="string">"@drawable/ic_inbox_white"</span></div><div class="line">            <span class="attr">android:title</span>=<span class="string">"Inbox"</span></div><div class="line">            <span class="attr">app:showAsAction</span>=<span class="string">"always"</span> /&gt;</div><div class="line"><span class="tag">&lt;/<span class="name">menu</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>在activity中inflated这个menu：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onCreateOptionsMenu</span><span class="params">(Menu menu)</span> </span>&#123;</div><div class="line">    getMenuInflater().inflate(R.menu.menu_main, menu);</div><div class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>本应运行的很好，但是正如我在twitter上提到的，Toolbar onClick  selectors有不协调的情况：</p>
+<p>为了解决这个问题，需要做更多的工作，首先为menu item创建一个自定义的view</p>
+<p>res/layout/menu_item_view.xml：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="php"><span class="meta">&lt;?</span>xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span><span class="meta">?&gt;</span></span></div><div class="line"><span class="comment">&lt;!--menu_item_view.xml--&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">ImageButton</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"?attr/actionBarSize"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"?attr/actionBarSize"</span></div><div class="line">    <span class="attr">android:background</span>=<span class="string">"@drawable/btn_default_light"</span></div><div class="line">    <span class="attr">android:src</span>=<span class="string">"@drawable/ic_inbox_white"</span> /&gt;</div></pre></td></tr></table></figure></p>
+<p>然后为Lollipop和Lollipop之前的设备分别创建onClick的selector，在Lollipop上有ripple效果：<br>btn_default_light2.xml<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="php"><span class="meta">&lt;?</span>xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span><span class="meta">?&gt;</span></span></div><div class="line"><span class="comment">&lt;!--drawable-v21/btn_default_light.xml--&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">ripple</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">    <span class="attr">android:color</span>=<span class="string">"@color/btn_default_light_pressed"</span> /&gt;</div></pre></td></tr></table></figure></p>
+<p>btn_default_light1.xml<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="php"><span class="meta">&lt;?</span>xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span><span class="meta">?&gt;</span></span></div><div class="line"><span class="comment">&lt;!--drawable/btn_default_light.xml--&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">selector</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">item</span> <span class="attr">android:drawable</span>=<span class="string">"@color/btn_default_light_normal"</span> <span class="attr">android:state_focused</span>=<span class="string">"false"</span> <span class="attr">android:state_pressed</span>=<span class="string">"false"</span> /&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">item</span> <span class="attr">android:drawable</span>=<span class="string">"@color/btn_default_light_pressed"</span> <span class="attr">android:state_pressed</span>=<span class="string">"true"</span> /&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">item</span> <span class="attr">android:drawable</span>=<span class="string">"@color/btn_default_light_pressed"</span> <span class="attr">android:state_focused</span>=<span class="string">"true"</span> /&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">selector</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>现在，工程中的所有的color应该是这样子了：</p>
+<p>colors.xml<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="php"><span class="meta">&lt;?</span>xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span><span class="meta">?&gt;</span></span></div><div class="line"><span class="comment">&lt;!--colors.xml--&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">resources</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"style_color_primary"</span>&gt;</span>#2d5d82<span class="tag">&lt;/<span class="name">color</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"style_color_primary_dark"</span>&gt;</span>#21425d<span class="tag">&lt;/<span class="name">color</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"style_color_accent"</span>&gt;</span>#01bcd5<span class="tag">&lt;/<span class="name">color</span>&gt;</span></div><div class="line">  </div><div class="line"><span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"fab_color_pressed"</span>&gt;</span>#007787<span class="tag">&lt;/<span class="name">color</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"fab_color_shadow"</span>&gt;</span>#44000000<span class="tag">&lt;/<span class="name">color</span>&gt;</span></div><div class="line">  </div><div class="line"><span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"btn_default_light_normal"</span>&gt;</span>#00000000<span class="tag">&lt;/<span class="name">color</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">color</span> <span class="attr">name</span>=<span class="string">"btn_default_light_pressed"</span>&gt;</span>#40ffffff<span class="tag">&lt;/<span class="name">color</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">resources</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p> 最后我们应该将custom view放到menu item中，在onCreateOptionsMenu()中：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"> <span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onCreateOptionsMenu</span><span class="params">(Menu menu)</span> </span>&#123;</div><div class="line">    getMenuInflater().inflate(R.menu.menu_main, menu);</div><div class="line">    inboxMenuItem = menu.findItem(R.id.action_inbox);</div><div class="line">    inboxMenuItem.setActionView(R.layout.menu_item_view);</div><div class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>以上就是toolbar的所有东西。并且onClick的按下效果也达到了预期的效果：</p>
+<p><img src="http://jcodecraeer.com/uploads/20150204/1423059085109860.png" alt=""></p>
+<p>#Feed<br>最后需要实现的是feed，基于RecyclerView实现。我们需要设置两个东西：layout manager和adapter，因为这里其实就是想实现ListView的效果，所以直接用LinearLayoutManager就行了，而adapter我们首先从item的布局开始(res/layout/item_feed.xml)：</p>
+<p>item_feed.xml</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="php"><span class="meta">&lt;?</span>xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span><span class="meta">?&gt;</span></span><span class="comment">&lt;!-- item_feed.xml --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">android.support.v7.widget.CardView</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">    <span class="attr">xmlns:card_view</span>=<span class="string">"http://schemas.android.com/apk/res-auto"</span></div><div class="line">    <span class="attr">android:id</span>=<span class="string">"@+id/card_view"</span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">    <span class="attr">android:layout_gravity</span>=<span class="string">"center"</span></div><div class="line">    <span class="attr">android:layout_margin</span>=<span class="string">"8dp"</span></div><div class="line">    <span class="attr">card_view:cardCornerRadius</span>=<span class="string">"4dp"</span>&gt;</div><div class="line">  </div><div class="line">    <span class="tag">&lt;<span class="name">LinearLayout</span></span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">        <span class="attr">android:orientation</span>=<span class="string">"vertical"</span>&gt;</div><div class="line">      </div><div class="line">        <span class="tag">&lt;<span class="name">ImageView</span></span></div><div class="line">            <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">            <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">            <span class="attr">android:src</span>=<span class="string">"@drawable/ic_feed_top"</span> /&gt;</div><div class="line">          </div><div class="line">        <span class="tag">&lt;<span class="name">io.github.froger.instamaterial.SquaredImageView</span></span></div><div class="line">            <span class="attr">android:id</span>=<span class="string">"@+id/ivFeedCenter"</span></div><div class="line">            <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">            <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span> /&gt;</div><div class="line">          </div><div class="line">        <span class="tag">&lt;<span class="name">ImageView</span></span></div><div class="line">            <span class="attr">android:id</span>=<span class="string">"@+id/ivFeedBottom"</span></div><div class="line">            <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">            <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span> /&gt;</div><div class="line">      </div><div class="line">    <span class="tag">&lt;/<span class="name">LinearLayout</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">android.support.v7.widget.CardView</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>FeedAdapter也非常简单：</p>
+<p>FeedAdapter.java<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FeedAdapter</span> <span class="keyword">extends</span> <span class="title">RecyclerView</span>.<span class="title">Adapter</span>&lt;<span class="title">RecyclerView</span>.<span class="title">ViewHolder</span>&gt; </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> ANIMATED_ITEMS_COUNT = <span class="number">2</span>;</div><div class="line">      </div><div class="line">    <span class="keyword">private</span> Context context;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> lastAnimatedPosition = -<span class="number">1</span>;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> itemsCount = <span class="number">0</span>;</div><div class="line">      </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">FeedAdapter</span><span class="params">(Context context)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.context = context;</div><div class="line">    &#125;</div><div class="line">      </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="keyword">public</span> RecyclerView.<span class="function">ViewHolder <span class="title">onCreateViewHolder</span><span class="params">(ViewGroup parent, <span class="keyword">int</span> viewType)</span> </span>&#123;</div><div class="line">        <span class="keyword">final</span> View view = LayoutInflater.from(context).inflate(R.layout.item_feed, parent, <span class="keyword">false</span>);</div><div class="line">        <span class="keyword">return</span> <span class="keyword">new</span> CellFeedViewHolder(view);</div><div class="line">    &#125;</div><div class="line">      </div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">runEnterAnimation</span><span class="params">(View view, <span class="keyword">int</span> position)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (position &gt;= ANIMATED_ITEMS_COUNT - <span class="number">1</span>) &#123;</div><div class="line">            <span class="keyword">return</span>;</div><div class="line">        &#125;</div><div class="line">          </div><div class="line">        <span class="keyword">if</span> (position &gt; lastAnimatedPosition) &#123;</div><div class="line">            lastAnimatedPosition = position;</div><div class="line">            view.setTranslationY(Utils.getScreenHeight(context));</div><div class="line">            view.animate()</div><div class="line">            .translationY(<span class="number">0</span>)</div><div class="line">            .setInterpolator(<span class="keyword">new</span> DecelerateInterpolator(<span class="number">3</span>.f))</div><div class="line">            .setDuration(<span class="number">700</span>)</div><div class="line">            .start();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">      </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBindViewHolder</span><span class="params">(RecyclerView.ViewHolder viewHolder, <span class="keyword">int</span> position)</span> </span>&#123;</div><div class="line">        runEnterAnimation(viewHolder.itemView, position);</div><div class="line">        CellFeedViewHolder holder = (CellFeedViewHolder) viewHolder;</div><div class="line">        <span class="keyword">if</span> (position % <span class="number">2</span> == <span class="number">0</span>) &#123;</div><div class="line">            holder.ivFeedCenter.setImageResource(R.drawable.img_feed_center_1);</div><div class="line">            holder.ivFeedBottom.setImageResource(R.drawable.img_feed_bottom_1);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            holder.ivFeedCenter.setImageResource(R.drawable.img_feed_center_2);</div><div class="line">            holder.ivFeedBottom.setImageResource(R.drawable.img_feed_bottom_2);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">      </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getItemCount</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> itemsCount;</div><div class="line">    &#125;</div><div class="line">      </div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">CellFeedViewHolder</span> <span class="keyword">extends</span> <span class="title">RecyclerView</span>.<span class="title">ViewHolder</span> </span>&#123;</div><div class="line">        <span class="meta">@InjectView</span>(R.id.ivFeedCenter)</div><div class="line">        SquaredImageView ivFeedCenter;</div><div class="line">        <span class="meta">@InjectView</span>(R.id.ivFeedBottom)</div><div class="line">        ImageView ivFeedBottom;</div><div class="line">          </div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="title">CellFeedViewHolder</span><span class="params">(View view)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>(view);</div><div class="line">            ButterKnife.inject(<span class="keyword">this</span>, view);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">      </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">updateItems</span><span class="params">()</span> </span>&#123;</div><div class="line">        itemsCount = <span class="number">10</span>;</div><div class="line">        notifyDataSetChanged();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>没什么特别之处需要说明。</p>
+<p>通过以下方法将他们放在一起：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setupFeed</span><span class="params">()</span> </span>&#123;</div><div class="line">    LinearLayoutManager linearLayoutManager = <span class="keyword">new</span> LinearLayoutManager(<span class="keyword">this</span>);</div><div class="line">    rvFeed.setLayoutManager(linearLayoutManager);</div><div class="line">    feedAdapter = <span class="keyword">new</span> FeedAdapter(<span class="keyword">this</span>);</div><div class="line">    rvFeed.setAdapter(feedAdapter);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>下面是整个MainActivity class的源码：<br>//MainActivity.java<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">ActionBarActivity</span> </span>&#123;</div><div class="line">    <span class="meta">@InjectView</span>(R.id.toolbar)</div><div class="line">    Toolbar toolbar;</div><div class="line">    <span class="meta">@InjectView</span>(R.id.rvFeed)</div><div class="line">    RecyclerView rvFeed;</div><div class="line">      </div><div class="line">    <span class="keyword">private</span> MenuItem inboxMenuItem;</div><div class="line">    <span class="keyword">private</span> FeedAdapter feedAdapter;</div><div class="line">      </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line">        ButterKnife.inject(<span class="keyword">this</span>);</div><div class="line">          </div><div class="line">        setupToolbar();</div><div class="line">        setupFeed();</div><div class="line">    &#125;</div><div class="line">      </div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setupToolbar</span><span class="params">()</span> </span>&#123;</div><div class="line">        setSupportActionBar(toolbar);</div><div class="line">        toolbar.setNavigationIcon(R.drawable.ic_menu_white);</div><div class="line">    &#125;</div><div class="line">      </div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setupFeed</span><span class="params">()</span> </span>&#123;</div><div class="line">        LinearLayoutManager linearLayoutManager = <span class="keyword">new</span> LinearLayoutManager(<span class="keyword">this</span>);</div><div class="line">        rvFeed.setLayoutManager(linearLayoutManager);</div><div class="line">        feedAdapter = <span class="keyword">new</span> FeedAdapter(<span class="keyword">this</span>);</div><div class="line">        rvFeed.setAdapter(feedAdapter);</div><div class="line">    &#125;</div><div class="line">      </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onCreateOptionsMenu</span><span class="params">(Menu menu)</span> </span>&#123;</div><div class="line">        getMenuInflater().inflate(R.menu.menu_main, menu);</div><div class="line">        inboxMenuItem = menu.findItem(R.id.action_inbox);</div><div class="line">        inboxMenuItem.setActionView(R.layout.menu_item_view);</div><div class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>运行结果：</p>
+<p>Android Lollipop</p>
+<p><img src="http://jcodecraeer.com/uploads/20150204/1423059086107717.png" alt=""></p>
+<p>Android pre-21</p>
+<p><img src="http://jcodecraeer.com/uploads/20150204/1423059082492283.png" alt=""></p>
+<p>##动画</p>
+<p>最后一件也是最重要的事情就是进入时的动画效果，再浏览一遍概念视频，可以发现在main Activity启动的时候有如下动画，分成两步：</p>
+<p>显示Toolbar以及其里面的元素</p>
+<p>在Toolbar动画完成之后显示feed和floating action button。</p>
+<p>Toolbar中元素的动画表现为在较短的时间内一个接一个的进入。实现这个效果的主要问题在于navigation icon的动画，navigation icon是唯一一个不能使用动画的，其他的都好办。<br><em>Toolbar animation</em></p>
+<p>首先我们只是需要在activity启动的时候才播放动画（在旋转屏幕的时候不播放），还要知道menu的动画过程是不能在onCreate()中去实现的（我们在onCreateOptionsMenu()中实现），创建一个布尔类型的变量pendingIntroAnimation ，在onCreate()方法中初始化：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//...</span></div><div class="line"><span class="keyword">if</span> (savedInstanceState == <span class="keyword">null</span>) &#123;</div><div class="line">    pendingIntroAnimation = <span class="keyword">true</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>onCreateOptionsMenu():<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onCreateOptionsMenu</span><span class="params">(Menu menu)</span> </span>&#123;</div><div class="line">    getMenuInflater().inflate(R.menu.menu_main, menu);</div><div class="line">    inboxMenuItem = menu.findItem(R.id.action_inbox);</div><div class="line">    inboxMenuItem.setActionView(R.layout.menu_item_view);</div><div class="line">    <span class="keyword">if</span> (pendingIntroAnimation) &#123;</div><div class="line">        pendingIntroAnimation = <span class="keyword">false</span>;</div><div class="line">        startIntroAnimation();</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这样startIntroAnimation()将只被调用一次。</p>
+<p>现在该来准备Toolbar中元素的动画了，也非常简单</p>
+<p>ToolbarAnimation<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//...</span></div><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> ANIM_DURATION_TOOLBAR = <span class="number">300</span>;</div><div class="line">  </div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startIntroAnimation</span><span class="params">()</span> </span>&#123;</div><div class="line">    btnCreate.setTranslationY(<span class="number">2</span> * getResources().getDimensionPixelOffset(R.dimen.btn_fab_size));</div><div class="line">    <span class="keyword">int</span> actionbarSize = Utils.dpToPx(<span class="number">56</span>);</div><div class="line">    toolbar.setTranslationY(-actionbarSize);</div><div class="line">    ivLogo.setTranslationY(-actionbarSize);</div><div class="line">    inboxMenuItem.getActionView().setTranslationY(-actionbarSize);</div><div class="line">      </div><div class="line">    toolbar.animate()</div><div class="line">        .translationY(<span class="number">0</span>)</div><div class="line">        .setDuration(ANIM_DURATION_TOOLBAR)</div><div class="line">        .setStartDelay(<span class="number">300</span>);</div><div class="line">    ivLogo.animate()</div><div class="line">        .translationY(<span class="number">0</span>)</div><div class="line">        .setDuration(ANIM_DURATION_TOOLBAR)</div><div class="line">        .setStartDelay(<span class="number">400</span>);</div><div class="line">    inboxMenuItem.getActionView().animate()</div><div class="line">        .translationY(<span class="number">0</span>)</div><div class="line">        .setDuration(ANIM_DURATION_TOOLBAR)</div><div class="line">        .setStartDelay(<span class="number">500</span>)</div><div class="line">        .setListener(<span class="keyword">new</span> AnimatorListenerAdapter() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAnimationEnd</span><span class="params">(Animator animation)</span> </span>&#123;</div><div class="line">            startContentAnimation();</div><div class="line">            &#125;</div><div class="line">        &#125;)</div><div class="line">        .start();</div><div class="line">&#125;</div><div class="line"><span class="comment">//...</span></div></pre></td></tr></table></figure></p>
+<p>在上面的代码中：</p>
+<pre><code>首先我们将所有的元素都通过移动到屏幕之外隐藏起来（这一步我们将FAB也隐藏了）。
+
+让Toolbar元素一个接一个的开始动画
+
+当动画完成，调用了startContentAnimation()开始content的动画（FAB和feed卡片的动画）
+</code></pre><p> 简单，是吧？<br><em>Content 动画</em></p>
+<p>在这一步中我们将让FAB和feed卡片动起来。FAB的动画很简单，跟上面的方法类似，但是feed卡片稍微复杂些。</p>
+<p>startContentAnimation方法<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//...</span></div><div class="line"><span class="comment">//FAB animation</span></div><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> ANIM_DURATION_FAB = <span class="number">400</span>;</div><div class="line">  </div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startContentAnimation</span><span class="params">()</span> </span>&#123;</div><div class="line">    btnCreate.animate()</div><div class="line">        .translationY(<span class="number">0</span>)</div><div class="line">        .setInterpolator(<span class="keyword">new</span> OvershootInterpolator(<span class="number">1</span>.f))</div><div class="line">        .setStartDelay(<span class="number">300</span>)</div><div class="line">        .setDuration(ANIM_DURATION_FAB)</div><div class="line">        .start();</div><div class="line">    feedAdapter.updateItems();</div><div class="line">&#125;</div><div class="line"><span class="comment">//...</span></div></pre></td></tr></table></figure></p>
+<p>FeedAdapter的代码在上面已经贴出来了。结合着就知道动画是如何实现的了。</p>
+<p>本篇文章就结束了，避免遗漏，这里是这篇文章是提交的代码 <a href="https://github.com/frogermcs/InstaMaterial/commit/4e838861c5f858711b1072777cae2325ce12ee21" target="_blank" rel="external">commit for our project with implemented animations</a> .</p>
+<p>##源代码</p>
+<p>完整的代码在<a href="https://github.com/frogermcs/InstaMaterial" target="_blank" rel="external">Github repository</a>.</p>
+<p>作者: Miroslaw Stanek</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://kevin1202.github.io/2017/04/27/实现Instagram的Material Design概念设计/" data-title="实现Instagram的Material Design概念设计 | Kevin博客" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/04/27/延迟共享元素的过渡动画/" title="延迟共享元素的过渡动画 (part 3b)">
+  <strong>上一篇：</strong><br/>
+  <span>
+  延迟共享元素的过渡动画 (part 3b)</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/04/27/开始使用 Transitions（过渡动画） (part 1)/"  title="开始使用 Transitions（过渡动画） (part 1)">
+ <strong>下一篇：</strong><br/> 
+ <span>开始使用 Transitions（过渡动画） (part 1)
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2017/04/27/实现Instagram的Material Design概念设计/" data-title="实现Instagram的Material Design概念设计" data-url="https://kevin1202.github.io/2017/04/27/实现Instagram的Material Design概念设计/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="carrie1217" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Android/" title="Android">Android<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/git/" title="git">git<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/mac/" title="mac">mac<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/TimerTask/" title="TimerTask">TimerTask<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/size/" title="size">size<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Travis-CI/" title="Travis-CI">Travis-CI<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://coderq.com" target="_blank" title="一个面向程序员交流分享的新一代社区">码农圈</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://wuchong.me" target="_blank" title="Jark&#39;s Blog">Jark&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> 活着就要学习，学习不是为了活着。 <br/>
+			情况是在不断的变化，要使自己的思想适应新的情况，就得学习。</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/carrie1217" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Kevin">Kevin</a>
+		
+		
+		</p>
+		<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','DBjSFU5kGEcv8E-m-m_m','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"kevinbolg"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

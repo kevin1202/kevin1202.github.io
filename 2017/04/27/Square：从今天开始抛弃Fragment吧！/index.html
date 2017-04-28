@@ -1,0 +1,657 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Square：从今天开始抛弃Fragment吧！ | Kevin博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Kevin">
+    
+
+    
+    <meta name="description" content="原文链接 : Advocating Against Android Fragments
+原文作者 : Pierre-Yves Ricau
+译文出自 :  开发技术前线 www.devtf.cn
+译者 : chaossss 
+校对者: Belial
+状态 :  完成
+
+最近我在 Droidcon Paris 上进行了一个技术相关的演讲，我在这次演讲中给大家展示了 Square 使用 Fragmen">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Square：从今天开始抛弃Fragment吧！">
+<meta property="og:url" content="https://kevin1202.github.io/2017/04/27/Square：从今天开始抛弃Fragment吧！/index.html">
+<meta property="og:site_name" content="Kevin博客">
+<meta property="og:description" content="原文链接 : Advocating Against Android Fragments
+原文作者 : Pierre-Yves Ricau
+译文出自 :  开发技术前线 www.devtf.cn
+译者 : chaossss 
+校对者: Belial
+状态 :  完成
+
+最近我在 Droidcon Paris 上进行了一个技术相关的演讲，我在这次演讲中给大家展示了 Square 使用 Fragmen">
+<meta property="og:image" content="https://corner.squareup.com/images/no-fragments/lifecycle.png">
+<meta property="og:image" content="https://corner.squareup.com/images/no-fragments/code-quality.png">
+<meta property="og:image" content="https://corner.squareup.com/images/no-fragments/edit-discounts.png">
+<meta property="og:updated_time" content="2017-04-28T05:46:54.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Square：从今天开始抛弃Fragment吧！">
+<meta name="twitter:description" content="原文链接 : Advocating Against Android Fragments
+原文作者 : Pierre-Yves Ricau
+译文出自 :  开发技术前线 www.devtf.cn
+译者 : chaossss 
+校对者: Belial
+状态 :  完成
+
+最近我在 Droidcon Paris 上进行了一个技术相关的演讲，我在这次演讲中给大家展示了 Square 使用 Fragmen">
+<meta name="twitter:image" content="https://corner.squareup.com/images/no-fragments/lifecycle.png">
+
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/pacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/pacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="Kevin博客" title="Kevin博客"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Kevin博客">Kevin博客</a></h1>
+				<h2 class="blog-motto">梦想还是要有的，万一实现了呢？</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" class="st-default-search-input" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/Square：从今天开始抛弃Fragment吧！/" title="Square：从今天开始抛弃Fragment吧！" itemprop="url">Square：从今天开始抛弃Fragment吧！</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<ul>
+<li>原文链接 : <a href="https://corner.squareup.com/2014/10/advocating-against-android-fragments.html" target="_blank" rel="external">Advocating Against Android Fragments</a></li>
+<li>原文作者 : <a href="http://twitter.com/Piwai" target="_blank" rel="external">Pierre-Yves Ricau</a></li>
+<li><a href="http://www.devtf.cn" target="_blank" rel="external">译文出自 :  开发技术前线 www.devtf.cn</a></li>
+<li>译者 : <a href="https://github.com/chaossss" target="_blank" rel="external">chaossss</a> </li>
+<li>校对者: <a href="www.belial.me">Belial</a></li>
+<li>状态 :  完成</li>
+</ul>
+<p>最近我在 Droidcon Paris 上进行了<a href="http://fr.droidcon.com/2014/agenda/detail?title=D%C3%A9fragmentez+vos+apps+avec+Mortar+%21" target="_blank" rel="external">一个技术相关的演讲</a>，我在这次演讲中给大家展示了 Square 使用 Fragment 进行开发时遇到的种种问题，以及其他 Android 开发者是怎么避免在项目中使用 Fragment 的。</p>
+<p>在 2011 年那会，由于下面的原因我们决定使用 Fragment：</p>
+<ul>
+<li><p>在那会，虽然我们很想让应用能在平板设备上被使用，但我们确实没能为平板提供平台支持。而 Fragment 能帮助我们完成这项愿望，建立响应式 UI 界面。</p>
+</li>
+<li><p>Fragment 是视图控制器，它们能够将一大块耦合严重的业务逻辑模块解耦，并使得解耦后的业务逻辑能够被测试。</p>
+</li>
+<li><p>Fragment 的 API 能够进行回退栈管理（例如，它能反射某个 Activity 内 Activity 栈的具体操作）</p>
+</li>
+<li><p>因为 Fragment 处于视图层的顶层，而为 View 设置动画并不麻烦，使得 Fragment 为设置页面切换的过渡效果提供了更好的支持。</p>
+</li>
+<li><p>Google 建议我们使用 Fragment，而我们作为开发者都想让自己的代码符合标准。</p>
+</li>
+</ul>
+<p>在 2011年之后，我们在为 Square 进行开发的过程中发现了比使用 Fragment 更好的方法。</p>
+<p>#关于 Fragment 你不知道的事</p>
+<p>##The lolcycle</p>
+<p>在 Android 中，Context 就像一个<a href="http://en.wikipedia.org/wiki/God_object" target="_blank" rel="external">上帝对象</a>，因为在 Context 类中涵盖了太多 Android 系统的信息和相关的操作，使得 Context 在 Android 系统中相当于一个全知全能的上帝，而 Activity 就是为 Context 添加了生命周期的子类。不过让上帝具有生命周期还是有些讽刺的。虽然 Fragment 不是上帝对象，但 Fragment 为了能够完成 Activity 中能完成的各种操作，使 Fragment 自身的生命周期变得异常复杂。</p>
+<p>Steve Pomeroy 做了一张<a href="https://github.com/xxv/android-lifecycle" target="_blank" rel="external"> Fragment 的完整生命周期图</a>，我相信任谁看到这张图都不会好受：</p>
+<p><img src="https://corner.squareup.com/images/no-fragments/lifecycle.png" alt=""></p>
+<p>这张图由 Steve Pomeroy 完成，图中移除了 Activity 的生命周期，分享这张图需要获得 <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="external">CC BY-SA 4.0</a> 许可。</p>
+<p>整个 Fragment 的生命周期让你很头疼要怎样使用这些回调方法，它们是同步调用的呢，还是只是一次性全部调用呢，还是其它情况……？</p>
+<p>##难于调试</p>
+<p>当你的应用出现 Bug，你得用调试工具一步一步地执行代码才能知道到底发生了什么，虽说一般情况下这样做 Bug 都能解决，但如果你在调试的时候发现 Bug 和 FragmentManagerImpl 类存在某种联系，那么我可要好好恭喜你即将中大奖了！</p>
+<p>因为要跟踪 FragmentManagerImpl 类内代码的执行顺序，并进行调试是很困难的，这也使得修复应用中相关的 Bug 也变得异常困难：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">switch</span> (f.mState) &#123;</div><div class="line">    <span class="keyword">case</span> Fragment.INITIALIZING:</div><div class="line">        <span class="keyword">if</span> (f.mSavedFragmentState != <span class="keyword">null</span>) &#123;</div><div class="line">            f.mSavedViewState = f.mSavedFragmentState.getSparseParcelableArray(</div><div class="line">                    FragmentManagerImpl.VIEW_STATE_TAG);</div><div class="line">            f.mTarget = getFragment(f.mSavedFragmentState,</div><div class="line">                    FragmentManagerImpl.TARGET_STATE_TAG);</div><div class="line">            <span class="keyword">if</span> (f.mTarget != <span class="keyword">null</span>) &#123;</div><div class="line">                f.mTargetRequestCode = f.mSavedFragmentState.getInt(</div><div class="line">                        FragmentManagerImpl.TARGET_REQUEST_CODE_STATE_TAG, <span class="number">0</span>);</div><div class="line">            &#125;</div><div class="line">            f.mUserVisibleHint = f.mSavedFragmentState.getBoolean(</div><div class="line">                    FragmentManagerImpl.USER_VISIBLE_HINT_TAG, <span class="keyword">true</span>);</div><div class="line">            <span class="keyword">if</span> (!f.mUserVisibleHint) &#123;</div><div class="line">                f.mDeferStart = <span class="keyword">true</span>;</div><div class="line">                <span class="keyword">if</span> (newState &gt; Fragment.STOPPED) &#123;</div><div class="line">                    newState = Fragment.STOPPED;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"><span class="comment">// ...</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果你曾经需要解决应用旋转后产生一个与旋转前 UI 相同（方向发生变化）的独立的 Fragment 的需求，我想你应该懂我在说什么。（别给我提嵌套使用的 Fragment！）</p>
+<p>我想下面这张图很好地诠释了这类代码给程序员带来的伤害（由于版权问题我得放出这张图的出处哈：<a href="http://www.osnews.com/story/19266/WTFs_m" target="_blank" rel="external">this cartoon</a>）：</p>
+<p><img src="https://corner.squareup.com/images/no-fragments/code-quality.png" alt=""></p>
+<p>在多年的深度分析中我得出结论：操蛋程度/调试耗费的时间 = 2^m，m 为 Fragment 的个数。</p>
+<p>##Fragment 是视图控制器？想太多</p>
+<p>因为 Fragment 需要创建、绑定和配置 View，它们包含了许多与 View 关联的结点，这就意味着 View 类代码中的业务逻辑并没有真正地被解耦，正是这个原因使得我们要为 Fragment 实现测试单元将会变得很困难。</p>
+<p>##Fragment transactions</p>
+<p>Fragment 的 transaction 允许你执行一系列的 Fragment 操作，但不幸的是，提交 transaction 是异步操作，并且在 UI 线程的 Handler 队列的队尾被提交。这会在接收多个点击事件或配置发生改变时让你的 App 处在未知的状态。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">BackStackRecord</span> <span class="keyword">extends</span> <span class="title">FragmentTransaction</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">int</span> <span class="title">commitInternal</span><span class="params">(<span class="keyword">boolean</span> allowStateLoss)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (mCommitted)</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"commit already called"</span>);</div><div class="line">        mCommitted = <span class="keyword">true</span>;</div><div class="line">        <span class="keyword">if</span> (mAddToBackStack) &#123;</div><div class="line">            mIndex = mManager.allocBackStackIndex(<span class="keyword">this</span>);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            mIndex = -<span class="number">1</span>;</div><div class="line">        &#125;</div><div class="line">        mManager.enqueueAction(<span class="keyword">this</span>, allowStateLoss);</div><div class="line">        <span class="keyword">return</span> mIndex;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>##创建 Fragment 可能带来的问题</p>
+<p>Fragment 的实例能够通过 Fragment Manager 创建，例如下面的代码看起来没有什么问题：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">DialogFragment dialogFragment = <span class="keyword">new</span> DialogFragment() &#123;</div><div class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> Dialog <span class="title">onCreateDialog</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123; ... &#125;</div><div class="line">&#125;;</div><div class="line">dialogFragment.show(fragmentManager, tag);</div></pre></td></tr></table></figure>
+<p>然而，当我们需要存储 Activity 实例的状态时，Fragment Manager 可能会通过反射机制重新创建该 Fragment 的实例，又因为这是一个匿名内部类，该类有一个隐藏的构造器的参数正是外部类的引用，如果大家有看过<a href="http://blog.csdn.net/u012403246/article/details/45666369" target="_blank" rel="external">这篇博文</a>的话就会知道，拥有外部引用可能会带来内存泄漏的问题。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">android.support.v4.app.Fragment$InstantiationException:</div><div class="line">    Unable to instantiate fragment com.squareup.MyActivity$<span class="number">1</span>:</div><div class="line">    make sure <span class="class"><span class="keyword">class</span> <span class="title">name</span> <span class="title">exists</span>, <span class="title">is</span> <span class="title">public</span>, <span class="title">and</span> <span class="title">has</span> <span class="title">an</span> <span class="title">empty</span></span></div><div class="line">    <span class="title">constructor</span> <span class="title">that</span> <span class="title">is</span> <span class="title">public</span></div></pre></td></tr></table></figure>
+<p>##Fragment 教给我们的思想</p>
+<p>尽管 Fragment 有着上面提到的缺点，但也是 Fragment 教给我们许多代码架构的思想：</p>
+<ul>
+<li><p>独立的 Activity 接口：实际上我们并不需要为每一个页面创建一个 Activity，我们大可以将应用切分成许多解耦的视图组件，按照我们的实际需求把它们组装成我们想要的界面。这样做也能简化生命周期和动画设置，因为我们还能将视图组件切分为 view 组件和控制器组件。</p>
+</li>
+<li><p>回退栈不是 Activity 的特有概念，也就意味着你能在 Activity 内部实现回退栈。</p>
+</li>
+<li><p>不需要添加新的 API，我们需要的只是 Activity，View 和 LayoutInflater。</p>
+</li>
+</ul>
+<p>#响应式 UI：Fragment VS Custom View</p>
+<p>##Fragment</p>
+<p>我们不妨先来看看一个 Fragment 的<a href="http://developer.android.com/shareables/training/FragmentBasics.zip" target="_blank" rel="external">范例</a>，界面中显示了一个 list。</p>
+<p>HeadlinesFragment 就是显示 List 的简单 Fragment：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HeadlinesFragment</span> <span class="keyword">extends</span> <span class="title">ListFragment</span> </span>&#123;</div><div class="line">  OnHeadlineSelectedListener mCallback;</div><div class="line"></div><div class="line">  <span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">OnHeadlineSelectedListener</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">onArticleSelected</span><span class="params">(<span class="keyword">int</span> position)</span></span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">    setListAdapter(</div><div class="line">        <span class="keyword">new</span> ArrayAdapter&lt;String&gt;(getActivity(),</div><div class="line">            R.layout.fragment_list,</div><div class="line">            Ipsum.Headlines));</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAttach</span><span class="params">(Activity activity)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onAttach(activity);</div><div class="line">    mCallback = (OnHeadlineSelectedListener) activity;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onListItemClick</span><span class="params">(ListView l, View v, <span class="keyword">int</span> position, <span class="keyword">long</span> id)</span> </span>&#123;</div><div class="line">    mCallback.onArticleSelected(position);</div><div class="line">    getListView().setItemChecked(position, <span class="keyword">true</span>);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在有趣的事情来了：ListFragmentActivity 必须控制 list 是否处于同一个页面中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ListFragmentActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span></span></div><div class="line">    <span class="keyword">implements</span> <span class="title">HeadlinesFragment</span>.<span class="title">OnHeadlineSelectedListener</span> &#123;</div><div class="line">  <span class="meta">@Override</span></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">    setContentView(R.layout.news_articles);</div><div class="line">    <span class="keyword">if</span> (findViewById(R.id.fragment_container) != <span class="keyword">null</span>) &#123;</div><div class="line">      <span class="keyword">if</span> (savedInstanceState != <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">return</span>;</div><div class="line">      &#125;</div><div class="line">      HeadlinesFragment firstFragment = <span class="keyword">new</span> HeadlinesFragment();</div><div class="line">      firstFragment.setArguments(getIntent().getExtras());</div><div class="line">      getFragmentManager()</div><div class="line">          .beginTransaction()</div><div class="line">          .add(R.id.fragment_container, firstFragment)</div><div class="line">          .commit();</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onArticleSelected</span><span class="params">(<span class="keyword">int</span> position)</span> </span>&#123;</div><div class="line">    ArticleFragment articleFrag =</div><div class="line">        (ArticleFragment) getFragmentManager()</div><div class="line">            .findFragmentById(R.id.article_fragment);</div><div class="line">    <span class="keyword">if</span> (articleFrag != <span class="keyword">null</span>) &#123;</div><div class="line">      articleFrag.updateArticleView(position);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">      ArticleFragment newFragment = <span class="keyword">new</span> ArticleFragment();</div><div class="line">      Bundle args = <span class="keyword">new</span> Bundle();</div><div class="line">      args.putInt(ArticleFragment.ARG_POSITION, position);</div><div class="line">      newFragment.setArguments(args);</div><div class="line">      getFragmentManager()</div><div class="line">          .beginTransaction()</div><div class="line">          .replace(R.id.fragment_container, newFragment)</div><div class="line">          .addToBackStack(<span class="keyword">null</span>)</div><div class="line">          .commit();</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>##自定义 View</p>
+<p>我们不妨重新实现一个简化版的只使用了 View 的代码</p>
+<p>首先，我们会引入一个叫作“容器”的概念，“容器”的作用是帮助我们展示一项内容并处理后退操作</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Container</span> </span>&#123;</div><div class="line">  <span class="function"><span class="keyword">void</span> <span class="title">showItem</span><span class="params">(String item)</span></span>;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">boolean</span> <span class="title">onBackPressed</span><span class="params">()</span></span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Acitivity 将假设始终存在容器，并且几乎不会将业务交给容器处理。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span> </span>&#123;</div><div class="line">  <span class="keyword">private</span> Container container;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">    setContentView(R.layout.main_activity);</div><div class="line">    container = (Container) findViewById(R.id.container);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">public</span> Container <span class="title">getContainer</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> container;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBackPressed</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">boolean</span> handled = container.onBackPressed();</div><div class="line">    <span class="keyword">if</span> (!handled) &#123;</div><div class="line">      finish();</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>要显示的 List 也只是个平凡的 List。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ItemListView</span> <span class="keyword">extends</span> <span class="title">ListView</span> </span>&#123;</div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">ItemListView</span><span class="params">(Context context, AttributeSet attrs)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>(context, attrs);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onFinishInflate</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onFinishInflate();</div><div class="line">    <span class="keyword">final</span> MyListAdapter adapter = <span class="keyword">new</span> MyListAdapter();</div><div class="line">    setAdapter(adapter);</div><div class="line">    setOnItemClickListener(<span class="keyword">new</span> OnItemClickListener() &#123;</div><div class="line">      <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onItemClick</span><span class="params">(AdapterView&lt;?&gt; parent, View view,</span></span></div><div class="line">            <span class="keyword">int</span> position, <span class="keyword">long</span> id) &#123;</div><div class="line">        String item = adapter.getItem(position);</div><div class="line">        MainActivity activity = (MainActivity) getContext();</div><div class="line">        Container container = activity.getContainer();</div><div class="line">        container.showItem(item);</div><div class="line">      &#125;</div><div class="line">    &#125;);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这样做的好处是：能够基于资源文件夹在不同的 XML 布局文件</p>
+<p><code>res/layout/main_activity.xml</code></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">com.squareup.view.SinglePaneContainer</span></span></div><div class="line">    <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">    <span class="attr">android:id</span>=<span class="string">"@+id/container"</span></div><div class="line">    &gt;</div><div class="line">  <span class="tag">&lt;<span class="name">com.squareup.view.ItemListView</span></span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">      /&gt;</div><div class="line"><span class="tag">&lt;/<span class="name">com.squareup.view.SinglePaneContainer</span>&gt;</span></div></pre></td></tr></table></figure>
+<p><code>res/layout-land/main_activity.xml</code></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">com.squareup.view.DualPaneContainer</span></span></div><div class="line">    <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">    <span class="attr">android:orientation</span>=<span class="string">"horizontal"</span></div><div class="line">    <span class="attr">android:id</span>=<span class="string">"@+id/container"</span></div><div class="line">    &gt;</div><div class="line">  <span class="tag">&lt;<span class="name">com.squareup.view.ItemListView</span></span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"0dp"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_weight</span>=<span class="string">"0.2"</span></div><div class="line">      /&gt;</div><div class="line">  <span class="tag">&lt;<span class="name">include</span> <span class="attr">layout</span>=<span class="string">"@layout/detail"</span></span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"0dp"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_weight</span>=<span class="string">"0.8"</span></div><div class="line">      /&gt;</div><div class="line"><span class="tag">&lt;/<span class="name">com.squareup.view.DualPaneContainer</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>下面是这些容器类的简单实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DualPaneContainer</span> <span class="keyword">extends</span> <span class="title">LinearLayout</span> <span class="keyword">implements</span> <span class="title">Container</span> </span>&#123;</div><div class="line">  <span class="keyword">private</span> MyDetailView detailView;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">DualPaneContainer</span><span class="params">(Context context, AttributeSet attrs)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>(context, attrs);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onFinishInflate</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onFinishInflate();</div><div class="line">    detailView = (MyDetailView) getChildAt(<span class="number">1</span>);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onBackPressed</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">showItem</span><span class="params">(String item)</span> </span>&#123;</div><div class="line">    detailView.setItem(item);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SinglePaneContainer</span> <span class="keyword">extends</span> <span class="title">FrameLayout</span> <span class="keyword">implements</span> <span class="title">Container</span> </span>&#123;</div><div class="line">  <span class="keyword">private</span> ItemListView listView;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">SinglePaneContainer</span><span class="params">(Context context, AttributeSet attrs)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>(context, attrs);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onFinishInflate</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onFinishInflate();</div><div class="line">    listView = (ItemListView) getChildAt(<span class="number">0</span>);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onBackPressed</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (!listViewAttached()) &#123;</div><div class="line">      removeViewAt(<span class="number">0</span>);</div><div class="line">      addView(listView);</div><div class="line">      <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">showItem</span><span class="params">(String item)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (listViewAttached()) &#123;</div><div class="line">      removeViewAt(<span class="number">0</span>);</div><div class="line">      View.inflate(getContext(), R.layout.detail, <span class="keyword">this</span>);</div><div class="line">    &#125;</div><div class="line">    MyDetailView detailView = (MyDetailView) getChildAt(<span class="number">0</span>);</div><div class="line">    detailView.setItem(item);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">listViewAttached</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> listView.getParent() != <span class="keyword">null</span>;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>不难想象：将容器类抽象，并用这种的方式开发 App，不但不需要 Fragment，还能架构出容易理解的代码。</p>
+<p>##View 和 Presenter</p>
+<p>自定义 View 在应用中非常有用，但我们希望将业务逻辑从 View 中剥离，转交给特定的控制器处理，也就是接下来我们所说的 Presenter，引入 Presenter 能提高代码的可读性和可测试性。如果你不信的话，不妨看看重构后的 MyDetailView：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyDetailView</span> <span class="keyword">extends</span> <span class="title">LinearLayout</span> </span>&#123;</div><div class="line">  TextView textView;</div><div class="line">  DetailPresenter presenter;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">MyDetailView</span><span class="params">(Context context, AttributeSet attrs)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>(context, attrs);</div><div class="line">    presenter = <span class="keyword">new</span> DetailPresenter();</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onFinishInflate</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onFinishInflate();</div><div class="line">    presenter.setView(<span class="keyword">this</span>);</div><div class="line">    textView = (TextView) findViewById(R.id.text);</div><div class="line">    findViewById(R.id.button).setOnClickListener(<span class="keyword">new</span> OnClickListener() &#123;</div><div class="line">      <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">        presenter.buttonClicked();</div><div class="line">      &#125;</div><div class="line">    &#125;);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setItem</span><span class="params">(String item)</span> </span>&#123;</div><div class="line">    textView.setText(item);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我们来看看 Square 注册界面中编辑账户的页面吧！</p>
+<p><img src="https://corner.squareup.com/images/no-fragments/edit-discounts.png" alt=""></p>
+<p>Presenter 将在更高层级中操控 View：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">EditDiscountPresenter</span> </span>&#123;</div><div class="line">  <span class="comment">// ...</span></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">saveDiscount</span><span class="params">()</span> </span>&#123;</div><div class="line">    EditDiscountView view = getView();</div><div class="line">    String name = view.getName();</div><div class="line">    <span class="keyword">if</span> (isBlank(name)) &#123;</div><div class="line">      view.showNameRequiredWarning();</div><div class="line">      <span class="keyword">return</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (isNewDiscount()) &#123;</div><div class="line">      createNewDiscountAsync(name, view.getAmount(), view.isPercentage());</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">      updateNewDiscountAsync(discountId, name, view.getAmount(),</div><div class="line">        view.isPercentage());</div><div class="line">    &#125;</div><div class="line">    close();</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>大家可以看到，为这个 Presenter 实现测试单元犹如一缕春风拂面来，甚是舒心爽快呐～</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Test</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cannot_save_discount_with_empty_name</span><span class="params">()</span> </span>&#123;</div><div class="line">  startEditingLoadedPercentageDiscount();</div><div class="line">  when(view.getName()).thenReturn(<span class="string">""</span>);</div><div class="line">  presenter.saveDiscount();</div><div class="line">  verify(view).showNameRequiredWarning();</div><div class="line">  assertThat(isSavingInBackground()).isFalse();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>##回退栈管理</p>
+<p>通过异步处理来管理回退栈实在是牛刀杀鸡，大材小用了……我们只需要用一个超轻量级库——Flow，就可以达到目的。有关 Flow 的介绍 Ray Ryan 已经写过博客了，我就不在此赘述啦。</p>
+<p>##我把 UI 相关的代码全都写在 Fragment 里了咋办呀，在线等，急！！！</p>
+<p>别理你的 Fragment，你就一点一点地把 View 相关的代码移到自定义 View 里，然后把涉及到的业务逻辑交给能够与 View 进行交互的 Presenter，然后你就会发现 Fragment 沦为空壳，只有一些初始化自定义 View 和连接 View 和 Presenter 的操作：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DetailFragment</span> <span class="keyword">extends</span> <span class="title">Fragment</span> </span>&#123;</div><div class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> View <span class="title">onCreateView</span><span class="params">(LayoutInflater inflater,</span></span></div><div class="line">    ViewGroup container, Bundle savedInstanceState) &#123;</div><div class="line">    <span class="keyword">return</span> inflater.inflate(R.layout.my_detail_view, container, <span class="keyword">false</span>);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>事实上到了这一步你已经可以抛弃 Fragment 了。</p>
+<p>抛弃 Fragment 确实得花很大的功夫，但我们已经做到了，感谢<a href="https://twitter.com/dnkoutso" target="_blank" rel="external"> Dimitris Koutsogiorgas </a>和<a href="https://twitter.com/rjrjr" target="_blank" rel="external"> Ray Ryan </a>的伟大贡献！</p>
+<p>##Dagger 和 Mortar 是什么？</p>
+<p>Dagger &amp; Mortar 与 Fragment 成正交关系，换句话说，两者间各自的变化不会影响对方，使用 Dagger &amp; Mortar 既可以用 Fragment，也可以不用 Fragment。</p>
+<p><a href="http://square.github.io/dagger/" target="_blank" rel="external">Dagger</a> 能帮你将应用模块化为一张由解耦组件构成的图，它考虑了所有类间的连接关系并简化了抽取依赖的操作，并实现一个与此相关的单例对象。</p>
+<p><a href="https://github.com/square/mortar" target="_blank" rel="external">Mortar</a> 在 Dagger 的顶层进行操作，主要优势有如下两点：</p>
+<ul>
+<li><p>Mortar 为被注入组件提供简单的生命周期回调，使你能实现不会因旋转被销毁的单例 Presenter，不过需要注意的是，Mortar 将当前界面元素的状态储存在 Bundle 中，使数据不会随进程的结束而被清除。</p>
+</li>
+<li><p>Mortar 为你管理 Dagger 的子图，并帮你将它们与 Activity 的生命周期关联在一起，这种功能让你能有效地实现“域”：当一个 View 被添加进来，它的 Presenter 和依赖都会作为子图被创建；当 View 被移除，你能轻易地销毁“域”，并让垃圾回收机制去完成它的工作。</p>
+</li>
+</ul>
+<p>##结论</p>
+<p>我们曾为 Fragment 的诞生满心欢喜，幻想着 Fragment 能为我们带来种种便利，然而这一切不过是场虚空大梦，我们最后发现骑着白马的 Fragment 既不是王子也不是唐僧，只不过是人品爆发捡了只白马的乞丐罢了：</p>
+<ul>
+<li><p>我们遇到的大多数难以解决的 Bug 都与 Fragment 的生命周期有关。</p>
+</li>
+<li><p>我们只需要 View 创建响应式 UI，实现回退栈以及屏幕事件的处理，不用 Fragment 也能满足实际开发的需求。</p>
+</li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://kevin1202.github.io/2017/04/27/Square：从今天开始抛弃Fragment吧！/" data-title="Square：从今天开始抛弃Fragment吧！ | Kevin博客" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/04/27/chap2/" title="RxJava开发精要2-为什么是Observables?">
+  <strong>上一篇：</strong><br/>
+  <span>
+  RxJava开发精要2-为什么是Observables?</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/04/27/RxJava-Observables单元测试/"  title="RxJava Observables单元测试">
+ <strong>下一篇：</strong><br/> 
+ <span>RxJava Observables单元测试
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2017/04/27/Square：从今天开始抛弃Fragment吧！/" data-title="Square：从今天开始抛弃Fragment吧！" data-url="https://kevin1202.github.io/2017/04/27/Square：从今天开始抛弃Fragment吧！/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="carrie1217" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Android/" title="Android">Android<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/git/" title="git">git<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/mac/" title="mac">mac<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/TimerTask/" title="TimerTask">TimerTask<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/size/" title="size">size<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Travis-CI/" title="Travis-CI">Travis-CI<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://coderq.com" target="_blank" title="一个面向程序员交流分享的新一代社区">码农圈</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://wuchong.me" target="_blank" title="Jark&#39;s Blog">Jark&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> 活着就要学习，学习不是为了活着。 <br/>
+			情况是在不断的变化，要使自己的思想适应新的情况，就得学习。</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/carrie1217" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Kevin">Kevin</a>
+		
+		
+		</p>
+		<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','DBjSFU5kGEcv8E-m-m_m','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"kevinbolg"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

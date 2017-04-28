@@ -1,0 +1,607 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>RxJava开发精要8 - 与REST无缝结合-RxJava和Retrofit | Kevin博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Kevin">
+    
+
+    
+    <meta name="description" content="原文出自《RxJava Essentials》
+
+原文作者 : Ivan Morgillo
+译文出自 : 开发技术前线 www.devtf.cn
+转载声明: 本译文已授权开发者头条享有独家转载权，未经允许，不得转载!
+译者 : yuxingxin 
+项目地址 : RxJava-Essentials-CN
+
+在上一章中，我们学习了如何使用调度器在不同于UI线程的线程上操作。我们学习了如何高效的运行I">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RxJava开发精要8 - 与REST无缝结合-RxJava和Retrofit">
+<meta property="og:url" content="https://kevin1202.github.io/2017/04/27/chap8/index.html">
+<meta property="og:site_name" content="Kevin博客">
+<meta property="og:description" content="原文出自《RxJava Essentials》
+
+原文作者 : Ivan Morgillo
+译文出自 : 开发技术前线 www.devtf.cn
+转载声明: 本译文已授权开发者头条享有独家转载权，未经允许，不得转载!
+译者 : yuxingxin 
+项目地址 : RxJava-Essentials-CN
+
+在上一章中，我们学习了如何使用调度器在不同于UI线程的线程上操作。我们学习了如何高效的运行I">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter8_1.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter8_2.png">
+<meta property="og:updated_time" content="2017-04-28T06:08:33.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RxJava开发精要8 - 与REST无缝结合-RxJava和Retrofit">
+<meta name="twitter:description" content="原文出自《RxJava Essentials》
+
+原文作者 : Ivan Morgillo
+译文出自 : 开发技术前线 www.devtf.cn
+转载声明: 本译文已授权开发者头条享有独家转载权，未经允许，不得转载!
+译者 : yuxingxin 
+项目地址 : RxJava-Essentials-CN
+
+在上一章中，我们学习了如何使用调度器在不同于UI线程的线程上操作。我们学习了如何高效的运行I">
+<meta name="twitter:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter8_1.png">
+
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/pacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/pacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="Kevin博客" title="Kevin博客"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Kevin博客">Kevin博客</a></h1>
+				<h2 class="blog-motto">梦想还是要有的，万一实现了呢？</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" class="st-default-search-input" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/chap8/" title="RxJava开发精要8 - 与REST无缝结合-RxJava和Retrofit" itemprop="url">RxJava开发精要8 - 与REST无缝结合-RxJava和Retrofit</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#项目目标"><span class="toc-number">1.</span> <span class="toc-text">项目目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Retrofit"><span class="toc-number">2.</span> <span class="toc-text">Retrofit</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#App架构"><span class="toc-number">3.</span> <span class="toc-text">App架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建Activity类"><span class="toc-number">4.</span> <span class="toc-text">创建Activity类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建RecyclerView-Adapter"><span class="toc-number">5.</span> <span class="toc-text">创建RecyclerView Adapter</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#检索天气预报"><span class="toc-number">5.1.</span> <span class="toc-text">检索天气预报</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#打开网站"><span class="toc-number">5.2.</span> <span class="toc-text">打开网站</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">6.</span> <span class="toc-text">总结</span></a></li></ol>
+		
+		</div>
+		
+		<p>原文出自《RxJava Essentials》</p>
+<ul>
+<li>原文作者 : <a href="https://www.packtpub.com/books/info/authors/ivan-morgillo" target="_blank" rel="external">Ivan Morgillo</a></li>
+<li>译文出自 : <a href="http://www.devtf.cn" target="_blank" rel="external">开发技术前线 www.devtf.cn</a></li>
+<li>转载声明: 本译文已授权<a href="http://toutiao.io/download" target="_blank" rel="external">开发者头条</a>享有独家转载权，未经允许，不得转载!</li>
+<li>译者 : <a href="https://github.com/yuxingxin" target="_blank" rel="external">yuxingxin</a> </li>
+<li>项目地址 : <a href="https://github.com/yuxingxin/RxJava-Essentials-CN" target="_blank" rel="external">RxJava-Essentials-CN</a></li>
+</ul>
+<p>在上一章中，我们学习了如何使用调度器在不同于UI线程的线程上操作。我们学习了如何高效的运行I/O任务而不用阻塞UI以及如何运行耗时的计算任务而不耗损应用性能。在最后一章中，我们将创建一个最终版的<code>真实世界</code>的例子，用Retrofit映射到远程的API,异步的查询数据，从而不费力的创造一个丰富的UI。</p>
+<h2 id="项目目标"><a href="#项目目标" class="headerlink" title="项目目标"></a>项目目标</h2><p>我们将在已存在的例子中创建一个新的<code>Activity</code>。这个<code>Activity</code>将会使用StackExchange API从stackoverflow检索最活跃的10位用户。使用这个信息，App将会展示一个用户的头像，姓名，名望数以及住址列表。对于每一位用户，app将会使用其居住城市和OpenWeatherMap API 来检索当地的天气预报，并展示一个小的天气图标。基于从StackOverflow检索的信息，app对列表的每一位用户将会提供一个<code>onClick</code>事件，它将会打开他们在个人信息中指定的个人网站或者打开Stack Overflow的个人主页。</p>
+<h2 id="Retrofit"><a href="#Retrofit" class="headerlink" title="Retrofit"></a>Retrofit</h2><p>Retrofit是Square公司专为Android和Java设计的一个类型安全的REST客户端。它帮助你很容易的和任何REST API交互，它完美的集成R小Java：所有的JSON响应对象都被映射成原始的Java对象，并且所有的网络调用都基于Rxjava Observable这些对象。</p>
+<p>使用API文档，我们可以定义我们从服务器接收的JSON响应数据。为了很容易的将JSON响应数据映射为我们的Java代码，我们将使用jsonschema2pojo(<a href="http://www.jsonschema2pojo.org)，这个灵活的服务将会生成我们所需要映射JSON响应数据的所有Java类。" target="_blank" rel="external">http://www.jsonschema2pojo.org)，这个灵活的服务将会生成我们所需要映射JSON响应数据的所有Java类。</a></p>
+<p>当我们把所有的Java model准备好后，我们就可以开始建立Retrofit。Retrofi使用标准的Java接口来映射API路由。例如例子中，我们将使用来自API的一个路由，下面是我们Retrofit的接口：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">StackExchangeService</span> </span>&#123;</div><div class="line">    <span class="meta">@GET</span>(<span class="string">"2.2users?order=desc&amp;sort=reputation&amp;site=stackoverflow"</span>)</div><div class="line">    Observable&lt;User sResponse&gt; getMostPopularSOusers(<span class="meta">@Query</span>(<span class="string">"pagesize"</span>) <span class="keyword">int</span> howmany);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><code>interface</code>接口只包含一个方法，即<code>getMostPopularSOusers</code>。这个方法用整型<code>howmany</code>作为一个参数并返回<code>UserResponse</code>的Observable。</p>
+<p>当我们有了<code>interface</code>，我们可以创建<code>RestAdapter</code>类，为了更清楚的组织我们的代码，我们创建一个<code>SeApiManager</code>函数提供一种更适当的方式来和StackExchange API交互。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SeApiManager</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> StackExchangeService mStackExchangeService;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">SeApiManager</span><span class="params">()</span> </span>&#123;</div><div class="line">        RestAdapter restAdapter = <span class="keyword">new</span> RestAdapter.Builder()</div><div class="line">            .setEndpoint(<span class="string">"https://api.stackexchange.com"</span>)</div><div class="line">            .setLogLevel(RestAdapter.LogLevel.BASIC)</div><div class="line">            .build();</div><div class="line">        mStackExchangeService = restAdapter.create(StackExchangeService.class);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">public</span> Observable&lt;List&lt;User&gt;&gt; getMostPopularSOusers(<span class="keyword">int</span> howmany) &#123;</div><div class="line">    <span class="keyword">return</span> mStackExchangeService</div><div class="line">    .getMostPopularSOusers(howmany)</div><div class="line">    .map(UsersResponse::getUsers)</div><div class="line">    .subscribeOn(Schedulers.io())</div><div class="line">    .observeOn(AndroidSchedulers.mainThread());</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>为了简化例子，我们不再将这个类设计为它本应该设计为的单例。使用依赖注入解决方案，如Dagger2将会使代码质量更高。</p>
+<p>创建<code>RestAdapter</code>类，我们为API客户端建立了几个重要的点。这个例子中，我们设置<code>endpoint</code>和<code>log level</code>。由于这个例子URL只是硬编码，使用外部资源来像这样存储数据很重要。避免在代码中硬编码字符串是一个好的实践。</p>
+<p>Retrofit把<code>RestAdapter</code>类和我们的API接口绑定在一起后就创建结束。它返回给我们一个对象用来查询API。我们可以选择直接暴露这个对象，或者以某种方式封装依次来限制访问它。在这个例子中，我们封装它并只暴露<code>getMostPopularSOusers</code>方法。这个方法执行查询，让Retrofit解析JSON响应数据。获得用户列表，并返回给订阅者。正如你看到的，使用Retrofit、RxJava和Retrolambda，我们几乎没有模板代码：它非常紧凑并且可读性也高。</p>
+<p>现在，我们已经有一个API管理者来暴露一个响应式的方法，它从远程API获取到数据并给I/O调度器，解析映射最后提供给我们的消费者一个简洁的用户列表。</p>
+<h2 id="App架构"><a href="#App架构" class="headerlink" title="App架构"></a>App架构</h2><p>我们不使用任何MVC，MVP，或者MVVM模式。因为那不是这本书的目的，因此我们的<code>Activity</code>类将包含我们需要创建和展示用户列表的所有逻辑。</p>
+<h2 id="创建Activity类"><a href="#创建Activity类" class="headerlink" title="创建Activity类"></a>创建Activity类</h2><p>我们将在<code>onCreate()</code>方法里创建<code>SwipeRefreshLayout</code>和<code>RecyclerView</code>；我们有一个<code>refreshList()</code>方法来处理用户列表的获取和展示，<code>showRefreshing()</code>方法来管理进度条和<code>RecyclerView</code>的显示。</p>
+<p>我们的<code>refreshList()</code>函数看起来如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">refreshList</span><span class="params">()</span> </span>&#123; </div><div class="line">    showRefresh(<span class="keyword">true</span>);</div><div class="line">    mSeApiManager.getMostPopularSOusers(<span class="number">10</span>)</div><div class="line">        .subscribe(users -&gt; &#123; </div><div class="line">            showRefresh(<span class="keyword">false</span>);</div><div class="line">            mAdapter.updateUsers(users);</div><div class="line">        &#125;, error -&gt; &#123; </div><div class="line">            App.L.error(error.toString());</div><div class="line">            showRefresh(<span class="keyword">false</span>);</div><div class="line">        &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>我们显示了进度条，从StackExchange API 管理器观测用户列表。一旦获取到列表数据，我们开始展示它并更新<code>Adapter</code>的内容并让<code>RecyclerView</code>显示为可见。</p>
+<h2 id="创建RecyclerView-Adapter"><a href="#创建RecyclerView-Adapter" class="headerlink" title="创建RecyclerView Adapter"></a>创建RecyclerView Adapter</h2><p>我们从REST API获取到数据后，我们需要把它绑定View上，并用一个适配器填充列表。我们的RecyclerView适配器是标准的。它继承于<code>RecyclerView.Adapter</code>并指定它自己的<code>ViewHolder</code>：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ViewHolder</span> <span class="keyword">extends</span> <span class="title">RecyclerView</span>.<span class="title">ViewHolder</span> </span>&#123;</div><div class="line">    <span class="meta">@InjectView</span>(R.id.name) TextView name;</div><div class="line">    <span class="meta">@InjectView</span>(R.id.city) TextView city;</div><div class="line">    <span class="meta">@InjectView</span>(R.id.reputation) TextView reputation;</div><div class="line">    <span class="meta">@InjectView</span>(R.id.user_image) ImageView user_image;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ViewHolder</span><span class="params">(View view)</span> </span>&#123; </div><div class="line">        <span class="keyword">super</span>(view);</div><div class="line">        ButterKnife.inject(<span class="keyword">this</span>, view); </div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>我们一旦收到来自API管理器的数据，我们可以设置界面上所有的标签：<code>name</code>,<code>city</code>和<code>reputation</code>。</p>
+<p>为了展示用户的头像，我们将使用Sergey Tarasevich (<a href="https://github.com/nostra13/Android-Universal-" target="_blank" rel="external">https://github.com/nostra13/Android-Universal-</a> ImageLoader)写的<code>Universal Image Loader</code>。UIL是非常有名的并且被测试出很好用的图片管理库。我们也可以使用Square公司的Picasso，Glide或者Facebook公司的Fresco。这只是根据你自己的爱好。重要的是无须重复造轮子：库能够方便开发者的生活并让他们更快速实现目标。</p>
+<p>在我们的适配器中，我们可以这样：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBindViewHolder</span><span class="params">(SoAdapter.ViewHolder holder, <span class="keyword">int</span> position)</span> </span>&#123;</div><div class="line">    User user = mUsers.get(position);</div><div class="line">    holder.setUser(user); </div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>在<code>ViewHolder</code>，我们可以这样：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setUser</span><span class="params">(User user)</span> </span>&#123; </div><div class="line">    name.setText(user.getDisplayName());</div><div class="line">    city.setText(user.getLocation());</div><div class="line">    reputation.setText(String.valueOf(user.getReputation()));</div><div class="line">    </div><div class="line">    ImageLoader.getInstance().displayImage(user.getProfileImage(), user_image);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>此时，我们可以允许代码获得一个用户列表，正如下图所示：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter8_1.png" width="240"></p>
+<h3 id="检索天气预报"><a href="#检索天气预报" class="headerlink" title="检索天气预报"></a>检索天气预报</h3><p>我们加大难度，将当地城市的天气加入列表中。<strong>OpenWeatherMap</strong>是一个灵活的web service公共API，我们可以查询检索许多有用的预报信息。</p>
+<p>和往常一样，我们将使用Retrofit映射到API然后通过RxJava来访问它。至于StackExchange API，我们将创建<code>interface</code>，<code>RestAdapter</code>和一个灵活的管理器：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">OpenWeatherMapService</span> </span>&#123;</div><div class="line">    <span class="meta">@GET</span>(<span class="string">"data2.5/weather"</span>)</div><div class="line">    <span class="function">Observable&lt;WeatherResponse&gt; <span class="title">getForecastByCity</span><span class="params">(@Query(<span class="string">"q"</span>)</span> String city)</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个方法用城市名字作为参数提供当地的预报信息。我们像下面这样将接口和<code>RestAdapter</code>类绑定在一起：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">RestAdapter restAdapter = <span class="keyword">new</span> RestAdapter.Builder()</div><div class="line">        .setEndpoint(<span class="string">"http://api.openweathermap.org"</span>)</div><div class="line">        .setLogLevel(RestAdapter.LogLevel.BASIC)</div><div class="line">        .build();</div><div class="line">mOpenWeatherMapService = restAdapter.create(OpenWeatherMapService.class);</div></pre></td></tr></table></figure>
+<p>像以前一样，我们只需设置API端口和log级别：我们只需要立马做的两件事情。</p>
+<p><code>OpenWeatherMapApiManager</code>类将提供下面的方法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> Observable&lt;WeatherResponse&gt; <span class="title">getForecastByCity</span><span class="params">(String city)</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> mOpenWeatherMapService.getForecastByCity(city)</div><div class="line">    .subscribeOn(Schedulers.io())</div><div class="line">    .observeOn(AndroidSchedulers.mainThread());</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>现在，我们有了用户列表，我们可以根据城市名来查询OpenWeatherMap来接收天气预报信息。下一步是修改我们的<code>ViewHolder</code>类来为每位用户检索和使用天气预报信息从而根据状态来展示天气图标。</p>
+<p>我们使用这些工具方法先验证用户主页信息并获得一个合法的城市名字：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isCityValid</span><span class="params">(String location)</span> </span>&#123;</div><div class="line">    <span class="keyword">int</span> separatorPosition = getSeparatorPosition(location);</div><div class="line">    <span class="keyword">return</span> !<span class="string">""</span>.equals(location) &amp;&amp; separatorPosition &gt; -<span class="number">1</span>; </div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">getSeparatorPosition</span><span class="params">(String location)</span> </span>&#123; </div><div class="line">    <span class="keyword">int</span> separatorPosition = -<span class="number">1</span>;</div><div class="line">    <span class="keyword">if</span> (location != <span class="keyword">null</span>) &#123;</div><div class="line">        separatorPosition = location.indexOf(<span class="string">","</span>); </div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> separatorPosition; </div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> String <span class="title">getCity</span><span class="params">(String location, <span class="keyword">int</span> position)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (location != <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">return</span> location.substring(<span class="number">0</span>, position); </div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">return</span> <span class="string">""</span>; </div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>借助一个有效的城市名，我们可以用下面命令来获得我们所需要天气的所有数据：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">OpenWeatherMapApiManager.getInstance().getForecastByCity(city)</div></pre></td></tr></table></figure>
+<p>用天气响应的结果，我们可以获得天气图标的URL：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">getWeatherIconUrl(weatherResponse);</div></pre></td></tr></table></figure>
+<p>用图标URL，我们可以检索到图标本身：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> Observable&lt;Bitmap&gt; <span class="title">loadBitmap</span><span class="params">(String url)</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> Observable.create(subscriber -&gt; &#123;</div><div class="line">        ImageLoader.getInstance().displayImage(url,city_image, <span class="keyword">new</span> ImageLoadingListener() &#123; </div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onLoadingStarted</span><span class="params">(String imageUri, View view)</span> </span>&#123;</div><div class="line">            &#125;</div><div class="line">            </div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onLoadingFailed</span><span class="params">(String imageUri, View view, FailReason failReason)</span> </span>&#123;</div><div class="line">                subscriber.onError(failReason.getCause()); </div><div class="line">            &#125;</div><div class="line">            </div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onLoadingComplete</span><span class="params">(String imageUri, View view, Bitmap loadedImage)</span> </span>&#123;</div><div class="line">                subscriber.onNext(loadedImage);</div><div class="line">                subscriber.onCompleted(); </div><div class="line">            &#125;</div><div class="line">            </div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onLoadingCancelled</span><span class="params">(String imageUri, View view)</span> </span>&#123;</div><div class="line">                subscriber.onError(<span class="keyword">new</span> Throwable(<span class="string">"Image loading cancelled"</span>));</div><div class="line">            &#125;</div><div class="line">         &#125;);</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个<code>loadBitmap()</code>返回的Observable可以链接前面一个，并且最后我们可以为这个任务返回一个单独的Observable：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> (isCityValid(location)) &#123;</div><div class="line">    String city = getCity(location, separatorPosition);</div><div class="line">    OpenWeatherMapApiManager.getInstance().getForecastByCity(city)</div><div class="line">        .filter(response -&gt; response != <span class="keyword">null</span>)</div><div class="line">        .filter(response -&gt; response.getWeather().size() &gt; <span class="number">0</span>)</div><div class="line">        .flatMap(response -&gt; &#123;</div><div class="line">            String url = getWeatherIconUrl(response);</div><div class="line">            <span class="keyword">return</span> loadBitmap(url);</div><div class="line">        &#125;)</div><div class="line">    .subscribeOn(Schedulers.io())</div><div class="line">    .observeOn(AndroidSchedulers.mainThread())</div><div class="line">    .subscribe(<span class="keyword">new</span> Observer&lt;Bitmap&gt;() &#123;</div><div class="line">    </div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123;</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">            App.L.error(e.toString()); </div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(Bitmap icon)</span> </span>&#123;</div><div class="line">            city_image.setImageBitmap(icon); </div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>运行代码，我们可以在下面列表中为每个用户获得新的天气图标：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter8_2.png" width="240"></p>
+<h3 id="打开网站"><a href="#打开网站" class="headerlink" title="打开网站"></a>打开网站</h3><p>使用用户主页包含的信息，我们将会创建一个<code>onClick</code>监听器来导航到用户web页面，如果有，或者是Stack Overflow个人主页。</p>
+<p>为了实现它，我们简单实现<code>Activity</code>类的接口，用来在适配器触发Android的<code>onClick</code>事件。</p>
+<p>我们的<code>Adapter ViewHolder</code>指定这个接口：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">OpenProfileListener</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">open</span><span class="params">(String url)</span></span>; </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>Activity</code>实现它：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">[https:<span class="comment">//github.com/yuxingxin/RxJava-Essentials-CN/raw/master.] implements SoAdapter.ViewHolder.OpenProfileListener &#123; [https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master.]</span></div><div class="line">    mAdapter.setOpenProfileListener(<span class="keyword">this</span>); </div><div class="line">[https:<span class="comment">//github.com/yuxingxin/RxJava-Essentials-CN/raw/master.]</span></div><div class="line"></div><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">open</span><span class="params">(String url)</span> </span>&#123;</div><div class="line">    Intent i = <span class="keyword">new</span> Intent(Intent.ACTION_VIEW);</div><div class="line">    i.setData(Uri.parse(url)); </div><div class="line">    startActivity(i);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>Activity</code>收到URL并用外部Android浏览器打开它。我们的<code>ViewHolder</code>负责在用户列表的每个卡片上创建<code>OnClickListener</code>并检查我们是打开Stack Overflow用户主页还是外部个人站：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">mView.setOnClickListener(view -&gt; &#123; </div><div class="line">    <span class="keyword">if</span> (mProfileListener != <span class="keyword">null</span>) &#123;</div><div class="line">        String url = user.getWebsiteUrl();</div><div class="line">        <span class="keyword">if</span> (url != <span class="keyword">null</span> &amp;&amp; !url.equals(<span class="string">""</span>) &amp;&amp; !url.contains(<span class="string">"search"</span>)) &#123;</div><div class="line">            mProfileListener.open(url); </div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            mProfileListener.open(user.getLink()); </div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">)&#125;；</div></pre></td></tr></table></figure>
+<p>一旦我们点击了，我们将直接重定向到预期的网站。在Android上，我们可以用RxAndroid的一种特殊形式（ViewObservable）以更加响应式的方式实现同样的结果。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">ViewObservable.clicks(mView)</div><div class="line">    .subscribe(onClickEvent -&gt; &#123;</div><div class="line">    <span class="keyword">if</span> (mProfileListener != <span class="keyword">null</span>) &#123;</div><div class="line">        String url = user.getWebsiteUrl();</div><div class="line">        <span class="keyword">if</span> (url != <span class="keyword">null</span> &amp;&amp; !url.equals(<span class="string">""</span>) &amp;&amp; !url.contains(<span class="string">"search"</span>)) &#123; </div><div class="line">            mProfileListener.open(url);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            mProfileListener.open(user.getLink());</div><div class="line">        &#125; </div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
+<p>上面两块代码片段是等价的，你可以选择你最喜欢的那一种方式。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>我们的旅程结束了。你已经准备好将你的Java应用带到一个新的代码质量水平。你可以享受一个新的编码模式并用更流畅的思维方式接触你的日常编码生活。RxJava提供这样一种机会来以面向时间的方式考虑数据：所有事情都是持续可变的，数据在更新，事件在触发，然后你可以创建基于这些事件响应的，灵活的，运行流畅的App。</p>
+<p>刚开始切换到RxJava看起来难并且耗时，但是我们经历了如何用响应式的方式有效地处理日常问题。现在你可以把你的旧代码迁移到RxJava上:给这些同步<code>getters</code>一种新的响应式生活。</p>
+<p>RxJava是一个正在不断发展和扩大的世界。还有许多方法我们还没有去探索。有些方法甚至还没有，因为RxJava，你可以创建你自己的操作符并把他们推得更远。</p>
+<p>Android是一个好玩的地方，但是它也有局限性。作为一个Android开发者，你可以用RxJava和RxAndroid克服它们中许多部分。我们用AndroidScheduler只简单提了下RxAndroid,除了在最后一章，你了解了<code>ViewObservable</code>。RxAndroid给了你许多：例如，<code>WidgetObservable</code>，<code>LifecycleObservable</code>。现在要更多的推动它取决于你了。</p>
+<p>记得可观测序列就像一条河：它们是流动的。你可以“过滤”一条河，你可以“转换”一条河，你可以将两条河合并成一个，然后它仍旧时流动的。最后，它将成为你想要的那条河。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://kevin1202.github.io/2017/04/27/chap8/" data-title="RxJava开发精要8 - 与REST无缝结合-RxJava和Retrofit | Kevin博客" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/04/27/chap5/" title="RxJava开发精要5 - Observables变换">
+  <strong>上一篇：</strong><br/>
+  <span>
+  RxJava开发精要5 - Observables变换</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/04/27/chap7/"  title="RxJava开发精要7 - Schedulers-解决Android主线程问题">
+ <strong>下一篇：</strong><br/> 
+ <span>RxJava开发精要7 - Schedulers-解决Android主线程问题
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2017/04/27/chap8/" data-title="RxJava开发精要8 - 与REST无缝结合-RxJava和Retrofit" data-url="https://kevin1202.github.io/2017/04/27/chap8/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#项目目标"><span class="toc-number">1.</span> <span class="toc-text">项目目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Retrofit"><span class="toc-number">2.</span> <span class="toc-text">Retrofit</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#App架构"><span class="toc-number">3.</span> <span class="toc-text">App架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建Activity类"><span class="toc-number">4.</span> <span class="toc-text">创建Activity类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建RecyclerView-Adapter"><span class="toc-number">5.</span> <span class="toc-text">创建RecyclerView Adapter</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#检索天气预报"><span class="toc-number">5.1.</span> <span class="toc-text">检索天气预报</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#打开网站"><span class="toc-number">5.2.</span> <span class="toc-text">打开网站</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">6.</span> <span class="toc-text">总结</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="carrie1217" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Android/" title="Android">Android<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/git/" title="git">git<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/mac/" title="mac">mac<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/TimerTask/" title="TimerTask">TimerTask<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/size/" title="size">size<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Travis-CI/" title="Travis-CI">Travis-CI<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://coderq.com" target="_blank" title="一个面向程序员交流分享的新一代社区">码农圈</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://wuchong.me" target="_blank" title="Jark&#39;s Blog">Jark&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> 活着就要学习，学习不是为了活着。 <br/>
+			情况是在不断的变化，要使自己的思想适应新的情况，就得学习。</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/carrie1217" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Kevin">Kevin</a>
+		
+		
+		</p>
+		<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','DBjSFU5kGEcv8E-m-m_m','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"kevinbolg"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

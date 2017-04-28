@@ -1,0 +1,631 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>深入理解Content Transition  (part 2) | Kevin博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Kevin">
+    
+
+    
+    <meta name="description" content="原文链接 :  Content Transitions In-Depth (part 2)
+
+
+译者 : tiiime
+校对者: chaossss
+状态 :  完成
+
+#深入理解Content Transition
+这篇文章会深度分析 Content Transitions 和它在 Activity &amp;amp; Fragment Transitions API 中的作用。这篇文章是下面这个系列中">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解Content Transition  (part 2)">
+<meta property="og:url" content="https://kevin1202.github.io/2017/04/27/深入理解ContentTransition(part2)/index.html">
+<meta property="og:site_name" content="Kevin博客">
+<meta property="og:description" content="原文链接 :  Content Transitions In-Depth (part 2)
+
+
+译者 : tiiime
+校对者: chaossss
+状态 :  完成
+
+#深入理解Content Transition
+这篇文章会深度分析 Content Transitions 和它在 Activity &amp;amp; Fragment Transitions API 中的作用。这篇文章是下面这个系列中">
+<meta property="og:updated_time" content="2017-04-28T05:31:00.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入理解Content Transition  (part 2)">
+<meta name="twitter:description" content="原文链接 :  Content Transitions In-Depth (part 2)
+
+
+译者 : tiiime
+校对者: chaossss
+状态 :  完成
+
+#深入理解Content Transition
+这篇文章会深度分析 Content Transitions 和它在 Activity &amp;amp; Fragment Transitions API 中的作用。这篇文章是下面这个系列中">
+
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/pacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/pacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="Kevin博客" title="Kevin博客"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Kevin博客">Kevin博客</a></h1>
+				<h2 class="blog-motto">梦想还是要有的，万一实现了呢？</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" class="st-default-search-input" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/深入理解ContentTransition(part2)/" title="深入理解Content Transition  (part 2)" itemprop="url">深入理解Content Transition  (part 2)</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<ul>
+<li>原文链接 :  <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-content-transitions-in-depth-part2.html" target="_blank" rel="external">Content Transitions In-Depth (part 2)</a></li>
+</ul>
+<ul>
+<li>译者 : <a href="https://github.com/tiiime" target="_blank" rel="external">tiiime</a></li>
+<li>校对者: <a href="https://github.com/chaossss" target="_blank" rel="external">chaossss</a></li>
+<li>状态 :  完成</li>
+</ul>
+<p>#深入理解Content Transition</p>
+<p>这篇文章会深度分析 Content Transitions 和它在 Activity &amp; Fragment Transitions API 中的作用。这篇文章是下面这个系列中的第二篇：</p>
+<ul>
+<li>Part 1: <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-transitions-in-android-lollipop-part1.html" target="_blank" rel="external">在 Activity 和 Fragment 中使用 Transition </a></li>
+<li>Part 2: <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-content-transitions-in-depth-part2.html" target="_blank" rel="external">深入理解 Content Transition</a></li>
+<li>Part 3a: <a href="http://www.androiddesignpatterns.com/2015/01/activity-fragment-shared-element-transitions-in-depth-part3a.html" target="_blank" rel="external">深入理解共享元素 Transition</a></li>
+<li>Part 3b:  <a href="http://www.androiddesignpatterns.com/2015/03/activity-postponed-shared-element-transitions-part3b.html" target="_blank" rel="external">延迟共享元素的 Transition</a></li>
+<li>Part 3c: 共享元素回调实践 (coming soon!)</li>
+<li>Part 4:  Activity &amp; Fragment 过渡动画示例(coming soon!)</li>
+</ul>
+<p>我们先来总结下在 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-transitions-in-android-lollipop-part1.html" target="_blank" rel="external">part 1</a> 中提到的关于 Content Transitions 的知识点，然后<br>说一说在 Android Lollipop 中是怎样使用它来构建合适的过渡动画。</p>
+<hr>
+<p>##Content Transition 是什么？</p>
+<p>Content transition 决定了非共享元素 View (也称为 transitioning view) 在<br>Activity &amp; Fragment 过渡期间是如何进入或退出场景的。出于 Google 新的设计语言<br><a href="http://www.google.com/design/spec/animation/meaningful-transitions.html" target="_blank" rel="external">Material Design</a> , content transitions 允许我们协调 Activity/Fragment 中每一个<br> view 的进入和退出 transition，轻松搞定流畅的屏幕切换动作。<br>开始使用 Android Lollipop，调用下面这些<a href="http://developer.android.com/reference/android/view/Window.html" target="_blank" rel="external"> Window </a> 和<br><a href="http://developer.android.com/reference/android/app/Fragment.html" target="_blank" rel="external"> Fragment </a> 方法可以通过程序设置 content transitions :</p>
+<ul>
+<li><p><strong>setExitTransition()</strong> - 当 A <strong>启动</strong> B 时， <strong>A</strong> 中 views <strong>离开</strong>场景的退出过渡动画</p>
+</li>
+<li><p><strong>setEnterTransition()</strong> - 当 A <strong>启动</strong> B 时， <strong>B</strong> 中 views <strong>进入</strong>场景的进入过渡动画</p>
+</li>
+<li><p><strong>setReturnTransition()</strong> - 当 B <strong>返回</strong> A 时， <strong>B</strong> 中 views <strong>离开</strong>场景的返回过渡动画</p>
+</li>
+<li><p><strong>setReenterTransition()</strong> - 当 B <strong>返回</strong> A 时， <strong>A</strong> 中 views <strong>进入</strong>场景的重入过渡动画</p>
+</li>
+</ul>
+<p>(注:A 和 B 是Activity 见 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-transitions-in-android-lollipop-part1.html" target="_blank" rel="external">part 1</a>)。</p>
+<p><a href="http://www.androiddesignpatterns.com/assets/videos/posts/2014/12/15/games-opt.mp4" target="_blank" rel="external"><strong>Video 2.1</strong></a> - Content transitions in the Google Play Games app (as of v2.2). Click to play.</p>
+<hr>
+<p><a href="http://www.androiddesignpatterns.com/assets/videos/posts/2014/12/15/games-opt.mp4" target="_blank" rel="external"><strong>Video 2.1</strong></a>作为示例阐明了在 Google Play Games app 中是如何使<br>用 content transitions 实现流畅的 activitiy 切换动画。当第二个 activity 启动，<br>它的<strong>进入</strong> content transition 轻轻地从屏幕底部边缘将头像推入场景。按下返回按钮后，<br>第二个 activity 的<strong>返回</strong> content transition 将图层分成上下两块，分别推出屏幕。</p>
+<hr>
+<p>目前为止我们对 content transitions 的分析仅仅停留在表面，一些重要的问题仍然没有涉及。<br>例如 Content Transition 在底层是如何实现的？都有哪些类型的 <strong>Transition</strong> 对象可以使用?框架是如何确定哪些 view<br>是 transitioning view? 在 content transitions 中一个 <strong>ViewGroup</strong> 和它的子视图能不能当成一个整体<br>执行动画?下面我们就来一个一个解答这些问题。</p>
+<hr>
+<p>##Content Transitions 底层深入</p>
+<p>上篇文章我们说过 Transition 的两个主要职责分别是获取目标视图的开始结束状态和创建这两个状态间的过渡动画。同样，框架必须先改变每个 transitioning view 的可见性并将状态信息交给 content<br>transition ，它才能创建过渡动画。更准确的说，当 Activity <strong>A</strong> 启动 Activity <strong>B</strong> 将会出现以下事件：<a id="1" href="#b1">(1)</a></p>
+<ol>
+<li><p>Activity <strong>A</strong> 调用 <strong>startActivity()</strong></p>
+<ul>
+<li>框架首先会遍历 <strong>A</strong> 的 view 层次结构，确定当 <strong>A</strong> 的退出 transition 运行后有哪些<br>transitioning views 会退出场景。</li>
+<li><strong>A</strong> 的退出 transition 捕获 A 中 transitioning views 的起始状态。</li>
+<li>框架将 <strong>A</strong> 中所有 transitioning views 设置为<strong>不可见</strong>。</li>
+<li>在下一个画面中，<strong>A</strong> 的退出 transition 捕获 <strong>A</strong> 中所有 transitioning views 的结束状态。</li>
+<li><strong>A</strong> 的退出 transition 比较每一个 transitioning view 开始和结束状态的不同，<br> 并基于这些信息创建一个 <strong>Animator</strong>，最后运行 <strong>Animator</strong> 将所有 transitioning views<br> 移出场景。</li>
+</ul>
+</li>
+<li><p>Activity <strong>B</strong> 被启动</p>
+<ul>
+<li>框架遍历 <strong>B</strong> 的 view 层次结构， 确定当 B 的进入 transition 运行后有哪些<br> transitioning views 会进入场景。</li>
+<li><strong>B</strong> 的进入 transition 捕获 B 中 transitioning views 的起始状态。</li>
+<li>框架将 <strong>B</strong> 中所有  transitioning views  设置为<strong>可见</strong></li>
+<li>在下一个画面中，<strong>B</strong> 的进入 transition 捕获 <strong>B</strong> 中所有 transitioning views 的结束状态。</li>
+<li><strong>B</strong> 的进入 transition 比较每一个 transitioning view 开始和结束状态的不同，<br>并基于这些信息创建一个 <strong>Animator</strong>，最后运行 <strong>Animator</strong> 将所有 transitioning views<br>移入场景。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<p>框架通过在<strong>可见</strong>和<strong>不可见</strong>之间切换每个 transitioning view 的可见性来保证<br>content transition 能够获得用来构建目标动画所需要的状态信息。<br>显然所有的 content <strong>Transition</strong> 对象至少要能够获取和记录每个 transitioning view<br>起始和结束状态的可见性。还好 <a href="https://developer.android.com/reference/android/transition/Visibility.html" target="_blank" rel="external">Visibility</a> 这个抽象类已经提供了这个功能 :<br>需要创建并返回 (让 view 进入/退出场景的) <strong>Animator</strong> 的 <strong>Visibility</strong><br>子类只需要实现 <a href="https://developer.android.com/reference/android/transition/Visibility.html#onAppear(android.view.ViewGroup,%20android.transition.TransitionValues,%20int,%20android.transition.TransitionValues,%20int)" target="_blank" rel="external"><strong>onAppear()</strong></a>  和 <a href="https://developer.android.com/reference/android/transition/Visibility.html#onDisappear(android.view.ViewGroup,%20android.transition.TransitionValues,%20int,%20android.transition.TransitionValues,%20int)" target="_blank" rel="external"><strong>onDisappear()</strong></a> 这两个工厂方法。<br>从 API 21 开始，有三个已经写好的 <strong>Visibility</strong> 实现( <a href="https://developer.android.com/reference/android/transition/Fade.html" target="_blank" rel="external"><strong>Fade</strong></a>, <a href="https://developer.android.com/reference/android/transition/Slide.html" target="_blank" rel="external"><strong>Slide</strong></a> 和 <a href="https://developer.android.com/reference/android/transition/Explode.html" target="_blank" rel="external"><strong>Explode</strong></a>)，可以使用它们来构建  Activity 和 Fragment 的 content transitions。<br>有必要的话也可以自己实现 Visibility 类达到想实现的效果。后边的文章会有具体介绍。</p>
+<hr>
+<p>##Transitioning Views 和 Transition Groups<br>直到现在，我们已经假设 content transitions 操作一组叫做 transitioning views 的非共享 view 。<br>在这节中，我们将探讨 Transition 框架如何确定哪些 View 是非共享 View，以及如何使用 transition group 深度定制框架</p>
+<p>Transition 开始前，框架会在 Activity 窗口(或 Fragment) 的视图层上执行一个递归的搜索，用来<br>构建 transitioning views 的集合。这个搜索通过对图层的根视图递归调用重写的<strong>ViewGroup#captureTransitioningViews</strong> 方法启动，部分<a href="https://github.com/android/platform_frameworks_base/blob/lollipop-release/core/java/android/view/ViewGroup.java#L6243-L6258" target="_blank" rel="external">源码</a>如下:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/** <span class="doctag">@hide</span> */</span></div><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">captureTransitioningViews</span><span class="params">(List&lt;View&gt; transitioningViews)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (getVisibility() != View.VISIBLE) &#123;</div><div class="line">        <span class="keyword">return</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (isTransitionGroup()) &#123;</div><div class="line">        transitioningViews.add(<span class="keyword">this</span>);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">int</span> count = getChildCount();</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</div><div class="line">            View child = getChildAt(i);</div><div class="line">            child.captureTransitioningViews(transitioningViews);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<hr>
+<p><a href="http://www.androiddesignpatterns.com/assets/videos/posts/2014/12/15/webview-opt.mp4" target="_blank" rel="external"><strong>Video 2.2</strong></a> - A simple Radiohead app that illustrates a potential bug involving transition groups and WebViews. Click to play.</p>
+<hr>
+<p>这个递归调用很简单: 框架遍历树的每一层，直到找到一个<strong>可见的</strong><a href="https://github.com/android/platform_frameworks_base/blob/lollipop-release/core/java/android/view/View.java#L19351-L19362" target="_blank" rel="external"> leaf view </a> (子视图)或者一个 transition group。Transition groups 本质上允许我们在 Activity/Fragment 的 transition<br>期间将全部 <strong>ViewGroups</strong> 当作一个整体执行过渡动画。如果一个 <strong>ViewGroup</strong> 的<br><a href="https://developer.android.com/reference/android/view/ViewGroup.html#isTransitionGroup()" target="_blank" rel="external"><code>isTransitionGroup ()</code></a> <a id="2" href="#b2">(2)</a>方法返回值为 <strong>true</strong>，它和它的子视图会被当作一<br>个整体来执行过渡动画。否则，这个递归搜索会继续执行下去， 这个 ViewGroup 的子视图在动画期间<br>会执行自己的独立的过渡动画。搜索最终会返回一个全部由 content transition<br> 执行动画的 transitioning views 集合 。<a id="3" href="#b3">(3)</a></p>
+<hr>
+<p>上面的 <a href="http://www.androiddesignpatterns.com/assets/videos/posts/2014/12/15/games-opt.mp4" target="_blank" rel="external"><strong>Video 2.1</strong></a> 展示了 transition groups  的效果。在 enter transition ，<br>用户头像是作为一个单独的 View 进入屏幕，return transition 时却是和包含它的 parent<br><strong>ViewGroup</strong> 一起消失。在  Google Play Games 里可能用了一个 transition group<br>来实现在返回前一个 activity 时，让当前场景拦腰斩断的效果。</p>
+<hr>
+<p>有时 transition groups 还被用来修复 Activity/Fragment transitions 中诡异的 bugs。<br>例如，Video 2.2中: <strong>调用 Activity</strong> 显示了一个电台司令专辑图的网格布局，<br><strong>被调用 Activity</strong> 展示了一个背景标题图，一个共享元素专辑封面图还有一个 <strong>WebView</strong>。<br>这个 App 使用了一个和 Google Play Games app 类似的 return transition，将背景图和底部的<br><strong>WebView</strong> 分别推出屏幕。然而这里有个小故障导致 <strong>WebView</strong> 不能流畅的退出屏幕。</p>
+<p>好吧，错误在哪呢？原来 <strong>WebView</strong> 是一个 <strong>ViewGroup</strong>，因此在默认情况下 WebView 不会被当作 transitioning view<br>的。当 return transition 被执行时，<strong>WebView</strong> 会被完全忽略，直到过渡动画结束才会被移除屏幕。<br>找到问题就好解决了，只要在 return transition 开始前调用 <code>webView.setTransitionGroup(true)</code><br>就能修复这个bug。</p>
+<hr>
+<p>##结语</p>
+<p>总之，这篇文章讲了三个重点:</p>
+<ul>
+<li>Content transition 决定了 Activity/Fragment 中非共享元素视图(被称为 transitioning views)<br>在 Activity/Fragment transition 期间如何进入或退出场景。</li>
+<li>Content transitions 被触发是因为它的 transitioning views 可见性改变  ，并且应该总是继承<br> <strong>Visibility</strong> 这个抽象类。</li>
+<li>Transition groups 可以让我们在 content transition 期间将 <strong>ViewGroups</strong><br> 当作一个整体执行过渡动画。</li>
+</ul>
+<p>希望这篇文章能够帮到你，欢迎留下评论～</p>
+<hr>
+<ol>
+<li>Activities 和 Fragments 在  return/reenter transitions 期间出现的一系列事件相似。<br><a id="b1" href="#1">↩</a></li>
+<li>如果 ViewGroup 有一个非空的  background drawable 或者非空的默认 transition name 那么<br><code>isTransitionGroup()</code> 将返回 <strong>true</strong> (所述方法<a href="https://developer.android.com/reference/android/view/ViewGroup.html#isTransitionGroup()" target="_blank" rel="external">文档</a>)<br><a id="b2" href="#2">↩</a></li>
+<li>当 transition 运行时，任何在 content <strong>Transition</strong> 对象中被明确地 <a href="https://developer.android.com/reference/android/transition/Transition.html#addTarget(android.view.View)" target="_blank" rel="external"> added </a>或<br><a href="https://developer.android.com/reference/android/transition/Transition.html#excludeTarget(android.view.View,%20boolean)" target="_blank" rel="external"> excluded </a> 的 view 也会被考虑。<a id="b3" href="#3">↩</a></li>
+</ol>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://kevin1202.github.io/2017/04/27/深入理解ContentTransition(part2)/" data-title="深入理解Content Transition  (part 2) | Kevin博客" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/04/27/在滚动列表中播放视频/" title="在滚动列表中播放视频">
+  <strong>上一篇：</strong><br/>
+  <span>
+  在滚动列表中播放视频</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/04/27/检测和解决Android应用的性能问题/"  title="检测和解决Android应用的性能问题">
+ <strong>下一篇：</strong><br/> 
+ <span>检测和解决Android应用的性能问题
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2017/04/27/深入理解ContentTransition(part2)/" data-title="深入理解Content Transition  (part 2)" data-url="https://kevin1202.github.io/2017/04/27/深入理解ContentTransition(part2)/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="carrie1217" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Android/" title="Android">Android<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/git/" title="git">git<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/mac/" title="mac">mac<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/TimerTask/" title="TimerTask">TimerTask<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/size/" title="size">size<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Travis-CI/" title="Travis-CI">Travis-CI<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://coderq.com" target="_blank" title="一个面向程序员交流分享的新一代社区">码农圈</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://wuchong.me" target="_blank" title="Jark&#39;s Blog">Jark&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> 活着就要学习，学习不是为了活着。 <br/>
+			情况是在不断的变化，要使自己的思想适应新的情况，就得学习。</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/carrie1217" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Kevin">Kevin</a>
+		
+		
+		</p>
+		<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','DBjSFU5kGEcv8E-m-m_m','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"kevinbolg"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

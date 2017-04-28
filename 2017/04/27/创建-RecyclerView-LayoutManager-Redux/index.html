@@ -1,0 +1,579 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>创建-RecyclerView-LayoutManager-Redux | Kevin博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Kevin">
+    
+
+    
+    <meta name="description" content="原文链接 : Building A RecyclerView LayoutManager – Redux
+原文作者 : Dave Smith
+译文出自 :  开发技术前线 www.devtf.cn
+译者 : Mr.Simple 
+校对者: chaossss  
+状态 :  完成 
+
+这篇文章是RecyclerView系列文章的结尾篇。前三部分的链接在这里 :       
+
+第一部分
+第二部分">
+<meta property="og:type" content="article">
+<meta property="og:title" content="创建-RecyclerView-LayoutManager-Redux">
+<meta property="og:url" content="https://kevin1202.github.io/2017/04/27/创建-RecyclerView-LayoutManager-Redux/index.html">
+<meta property="og:site_name" content="Kevin博客">
+<meta property="og:description" content="原文链接 : Building A RecyclerView LayoutManager – Redux
+原文作者 : Dave Smith
+译文出自 :  开发技术前线 www.devtf.cn
+译者 : Mr.Simple 
+校对者: chaossss  
+状态 :  完成 
+
+这篇文章是RecyclerView系列文章的结尾篇。前三部分的链接在这里 :       
+
+第一部分
+第二部分">
+<meta property="og:image" content="http://i.embed.ly/1/display/resize?url=http%3A%2F%2Fwiresareobsolete.com%2Fwp-content%2Fuploads%2F2015%2F02%2FGridWindow.gif&grow=true&key=92b31102528511e1a2ec4040d3dc5c07&height=400">
+<meta property="og:updated_time" content="2017-04-28T05:47:27.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="创建-RecyclerView-LayoutManager-Redux">
+<meta name="twitter:description" content="原文链接 : Building A RecyclerView LayoutManager – Redux
+原文作者 : Dave Smith
+译文出自 :  开发技术前线 www.devtf.cn
+译者 : Mr.Simple 
+校对者: chaossss  
+状态 :  完成 
+
+这篇文章是RecyclerView系列文章的结尾篇。前三部分的链接在这里 :       
+
+第一部分
+第二部分">
+<meta name="twitter:image" content="http://i.embed.ly/1/display/resize?url=http%3A%2F%2Fwiresareobsolete.com%2Fwp-content%2Fuploads%2F2015%2F02%2FGridWindow.gif&grow=true&key=92b31102528511e1a2ec4040d3dc5c07&height=400">
+
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/pacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/pacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="Kevin博客" title="Kevin博客"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Kevin博客">Kevin博客</a></h1>
+				<h2 class="blog-motto">梦想还是要有的，万一实现了呢？</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" class="st-default-search-input" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/创建-RecyclerView-LayoutManager-Redux/" title="创建-RecyclerView-LayoutManager-Redux" itemprop="url">创建-RecyclerView-LayoutManager-Redux</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#打破常规设计"><span class="toc-number">1.</span> <span class="toc-text">打破常规设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#假设1-：-从不可见区域移除一个数据项不会影响当前可见的View"><span class="toc-number">2.</span> <span class="toc-text">假设1 ： 从不可见区域移除一个数据项不会影响当前可见的View</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#假设-2：添加新的数据项只会导致同级view的消失，而不是生成。"><span class="toc-number">3.</span> <span class="toc-text">假设#2：添加新的数据项只会导致同级view的消失，而不是生成。</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#一切才刚刚开始"><span class="toc-number">4.</span> <span class="toc-text">一切才刚刚开始</span></a></li></ol>
+		
+		</div>
+		
+		<ul>
+<li>原文链接 : <a href="http://wiresareobsolete.com/2015/02/recyclerview-layoutmanager-redux/" target="_blank" rel="external">Building A RecyclerView LayoutManager – Redux</a></li>
+<li>原文作者 : <a href="http://wiresareobsolete.com/" target="_blank" rel="external">Dave Smith</a></li>
+<li><a href="http://www.devtf.cn" target="_blank" rel="external">译文出自 :  开发技术前线 www.devtf.cn</a></li>
+<li>译者 : <a href="https://github.com/bboyfeiyu" target="_blank" rel="external">Mr.Simple</a> </li>
+<li>校对者: <a href="https://github.com/chaossss" target="_blank" rel="external">chaossss</a>  </li>
+<li>状态 :  完成 </li>
+</ul>
+<p>这篇文章是RecyclerView系列文章的结尾篇。前三部分的链接在这里 :       </p>
+<ul>
+<li><a href="../issue-9/创建-RecyclerView-LayoutManager-Part-1.md">第一部分</a></li>
+<li><a href="./创建-RecyclerView-LayoutManager-Part-2.md">第二部分</a></li>
+<li><a href="./创建-RecyclerView-LayoutManager-Part-3.md">第三部分</a></li>
+</ul>
+<p>当我在写这个系列的最后一篇文章，也就是关于predictIve animation的讨论时，我突然想到几个很有意思的点，并且很有讨论价值。这个系列文章以调查RecyclerView是否能够以简单的方式满足竖向、横向滚动的布局需求以及开发者要定制一个LayoutManager的难度有多大开始。这篇文章中我选择了一个基本的网格布局作为自定义layoutManager的示例。</p>
+<p>下面这幅图展示了运用这个自定义LayoutManager到RecyclerView的滚动效果。       </p>
+<p><img src="http://i.embed.ly/1/display/resize?url=http%3A%2F%2Fwiresareobsolete.com%2Fwp-content%2Fuploads%2F2015%2F02%2FGridWindow.gif&amp;grow=true&amp;key=92b31102528511e1a2ec4040d3dc5c07&amp;height=400" alt=""></p>
+<h2 id="打破常规设计"><a href="#打破常规设计" class="headerlink" title="打破常规设计"></a>打破常规设计</h2><p>无论你打算如何组织Adapter的位置（从左到右，上到下等等）,内容视图的视角都是显示部分不连贯数据集的区域。更确切地说，在第一个和最后一个可视位置之间的Adapter区域的数据项也会在可视区域view的外面。 </p>
+<p>这是一个很重要的点，因为它与在单轴上滚动的布局大相径庭（从而导致与当前框架下提供的默认布局背道而驰）。这些标准小工具显示，数据集是在一个连接块范围内–从第一个到最后一个可视位置之间不间断。</p>
+<p>RecyclerView LayoutManager API会假定有一个可见的数据集合，RecyclerView LayoutManager只会显示数据集合中某个范围内可见的数据项，然后产生一个像上述所展示的网格布局一样的布局效果，这稍微有那么点挑战。在predictive animation里没有什么比这部分更加明显了。为了便于扩展，我感觉在这里指出这些毛病是非常必要的。</p>
+<h2 id="假设1-：-从不可见区域移除一个数据项不会影响当前可见的View"><a href="#假设1-：-从不可见区域移除一个数据项不会影响当前可见的View" class="headerlink" title="假设1 ： 从不可见区域移除一个数据项不会影响当前可见的View"></a>假设1 ： 从不可见区域移除一个数据项不会影响当前可见的View</h2><p>当你考虑到一个Adapter移除一个数据项时LinearLayoutManager或者GridLayoutManager会做何反应时，这两个LayoutManager实际上都处理得非常好。如果被移除的数据项是可见的，一个可用的区域将会空置出来，此时就需要一个周边的View进行填充。这意味着周边显示的View必须被布局到这个位置以填补缺口。然而，并没有一个示例表明当一个移除操作执行时会发送一个隐藏视图的操作，唯一被隐藏的视图是那些被显式移除的。如果被移除的View在可见区域之外，那么对于可见区域的布局不会产生影响。在这个情况之下，你不会看到任何动画，它可能做出的修改是数据项被移到其他位置。</p>
+<p>从上述的情况看，这与文章开头我们提到的一样，LayoutManager显示的是一个不连续的数据项。然而，这一可视区域的不连续本质使得数据项在屏幕外从可视区域内移除！换种说法，它们的位置处于第一个和最后一个位置之间，但是目前数据项view并不在布局中。这导致的结果就是，屏幕外发生的数据项移除可以并且会影响我们在布局动画处理时view的生成和消失。</p>
+<p>在有机会对view的生成进行布局时，预布局是RecyclerView动画的关键阶段。RecyclerView通过其初始位置值将view返回，据此我们可以将内容布局在其初始状态。但是，当view移除与可视区域不相交时。RecyclerView就会通过其最终位置值将view返回。这样一来，在没有附加记账的情况下处理view的生成就变得困难得多。不过话说回来，难是难，也还是可以做到。</p>
+<p>在上一篇文章中我们看到的FixedGridLayoutManager，我们不仅要解析可视view，还要听从onItemsRemoved()的回调来找到移除点，并妥当处理所有生成的view案例。RecyclerView确保我们在需要时，该回调会在预布局之前出现（屏幕外案例），但相反情况下会在预布局之后出现。RecyclerView这么做是为了避免这些事件与你的布局产生冲突–其时间点对我们来说只是一个美丽的意外。</p>
+<p>我们还需要追踪的一个事实就是，可视移除会以一种我们意料之中的方式偏移view的位置，而屏幕外移除则不会。这也是为什么移除会被冠以不同类型的原因。上一篇文章忽略的一点表明，在屏幕外进行移除时，我们会对view生成逻辑提供一个手动偏移。。。所以当移除可视时，位置之间会相互匹配。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">fillGrid</span><span class="params">(<span class="keyword">int</span> direction, <span class="keyword">int</span> emptyLeft, <span class="keyword">int</span> emptyTop, RecyclerView.Recycler recycler,</span></span></div><div class="line">        <span class="keyword">boolean</span> preLayout, SparseIntArray removedPositions) &#123;</div><div class="line">    …</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; getVisibleChildCount(); i++) &#123;</div><div class="line">        <span class="keyword">int</span> nextPosition = positionOfIndex(i);</div><div class="line"></div><div class="line">        <span class="comment">/*</span></div><div class="line">         * When a removal happens out of bounds, the pre-layout positions of items</div><div class="line">         * after the removal are shifted to their final positions ahead of schedule.</div><div class="line">         * We have to track off-screen removals and shift those positions back</div><div class="line">         * so we can properly lay out all current (and appearing) views in their</div><div class="line">         * initial locations.</div><div class="line">         */</div><div class="line">        <span class="keyword">int</span> offsetPositionDelta = <span class="number">0</span>;</div><div class="line">        <span class="keyword">if</span> (preLayout) &#123;</div><div class="line">            <span class="keyword">int</span> offsetPosition = nextPosition;</div><div class="line"></div><div class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> offset = <span class="number">0</span>; offset &lt; removedPositions.size(); offset++) &#123;</div><div class="line">                <span class="comment">//Look for off-screen removals that are less-than this</span></div><div class="line">                <span class="keyword">if</span> (removedPositions.valueAt(offset) == REMOVE_INVISIBLE</div><div class="line">                        &amp;&amp; removedPositions.keyAt(offset) &lt; nextPosition) &#123;</div><div class="line">                    <span class="comment">//Offset position to match</span></div><div class="line">                    offsetPosition--;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            offsetPositionDelta = nextPosition - offsetPosition;</div><div class="line">            nextPosition = offsetPosition;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (nextPosition &lt; <span class="number">0</span> || nextPosition &gt;= getItemCount()) &#123;</div><div class="line">            <span class="comment">//Item space beyond the data set, don't attempt to add a view</span></div><div class="line">            <span class="keyword">continue</span>;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        …</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (i % mVisibleColumnCount == (mVisibleColumnCount - <span class="number">1</span>)) &#123;</div><div class="line">            leftOffset = startLeftOffset;</div><div class="line">            topOffset += mDecoratedChildHeight;</div><div class="line"></div><div class="line">            <span class="comment">//During pre-layout, on each column end, apply any additional appearing views</span></div><div class="line">            <span class="keyword">if</span> (preLayout) &#123;</div><div class="line">                layoutAppearingViews(recycler, view, nextPosition, removedPositions.size(), offsetPositionDelta);</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            leftOffset += mDecoratedChildWidth;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    …</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>之后offsetPositionDelta值会作为我们在预布局中使用到的行/列位置的全局偏移被传递到layoutAppearingViews()。如果不是出于附加记账要求，这一偏移完全可以不必存在。</p>
+<h2 id="假设-2：添加新的数据项只会导致同级view的消失，而不是生成。"><a href="#假设-2：添加新的数据项只会导致同级view的消失，而不是生成。" class="headerlink" title="假设#2：添加新的数据项只会导致同级view的消失，而不是生成。"></a>假设#2：添加新的数据项只会导致同级view的消失，而不是生成。</h2><p>添加了新的数据项之后，反面为真。如果在添加时数据项为可视，那么标准布局管理器会在屏幕外推开不可视的view以便腾出空间。之前没有出现过关于这种行为会同时触发一个或多个同级view滑向可视子类位置的案例。移除也是同样的道理，在可视区域外添加数据项并不会影响可视view，所以通常来说动画也不会起作用。</p>
+<p>对于FixedGridLayoutManager或其他任何非连贯区域的布局，在可视区域内还是可视区域外进行添加并没有多大差别。两种情况中我们都需要管理可能出现的view生成和消失。而我们在移除中使用的方案在这里则不可行，因为onItemsAdded()总是在预布局之后被调用。。。这一次我们就没那么幸运地再一次能够碰到美丽的意外了。</p>
+<p>缺少了那次回调，关于添加数据项，我们实际上在预布局时就没有多少可做的了。这样一来就变成了布局额外的view以备不时之需，而不布局一定量的额外view就会损害性能这两种情况之间的妥协。FixedGridLayoutManager在添加数据项时不支持预测view生成。</p>
+<h2 id="一切才刚刚开始"><a href="#一切才刚刚开始" class="headerlink" title="一切才刚刚开始"></a>一切才刚刚开始</h2><p>RecyclerView APIs是一个新生事物，现有案例中还有非常多的地方需要改进的。同时，它也非常复杂，想要做对并不容易。表面上看起来RecyclerView要求大家付出的努力，背后可能大家要花10倍的精力才能实现。而且这些类型越到后面可能月蛋疼。希望正在尝试这种做法的各位同仁可以视本文为一个预警，不要盲目浪费时间，但同时我们也期待这这个框架的日渐成熟。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://kevin1202.github.io/2017/04/27/创建-RecyclerView-LayoutManager-Redux/" data-title="创建-RecyclerView-LayoutManager-Redux | Kevin博客" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/04/27/创建-RecyclerView-LayoutManager-Part-2/" title="创建 RecyclerView LayoutManager – Part 2">
+  <strong>上一篇：</strong><br/>
+  <span>
+  创建 RecyclerView LayoutManager – Part 2</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/04/27/用RxJava替代EventBus/"  title="用RxJava替代EventBus">
+ <strong>下一篇：</strong><br/> 
+ <span>用RxJava替代EventBus
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2017/04/27/创建-RecyclerView-LayoutManager-Redux/" data-title="创建-RecyclerView-LayoutManager-Redux" data-url="https://kevin1202.github.io/2017/04/27/创建-RecyclerView-LayoutManager-Redux/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#打破常规设计"><span class="toc-number">1.</span> <span class="toc-text">打破常规设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#假设1-：-从不可见区域移除一个数据项不会影响当前可见的View"><span class="toc-number">2.</span> <span class="toc-text">假设1 ： 从不可见区域移除一个数据项不会影响当前可见的View</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#假设-2：添加新的数据项只会导致同级view的消失，而不是生成。"><span class="toc-number">3.</span> <span class="toc-text">假设#2：添加新的数据项只会导致同级view的消失，而不是生成。</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#一切才刚刚开始"><span class="toc-number">4.</span> <span class="toc-text">一切才刚刚开始</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="carrie1217" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Android/" title="Android">Android<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/git/" title="git">git<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/mac/" title="mac">mac<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/TimerTask/" title="TimerTask">TimerTask<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/size/" title="size">size<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Travis-CI/" title="Travis-CI">Travis-CI<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://coderq.com" target="_blank" title="一个面向程序员交流分享的新一代社区">码农圈</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://wuchong.me" target="_blank" title="Jark&#39;s Blog">Jark&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> 活着就要学习，学习不是为了活着。 <br/>
+			情况是在不断的变化，要使自己的思想适应新的情况，就得学习。</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/carrie1217" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Kevin">Kevin</a>
+		
+		
+		</p>
+		<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','DBjSFU5kGEcv8E-m-m_m','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"kevinbolg"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

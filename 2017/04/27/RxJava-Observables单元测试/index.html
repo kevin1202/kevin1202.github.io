@@ -1,0 +1,551 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>RxJava Observables单元测试 | Kevin博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Kevin">
+    
+
+    
+    <meta name="description" content="原文链接 : Unit Testing RxJava Observables
+
+##RxJava Observables单元测试
+RxJava是一个非常棒的类库，但是它不容易上手，在这里，我们列出了不同的方法来对Observables进行单元测试。
+在ribot时，我们几个月前开始使用RxJava，而现在它已经成为我们开发的安卓应用的核心架构元素。使用RxJava有很多益处，但是学习(使用)的过">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RxJava Observables单元测试">
+<meta property="og:url" content="https://kevin1202.github.io/2017/04/27/RxJava-Observables单元测试/index.html">
+<meta property="og:site_name" content="Kevin博客">
+<meta property="og:description" content="原文链接 : Unit Testing RxJava Observables
+
+##RxJava Observables单元测试
+RxJava是一个非常棒的类库，但是它不容易上手，在这里，我们列出了不同的方法来对Observables进行单元测试。
+在ribot时，我们几个月前开始使用RxJava，而现在它已经成为我们开发的安卓应用的核心架构元素。使用RxJava有很多益处，但是学习(使用)的过">
+<meta property="og:updated_time" content="2017-04-28T05:54:03.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RxJava Observables单元测试">
+<meta name="twitter:description" content="原文链接 : Unit Testing RxJava Observables
+
+##RxJava Observables单元测试
+RxJava是一个非常棒的类库，但是它不容易上手，在这里，我们列出了不同的方法来对Observables进行单元测试。
+在ribot时，我们几个月前开始使用RxJava，而现在它已经成为我们开发的安卓应用的核心架构元素。使用RxJava有很多益处，但是学习(使用)的过">
+
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/pacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/pacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="Kevin博客" title="Kevin博客"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Kevin博客">Kevin博客</a></h1>
+				<h2 class="blog-motto">梦想还是要有的，万一实现了呢？</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" class="st-default-search-input" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/RxJava-Observables单元测试/" title="RxJava Observables单元测试" itemprop="url">RxJava Observables单元测试</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<ul>
+<li>原文链接 : <a href="https://medium.com/ribot-labs/unit-testing-rxjava-6e9540d4a329" target="_blank" rel="external">Unit Testing RxJava Observables</a></li>
+</ul>
+<p>##RxJava Observables单元测试</p>
+<p>RxJava是一个非常棒的类库，但是它不容易上手，在这里，我们列出了不同的方法来对Observables进行单元测试。</p>
+<p>在<a href="http://ribot.co.uk/" target="_blank" rel="external">ribot</a>时，我们几个月前开始使用RxJava，而现在它已经成为我们开发的安卓应用的核心架构元素。使用RxJava有很多益处，但是学习(使用)的过程是曲折的，很多时候，我们发现我们试图让自己的头脑中环绕着那些解释操作过程如何工作的“美丽”蓝图。</p>
+<p>改变我们架构的第一步就是改变那些定义在数据层的方法，让他们返回Observables。下一个问题是：我们如何对此进行单元测试？</p>
+<p>###丑陋的方式</p>
+<p>我们头脑中首先想到的是以同样的方式简单地描述我们的外部测试结果，然后将结果保存在一个全局变量，可以在以后进行断言。例如，假设我们有一个方法在一个database helper类中，负责加载用户对象。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">public Observable&lt;User&gt; loadUser() &#123;</div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>然后，针对这个方法的测试就会如同下面这样：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">User mUser;</div><div class="line">@Test</div><div class="line">public void shouldLoadUser() throw Exception &#123;</div><div class="line">   databaseHelper.loadUser()</div><div class="line">       .subscribe(new Action1&lt;User&gt;() &#123;</div><div class="line">           @Override</div><div class="line">           public void call(User user) &#123;</div><div class="line">               mUser = user;</div><div class="line">           &#125;</div><div class="line">        &#125;);</div><div class="line">   assertNotNull(mUser);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>默认情况下，这段代码将会执行，因为Observable会在同一个线程上执行。<br>因此，在结果设置为全局变量后断言会一直执行。</p>
+<p>###更好的方式<br>我们很快意识到先前的解决方式是不完美的。尽管先前的方法能够工作，(但是)它需要大量的模版代码。所以，我们决定创建一个类，该类提供一个名称为subscribeAssertingThat()的静态方法。这个类允许我们subscribe 一个observable，保存测试结果并且以一种清晰的方式执行一些断言。例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">@Test</div><div class="line">public void shouldLoadTwoUsers() throw Exception &#123;</div><div class="line"> 	 subscribeAssertingThat(databaseHelper.loadUser())</div><div class="line">      .completesSuccessfully()</div><div class="line">      .hasSize(2)</div><div class="line">      .emits(user1, user2)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>通过100行左右的代码，我们称为RxAssertions的这个类使我们的测试可读性和可写性更好。你可以在<a href="https://gist.github.com/ivacf/874dcb476bfc97f4d555" target="_blank" rel="external">这里</a>找到RxAssertions类的代码。</p>
+<p>###标准方式<br>后来，我们发现RxJava 提供了一个称为<a href="http://reactivex.io/RxJava/javadoc/rx/observers/TestSubscriber.html#TestSubscriber%28rx.Subscriber%29" target="_blank" rel="external">TestSubscriber</a>的subscriber专用类型。</p>
+<p>TestSubscriber由各种各样的<a href="http://reactivex.io/RxJava/javadoc/rx/Subscriber.html" target="_blank" rel="external">Subscriber</a>(组成)，你可以用于单元测试，执行断言，检查接收到的事件，或封装mocked类型的Subscriber。</p>
+<p>与第二个解决方案类似，测试subscriber允许你通过结果执行断言。例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">@Test</div><div class="line">public void shouldLoadTwoUsers() throw Exception &#123;</div><div class="line"> 	 	TestSubscriber&lt;User&gt; testSubscriber = new TestSubscriber&lt;&gt;();</div><div class="line">  		databaseHelper.loadUser().subscribe(testSubscriber);</div><div class="line"> 	 	testSubscriber.assertNoErrors();</div><div class="line">  		testSubscriber.assertReceivedOnNext(Arrays.asList(user1, user2))</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我们还没有频繁的使用TestSubscriber，但你可以看到上面的代码是相当优雅和可读。除了不同的断言，通过 Observable调用getOnNextEvents()方法，它也允许你恢复整个发现的问题列表。</p>
+<p>当使用TestSubscriber时，你会发现链接的断言是不可能的，因为断言方法不返回TestSubscriber。这个能力将是一个很好的改善(方向)。</p>
+<p>###总结<br>TestSusbcriber可能是目前最好的选择，因为它是RxJava codebase的一部分，它会不断的改进以及将新功能合并。能够了解别的开发者如何进行Observables的单元测试时很棒的。除了那些我在这里提到的其他方法，你还有什么方法(用于测试)？</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://kevin1202.github.io/2017/04/27/RxJava-Observables单元测试/" data-title="RxJava Observables单元测试 | Kevin博客" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/04/27/Square：从今天开始抛弃Fragment吧！/" title="Square：从今天开始抛弃Fragment吧！">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Square：从今天开始抛弃Fragment吧！</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/04/27/chap4/"  title="RxJava开发精要4 - Observables过滤">
+ <strong>下一篇：</strong><br/> 
+ <span>RxJava开发精要4 - Observables过滤
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2017/04/27/RxJava-Observables单元测试/" data-title="RxJava Observables单元测试" data-url="https://kevin1202.github.io/2017/04/27/RxJava-Observables单元测试/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="carrie1217" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Android/" title="Android">Android<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/git/" title="git">git<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/mac/" title="mac">mac<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/TimerTask/" title="TimerTask">TimerTask<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/size/" title="size">size<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Travis-CI/" title="Travis-CI">Travis-CI<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://coderq.com" target="_blank" title="一个面向程序员交流分享的新一代社区">码农圈</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://wuchong.me" target="_blank" title="Jark&#39;s Blog">Jark&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> 活着就要学习，学习不是为了活着。 <br/>
+			情况是在不断的变化，要使自己的思想适应新的情况，就得学习。</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/carrie1217" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Kevin">Kevin</a>
+		
+		
+		</p>
+		<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','DBjSFU5kGEcv8E-m-m_m','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"kevinbolg"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

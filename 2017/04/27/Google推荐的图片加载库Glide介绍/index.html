@@ -1,0 +1,627 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Google推荐的图片加载库Glide介绍 | Kevin博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Kevin">
+    
+
+    
+    <meta name="description" content="原文链接:Google推荐的图片加载库Glide介绍
+
+在泰国举行的谷歌开发者论坛上，谷歌为我们介绍了一个名叫 Glide 的图片加载库，作者是bumptech。这个库被广泛的运用在google的开源项目中，包括2014年google I/O大会上发布的官方app。
+毫无疑问，这个库引起了我的兴趣。于是我花了一个晚上研究和把玩它，将它的实现原理分析清楚以后，我决定写一篇博文分享一些自己的经验。在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Google推荐的图片加载库Glide介绍">
+<meta property="og:url" content="https://kevin1202.github.io/2017/04/27/Google推荐的图片加载库Glide介绍/index.html">
+<meta property="og:site_name" content="Kevin博客">
+<meta property="og:description" content="原文链接:Google推荐的图片加载库Glide介绍
+
+在泰国举行的谷歌开发者论坛上，谷歌为我们介绍了一个名叫 Glide 的图片加载库，作者是bumptech。这个库被广泛的运用在google的开源项目中，包括2014年google I/O大会上发布的官方app。
+毫无疑问，这个库引起了我的兴趣。于是我花了一个晚上研究和把玩它，将它的实现原理分析清楚以后，我决定写一篇博文分享一些自己的经验。在">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150327/1427445293711143.png">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150327/1427445293137409.jpg">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150327/1427445293965030.png">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150327/1427445294447874.jpg">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150327/1427445294918728.png">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150327/1427445294433243.png">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150327/1427445294704430.png">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150327/1427445294110987.jpg">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/allimg/150327/163Aa632-0.gif">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150327/1427445366503084.gif">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150327/1427453389115686.png">
+<meta property="og:image" content="http://jcodecraeer.com/uploads/20150327/1427453390188737.png">
+<meta property="og:updated_time" content="2017-04-28T05:29:22.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Google推荐的图片加载库Glide介绍">
+<meta name="twitter:description" content="原文链接:Google推荐的图片加载库Glide介绍
+
+在泰国举行的谷歌开发者论坛上，谷歌为我们介绍了一个名叫 Glide 的图片加载库，作者是bumptech。这个库被广泛的运用在google的开源项目中，包括2014年google I/O大会上发布的官方app。
+毫无疑问，这个库引起了我的兴趣。于是我花了一个晚上研究和把玩它，将它的实现原理分析清楚以后，我决定写一篇博文分享一些自己的经验。在">
+<meta name="twitter:image" content="http://jcodecraeer.com/uploads/20150327/1427445293711143.png">
+
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/pacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/pacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="Kevin博客" title="Kevin博客"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Kevin博客">Kevin博客</a></h1>
+				<h2 class="blog-motto">梦想还是要有的，万一实现了呢？</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" class="st-default-search-input" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/Google推荐的图片加载库Glide介绍/" title="Google推荐的图片加载库Glide介绍" itemprop="url">Google推荐的图片加载库Glide介绍</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<ul>
+<li>原文链接:<a href="http://inthecheesefactory.com/blog/get-to-know-glide-recommended-by-google/en" target="_blank" rel="external">Google推荐的图片加载库Glide介绍</a></li>
+</ul>
+<p>在泰国举行的谷歌开发者论坛上，谷歌为我们介绍了一个名叫 <a href="https://github.com/bumptech/glide" target="_blank" rel="external">Glide</a> 的图片加载库，作者是bumptech。这个库被广泛的运用在google的开源项目中，包括2014年google I/O大会上发布的官方app。</p>
+<p>毫无疑问，这个库引起了我的兴趣。于是我花了一个晚上研究和把玩它，将它的实现原理分析清楚以后，我决定写一篇博文分享一些自己的经验。在开始之前我想说，Glide和Picasso有90%的相似度，准确的说，我觉得它就像 Picasso 的克隆体。</p>
+<p>不管怎样，Glide 和 Picasso在细节上还是有不少区别的，接下来我会让你们了解到其中的差异。</p>
+<p>##导入库</p>
+<p>Picasso和Glide都在jcenter上。在项目中添加依赖非常简单：<br>Picasso<br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">dependencies</span> &#123;</div><div class="line">    <span class="keyword">compile</span> <span class="string">'com.squareup.picasso:picasso:2.5.1'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>Glide<br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">dependencies</span> &#123;</div><div class="line">    <span class="keyword">compile</span> <span class="string">'com.github.bumptech.glide:glide:3.5.2'</span></div><div class="line">    <span class="keyword">compile</span> <span class="string">'com.android.support:support-v4:22.0.0'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>不管怎样，Glide 需要 Android Support Library v4 包，千万不要忘了像上面的代码做的那样添加 Android Support Library v4 包的依赖。不过这都不是什么大问题，因为现在 Android Support Library v4 基本是每一个新 Android 项目的标配了。</p>
+<p>##基础</p>
+<p>就如我所说的Glide和Picasso非常相似，Glide加载图片的方法和Picasso如出一辙。</p>
+<p>Picasso<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Picasso.with(context)</div><div class="line">    .load(<span class="string">"http://inthecheesefactory.com/uploads/source/glidepicasso/cover.jpg"</span>)</div><div class="line">    .into(ivImg);</div></pre></td></tr></table></figure></p>
+<p>Glide</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Glide.with(context)</div><div class="line">    .load(<span class="string">"http://inthecheesefactory.com/uploads/source/glidepicasso/cover.jpg"</span>)</div><div class="line">    .into(ivImg);</div></pre></td></tr></table></figure>
+<p>虽然两者看起来非常相似，但是 Glide 的代码无疑设计得更好，因为 Glide 的 with() 方法不光接受 Context，还接受 Activity 和 Fragment。此外，with() 方法还能自动地从你放入的各种东西里面提取出 Context，供它自己使用。</p>
+<p><img src="http://jcodecraeer.com/uploads/20150327/1427445293711143.png" alt=""></p>
+<p>同 时将Activity/Fragment作为with()参数的好处是：图片加载会和Activity/Fragment的生命周期保持一致，比如 Paused状态在暂停加载，在Resumed的时候又自动重新加载。所以我建议传参的时候传递Activity 和 Fragment给Glide，而不是Context。</p>
+<p>##默认Bitmap格式是RGB_565</p>
+<p>下面是加载图片时和Picasso的比较（1920x1080 像素的图片加载到768x432的ImageView中）</p>
+<p><img src="http://jcodecraeer.com/uploads/20150327/1427445293137409.jpg" alt=""></p>
+<p>可以看到Glide加载的图片质量要差于Picasso（ps：我看不出来哈），为什么？这是因为Glide默认的Bitmap格式是RGB_565 ，比ARGB_8888格式的内存开销要小一半。下面是Picasso在ARGB8888下与Glide在RGB565下的内存开销图（应用自身占用了8m，因此以8为基准线比较）：</p>
+<p><img src="http://jcodecraeer.com/uploads/20150327/1427445293965030.png" alt=""></p>
+<p>如果你觉得 Glide 在默认的 RGB_565 格式下加载的图片质量可以接受的话，可以什么都不做。但如果你觉得难以接受，或者是你的实际需求对图片的质量有更高的要求的话，你可以像下面的代码那样创建一个 GlideModule 子类，把 Bitmap 的格式转换到 ARGB_8888：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"> <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GlideConfiguration</span> <span class="keyword">implements</span> <span class="title">GlideModule</span> </span>&#123;</div><div class="line">  </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">applyOptions</span><span class="params">(Context context, GlideBuilder builder)</span> </span>&#123;</div><div class="line">        <span class="comment">// Apply options to the builder here.</span></div><div class="line">        builder.setDecodeFormat(DecodeFormat.PREFER_ARGB_8888);</div><div class="line">    &#125;</div><div class="line">  </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">registerComponents</span><span class="params">(Context context, Glide glide)</span> </span>&#123;</div><div class="line">        <span class="comment">// register ModelLoaders here.</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>然后在AndroidManifest.xml中将GlideModule定义为meta-data</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;meta-data android:name=<span class="string">"com.inthecheesefactory.lab.glidepicasso.GlideConfiguration"</span></div><div class="line">            android:value=<span class="string">"GlideModule"</span>/&gt;</div></pre></td></tr></table></figure>
+<p><img src="http://jcodecraeer.com/uploads/20150327/1427445294447874.jpg" alt=""></p>
+<p>这样看起来就会好很多。</p>
+<p>我们再来看看内存开销图，虽然看起来这次 Glide 的内存开销接近于上次的两倍，但是Picasso的内存开销仍然远大于Glide。</p>
+<p><img src="http://jcodecraeer.com/uploads/20150327/1427445294918728.png" alt=""></p>
+<p>但是上面那样做的问题在于你需要手动计算 ImageView 的尺寸，又或者是你对 ImageView 设置了具体的尺寸大小，为了解决这样的麻烦，你可以在 Picasso 中通过这样做简化你的代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">Picasso.with(<span class="keyword">this</span>)</div><div class="line">    .load(<span class="string">"http://nuuneoi.com/uploads/source/playstore/cover.jpg"</span>)</div><div class="line">    .resize(<span class="number">768</span>, <span class="number">432</span>)</div><div class="line">    .into(ivImgPicasso);</div></pre></td></tr></table></figure>
+<p>但是问题在于你需要主动计算ImageView的大小，或者说你的ImageView大小是具体的值（而不是wrap_content），你也可以这样：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Picasso.with(<span class="keyword">this</span>)</div><div class="line">    .load(<span class="string">"http://nuuneoi.com/uploads/source/playstore/cover.jpg"</span>)</div><div class="line">    .fit()</div><div class="line">    .centerCrop()</div><div class="line">    .into(ivImgPicasso);</div></pre></td></tr></table></figure>
+<p>现在Picasso的内存开销就和Glide差不多了。</p>
+<p><img src="http://jcodecraeer.com/uploads/20150327/1427445294433243.png" alt=""></p>
+<p>虽然内存开销差距不大，但是在这个问题上Glide完胜Picasso。因为Glide可以自动计算出任意情况下的ImageView大小。</p>
+<p>##Image质量的细节</p>
+<p>这是将ImageView还原到真实大小时的比较。<br><img src="http://jcodecraeer.com/uploads/20150327/1427445294704430.png" alt=""></p>
+<p>很显然，Glide 加载的图片有些像素点变得很模糊，看起来也没有 Picasso 那么平滑。而且直到现在，我也没有找到一个可以直观改变图片大小调整算法的方法。</p>
+<p>但是这并不算什么坏事，因为很难察觉。</p>
+<p>##磁盘缓存</p>
+<p>Picasso和Glide在磁盘缓存策略上有很大的不同。我们刚刚做了一个使用 Glide 和 Picasso 加载同一张高清图片的实验，我在实验后检查缓存目录时发现： Glide 缓存的图片和 ImageView 的尺寸相同，而 Picasso 缓存的图片和原始图片的尺寸相同。</p>
+<p><img src="http://jcodecraeer.com/uploads/20150327/1427445294110987.jpg" alt=""></p>
+<p>上面提到的平滑度的问题依然存在，而且如果加载的是RGB565图片，那么缓存中的图片也是RGB565。</p>
+<p>我 尝试将ImageView调整成不同大小，但不管大小如何Picasso只缓存一个全尺寸的。Glide则不同，它会为每种大小的ImageView缓存 一次。尽管一张图片已经缓存了一次，但是假如你要在另外一个地方再次以不同尺寸显示，需要重新下载，调整成新尺寸的大小，然后将这个尺寸的也缓存起来。</p>
+<p>具体说来就是：假如在第一个页面有一个200x200的ImageView，在第二个页面有一个100x100的ImageView，这两个ImageView本来是要显示同一张图片，却需要下载两次。</p>
+<p>不过，你可以改变这种行为，让Glide既缓存全尺寸又缓存其他尺寸：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">Glide.with(<span class="keyword">this</span>)</div><div class="line">     .load(<span class="string">"http://nuuneoi.com/uploads/source/playstore/cover.jpg"</span>)</div><div class="line">     .diskCacheStrategy(DiskCacheStrategy.ALL)</div><div class="line">     .into(ivImgGlide);</div></pre></td></tr></table></figure>
+<p>下次在任何ImageView中加载图片的时候，全尺寸的图片将从缓存中取出，重新调整大小，然后缓存。</p>
+<p>Glide的这种方式优点是加载显示非常快。而Picasso的方式则因为需要在显示之前重新调整大小而导致一些延迟，即便你添加了这段代码来让其立即显示：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//Picasso</span></div><div class="line">.noFade();</div></pre></td></tr></table></figure></p>
+<p><img src="http://jcodecraeer.com/uploads/allimg/150327/163Aa632-0.gif" alt=""></p>
+<p>Picasso 和 Glide 在磁盘缓存策略上各有所长，你应该根据自己的需求选择最合适的。</p>
+<p>对我而言，我更喜欢Glide，因为它远比Picasso快，虽然需要更大的空间来缓存。</p>
+<p>##特性</p>
+<p>你可以做到几乎和Picasso一样多的事情，代码也几乎一样。</p>
+<p>Image Resizing<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Picasso</span></div><div class="line">.resize(<span class="number">300</span>, <span class="number">200</span>);</div><div class="line">  </div><div class="line"><span class="comment">// Glide</span></div><div class="line">.override(<span class="number">300</span>, <span class="number">200</span>);</div></pre></td></tr></table></figure></p>
+<p>Center Cropping<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Picasso</span></div><div class="line">.centerCrop();</div><div class="line">  </div><div class="line"><span class="comment">// Glide</span></div><div class="line">.centerCrop();</div></pre></td></tr></table></figure></p>
+<p>Transforming<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Picasso</span></div><div class="line">.transform(<span class="keyword">new</span> CircleTransform())</div><div class="line">  </div><div class="line"><span class="comment">// Glide</span></div><div class="line">.transform(<span class="keyword">new</span> CircleTransform(context))</div></pre></td></tr></table></figure></p>
+<p>设置占位图或者加载错误图：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Picasso</span></div><div class="line">.placeholder(R.drawable.placeholder)</div><div class="line">.error(R.drawable.imagenotfound)</div><div class="line">  </div><div class="line"><span class="comment">// Glide</span></div><div class="line">.placeholder(R.drawable.placeholder)</div><div class="line">.error(R.drawable.imagenotfound)</div></pre></td></tr></table></figure></p>
+<p>正如我在博文开头所说，如果你已经熟悉如何使用 Picasso，那从Picasso转换到Glide对你来说就是小菜一碟。</p>
+<p>##有什么Glide可以做而Picasso 做不到</p>
+<p>Glide可以加载GIF动态图，而Picasso不能。</p>
+<p><img src="http://jcodecraeer.com/uploads/20150327/1427445366503084.gif" alt=""></p>
+<p>同时因为Glide和Activity/Fragment的生命周期是一致的，因此gif的动画也会自动的随着Activity/Fragment的状态暂停、重放。Glide 的缓存在gif这里也是一样，调整大小然后缓存。</p>
+<p>但是从我的一次测试结果来看，用 Glide 显示动画会消耗很多内存，因此谨慎使用。</p>
+<p>除了gif动画之外，Glide还可以将任意本地视频解码成一张静态图片。</p>
+<p>还有一个特性是你可以配置图片显示的动画，而Picasso只有一种动画：fading in。</p>
+<p>最后一个是可以使用thumbnail()产生一个你所加载图片的thumbnail。</p>
+<p>其实还有一些特性，不过不是非常重要，比如将图像转换成字节数组等。<br>配置</p>
+<p>有许多可以配置的选项，比如大小，缓存的磁盘位置，最大缓存空间，位图格式等等。可以在这个页面查看这些配置 Configuration 。</p>
+<p>##库的大小</p>
+<p>Picasso (v2.5.1)的大小约118kb，而Glide (v3.5.2)的大小约430kb。</p>
+<p><img src="http://jcodecraeer.com/uploads/20150327/1427453389115686.png" alt=""></p>
+<p>不过312kb的差距并不是很重要。</p>
+<p>Picasso和Glide的方法个数分别是840和2678个。</p>
+<p><img src="http://jcodecraeer.com/uploads/20150327/1427453390188737.png" alt=""></p>
+<p>必须指出，对于DEX文件65535个方法的限制来说，2678是一个相当大的数字了。建议在使用Glide的时候开启ProGuard。</p>
+<p>##总结</p>
+<p>Glide和Picasso都是非常完美的库。Glide加载图像以及磁盘缓存的方式都要优于Picasso，速度更快，并且Glide更有利于减少OutOfMemoryError的发生，GIF动画是Glide的杀手锏。不过Picasso的图片质量更高。你更喜欢哪个呢？</p>
+<p>虽然我使用了很长时间的Picasso，但是我得承认现在我更喜欢Glide。我的建议是使用Glide，但是将Bitmap格式换成 ARGB_8888、让Glide缓存同时缓存全尺寸和改变尺寸两种。</p>
+<p>##相关资源</p>
+<ul>
+<li><a href="http://google-opensource.blogspot.com/2014/09/glide-30-media-management-library-for.html" target="_blank" rel="external">Glide 3.0: a media management library for Android</a> </li>
+<li><a href="https://github.com/bumptech/glide/wiki" target="_blank" rel="external">Glide Wiki</a> </li>
+<li><a href="http://pluu.github.io/android%20study/2015/01/15/android-glide-picasso/" target="_blank" rel="external">Android Picasso vs Glide</a> </li>
+<li><a href="http://vardhan-justlikethat.blogspot.com/2014/09/android-image-loading-libraries-picasso.html" target="_blank" rel="external">Android: Image loading libraries Picasso vs Glide</a> </li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://kevin1202.github.io/2017/04/27/Google推荐的图片加载库Glide介绍/" data-title="Google推荐的图片加载库Glide介绍 | Kevin博客" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/04/27/Android进行单元测试难在哪-part4/" title="Android 进行单元测试难在哪-part4">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Android 进行单元测试难在哪-part4</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/04/27/Gradle小知识1/"  title="Gradle小知识#1：tasks">
+ <strong>下一篇：</strong><br/> 
+ <span>Gradle小知识#1：tasks
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2017/04/27/Google推荐的图片加载库Glide介绍/" data-title="Google推荐的图片加载库Glide介绍" data-url="https://kevin1202.github.io/2017/04/27/Google推荐的图片加载库Glide介绍/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="carrie1217" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Android/" title="Android">Android<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/git/" title="git">git<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/mac/" title="mac">mac<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/TimerTask/" title="TimerTask">TimerTask<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/size/" title="size">size<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Travis-CI/" title="Travis-CI">Travis-CI<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://coderq.com" target="_blank" title="一个面向程序员交流分享的新一代社区">码农圈</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://wuchong.me" target="_blank" title="Jark&#39;s Blog">Jark&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> 活着就要学习，学习不是为了活着。 <br/>
+			情况是在不断的变化，要使自己的思想适应新的情况，就得学习。</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/carrie1217" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Kevin">Kevin</a>
+		
+		
+		</p>
+		<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','DBjSFU5kGEcv8E-m-m_m','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"kevinbolg"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

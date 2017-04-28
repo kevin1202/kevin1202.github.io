@@ -1,0 +1,674 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Android架构演化之路 | Kevin博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Kevin">
+    
+
+    
+    <meta name="description" content="原文链接 : Architecting Android…The evolution
+
+大家好!  过了一好阵子了(在此期间我收到了大量的读者反馈) 我决定是时候回到手机程序架构这个话题上了(这里用android代码举例),  给大家另一个我认为好的解决方案.
+在开始之前, 我这里假设大家都读过了我之前用简洁的办法架构Android程序一文. 如果你还没有读过, 现在应该去读一下那篇文章, 读过之">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android架构演化之路">
+<meta property="og:url" content="https://kevin1202.github.io/2017/04/27/Android架构演化之路/index.html">
+<meta property="og:site_name" content="Kevin博客">
+<meta property="og:description" content="原文链接 : Architecting Android…The evolution
+
+大家好!  过了一好阵子了(在此期间我收到了大量的读者反馈) 我决定是时候回到手机程序架构这个话题上了(这里用android代码举例),  给大家另一个我认为好的解决方案.
+在开始之前, 我这里假设大家都读过了我之前用简洁的办法架构Android程序一文. 如果你还没有读过, 现在应该去读一下那篇文章, 读过之">
+<meta property="og:image" content="http://fernandocejas.com/wp-content/uploads/2014/09/clean_architecture1.png">
+<meta property="og:image" content="http://fernandocejas.com/wp-content/uploads/2014/09/clean_architecture_android.png">
+<meta property="og:image" content="http://fernandocejas.com/wp-content/uploads/2015/07/clean_architecture_evolution.png">
+<meta property="og:image" content="http://fernandocejas.com/wp-content/uploads/2015/07/package_organization-795x1024.png">
+<meta property="og:image" content="http://fernandocejas.com/wp-content/uploads/2015/07/gradle_organization-283x300.png">
+<meta property="og:updated_time" content="2017-04-28T05:59:07.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android架构演化之路">
+<meta name="twitter:description" content="原文链接 : Architecting Android…The evolution
+
+大家好!  过了一好阵子了(在此期间我收到了大量的读者反馈) 我决定是时候回到手机程序架构这个话题上了(这里用android代码举例),  给大家另一个我认为好的解决方案.
+在开始之前, 我这里假设大家都读过了我之前用简洁的办法架构Android程序一文. 如果你还没有读过, 现在应该去读一下那篇文章, 读过之">
+<meta name="twitter:image" content="http://fernandocejas.com/wp-content/uploads/2014/09/clean_architecture1.png">
+
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/pacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/pacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="Kevin博客" title="Kevin博客"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Kevin博客">Kevin博客</a></h1>
+				<h2 class="blog-motto">梦想还是要有的，万一实现了呢？</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" class="st-default-search-input" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/Android架构演化之路/" title="Android架构演化之路" itemprop="url">Android架构演化之路</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#架构的演化"><span class="toc-number">1.</span> <span class="toc-text">架构的演化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#反应式方法-RxJava"><span class="toc-number">1.1.</span> <span class="toc-text">反应式方法: RxJava</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#依赖注入-Dagger-2"><span class="toc-number">1.2.</span> <span class="toc-text">依赖注入: Dagger 2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Lambda-表达式-Retrolambda"><span class="toc-number">1.3.</span> <span class="toc-text">Lambda 表达式: Retrolambda</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#测试途径"><span class="toc-number">1.4.</span> <span class="toc-text">测试途径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#包结构组织"><span class="toc-number">1.5.</span> <span class="toc-text">包结构组织</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#附加彩蛋-组织你的打包逻辑"><span class="toc-number">1.6.</span> <span class="toc-text">附加彩蛋: 组织你的打包逻辑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#总结"><span class="toc-number">1.7.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#源代码"><span class="toc-number">1.8.</span> <span class="toc-text">源代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#更多阅读"><span class="toc-number">1.9.</span> <span class="toc-text">更多阅读:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#引用"><span class="toc-number">1.10.</span> <span class="toc-text">引用</span></a></li></ol></li></ol>
+		
+		</div>
+		
+		<ul>
+<li>原文链接 : <a href="http://fernandocejas.com/2015/07/18/architecting-android-the-evolution/" target="_blank" rel="external">Architecting Android…The evolution</a></li>
+</ul>
+<p>大家好!  过了一好阵子了(在此期间我收到了大量的读者反馈) 我决定是时候回到手机程序架构这个话题上了(这里用android代码举例),  <strong><em>给大家另一个我认为好的解决方案.</em></strong></p>
+<p>在开始之前, 我这里假设大家都读过了我之前<a href="http://fernandocejas.com/2014/09/03/architecting-android-the-clean-way/" target="_blank" rel="external">用简洁的办法架构Android程序</a>一文. 如果你还没有读过, 现在应该去读一下那篇文章, 读过之后可以更好的理解我下面要讲的内容.</p>
+<p><img src="http://fernandocejas.com/wp-content/uploads/2014/09/clean_architecture1.png" alt="上一篇文章截图"></p>
+<h2 id="架构的演化"><a href="#架构的演化" class="headerlink" title="架构的演化"></a>架构的演化</h2><p><strong><em>演化是指一个事物变化成为另一个不同的事物的一个平缓过程, 通常情况下会变得更加复杂或者变成更好.</em></strong></p>
+<p>软件开发一直在进化和改变.  <strong><em>实际上, 一个好的代码结构必须帮助我们成长, 这意味着不用重新写所有代码就可以扩展功能.</em></strong> (尽管有些情况下应该大量的重写代码, 但那又是另一回事了, 这里先不做探讨).</p>
+<p>这篇文章的重点是<strong><em>如何保持android代码的清晰直观</em></strong>, 为了阐述这一问题, 我将会带着大家看几个我认为重要的关键点. 记住下面这个图我们就可以开始了.</p>
+<p><img src="http://fernandocejas.com/wp-content/uploads/2014/09/clean_architecture_android.png" alt="Presentation,Domain,Data三层架构示意图"></p>
+<h3 id="反应式方法-RxJava"><a href="#反应式方法-RxJava" class="headerlink" title="反应式方法: RxJava"></a>反应式方法: RxJava</h3><p>在这里我就不讲RxJava的好处了(<a href="https://github.com/ReactiveX/RxJava/wiki" target="_blank" rel="external">我猜大家都已经自己体会过了</a>) , 因为已经有很多<a href="http://blog.danlew.net/2014/09/15/grokking-rxjava-part-1/" target="_blank" rel="external">文章</a>和<a href="https://speakerdeck.com/benjchristensen" target="_blank" rel="external">坏蛋们</a>都讲过了, 而且讲的还都不错. <strong><em>这里我要讲的是它是怎么使得android开发变得非常有趣的, 还有它是如何帮助我完成搭建第一个干净简洁的架构的.</em></strong></p>
+<p>首先, 我选择一个反应式模式让用例(在简洁的架构命名规范中叫做interactor) 都返回Observables<t>, 这样的话所有子类都必须遵守这个规则也返回Observables<t></t></t></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">UseCase</span> </span>&#123;</div><div class="line"></div><div class="line"><span class="keyword">private</span> <span class="keyword">final</span> ThreadExecutor threadExecutor;</div><div class="line"><span class="keyword">private</span> <span class="keyword">final</span> PostExecutionThread postExecutionThread;</div><div class="line"></div><div class="line"><span class="keyword">private</span> Subscription subscription = Subscriptions.empty();</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="title">UseCase</span><span class="params">(ThreadExecutor threadExecutor,</span></span></div><div class="line">    PostExecutionThread postExecutionThread) &#123;</div><div class="line">    <span class="keyword">this</span>.threadExecutor = threadExecutor;</div><div class="line">    <span class="keyword">this</span>.postExecutionThread = postExecutionThread;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> Observable <span class="title">buildUseCaseObservable</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Subscriber UseCaseSubscriber)</span> </span>&#123;</div><div class="line">    <span class="keyword">this</span>.subscription = <span class="keyword">this</span>.buildUseCaseObservable()</div><div class="line">    .subscribeOn(Schedulers.from(threadExecutor))</div><div class="line">    .observeOn(postExecutionThread.getScheduler())</div><div class="line">    .subscribe(UseCaseSubscriber);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">unsubscribe</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (!subscription.isUnsubscribed()) &#123;</div><div class="line">        subscription.unsubscribe();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以看出,所有的子用例都继承自这个抽象类,并在<strong><em>buildUseCaseObservable()</em></strong>这个抽象方法中构造一个可以完成耗时操作并返回需要数据的<strong><em>Observable<t></t></em></strong></p>
+<p><strong><em>需要注意的是execute()这个方法, 我们保证了Observable<t>让自己执行在一个单独的线程中</t></em></strong>, 这样的话就可以最小限度的减少在主线程耗时.  然后通过主线程的scheduler机制把Observable<t>的执行结果返回给主线程.</t></p>
+<p><strong><em>到现在为止, 我们已经有了Observable<t> , 但是它产生的数据得有人来处理</t></em></strong> . 所以我这里将presenter(<strong><em>MVP</em></strong> 三层架构中的presentation层的一部分)改为了 <strong><em>Subscribers</em></strong> ,当用例产生数据后可以及时更新UI.</p>
+<p>也就是下面这样的subscriber:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">UserListSubscriber</span> <span class="keyword">extends</span></span></div><div class="line">    <span class="title">DefaultSubscriber</span>&lt;<span class="title">List</span>&lt;<span class="title">User</span>&gt;&gt; &#123;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123;</div><div class="line">      UserListPresenter.<span class="keyword">this</span>.hideViewLoading();</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">        UserListPresenter.<span class="keyword">this</span>.hideViewLoading();</div><div class="line">        UserListPresenter.<span class="keyword">this</span>.showErrorMessage(<span class="keyword">new</span> DefaultErrorBundle((Exception) e));</div><div class="line">        UserListPresenter.<span class="keyword">this</span>.showViewRetry();</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(List&lt;User&gt; users)</span> </span>&#123;</div><div class="line">        UserListPresenter.<span class="keyword">this</span>.showUsersCollectionInView(users);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>DefaultSubscriber<t>只是简单实现了对错误的处理, 每一个subscriber都是presenter中的一个继承自 <strong><em>DefaultSubscriber<t></t></em></strong> 的内部类.</t></p>
+<p>从下面这张图中, 你可以得到一个比较完整的思路.</p>
+<p><img src="http://fernandocejas.com/wp-content/uploads/2015/07/clean_architecture_evolution.png" alt="使用RxJava的完整思路"></p>
+<p>我们来总结一下RxJava带给我们的好处:</p>
+<ul>
+<li><p><strong><em>实现了Observables 和 Subscribers的解耦</em></strong>: 保持了结构稳定并简化了测试.</p>
+</li>
+<li><p><strong><em>使得异步任务变得简单</em></strong>: 多层异步任务被执行时, java的thread和future的操作和同步会变得非常复杂, 使用 scheduler 可以让我们在异步线程和主线程之间跳转变得非常简单(省去了多余的步骤), 特别是我们需要更新UI界面的时候. 同时也避免了使代码变成非常难以理解的”回调地狱”.</p>
+</li>
+<li><p><strong><em>数据的传递/组合</em></strong>: 我们可以使多个Observables<t>组合起来而不影响到client端, 这样提高了整套解决方案的可扩展性.</t></p>
+</li>
+<li><p><strong><em>异常处理</em></strong>: 任何一个Observable<t>.出现异常都会通知到consumer.</t></p>
+</li>
+</ul>
+<p>从我的角度看这里有一个小问题, 也是必须要付出的代价, 就是<strong><em>对这一概念不太熟悉的开发者的学习过程</em></strong>. 但是你会从中学到非常有价值的内容.  <strong><em>为了成功学习Reactive吧!</em></strong></p>
+<h3 id="依赖注入-Dagger-2"><a href="#依赖注入-Dagger-2" class="headerlink" title="依赖注入: Dagger 2"></a>依赖注入: Dagger 2</h3><p>我这里不会讲太多关于依赖注入的例子, 因为我之前写过<a href="http://fernandocejas.com/2015/04/11/tasting-dagger-2-on-android/" target="_blank" rel="external">一篇专门说依赖注入的文章</a>, 为了跟上我这里的脚步, 强烈推荐大家读一读这篇文章.</p>
+<p>值得强调的是, 像Dagger 2一样的依赖注入框架可以带给我们:</p>
+<ul>
+<li><p><strong><em>组件的重用</em></strong>, 因为依赖可以被从外部配置和注入.</p>
+</li>
+<li><p>最为合作者对抽象进行依赖注入时, 我们可以单单修改任何对象的实现, 而不用大量修改底层代码, 因为<strong><em>类的实现对象独立而解耦的存在于另一个地方</em></strong>.</p>
+</li>
+<li><p>依赖可以被注入到组件中去: <strong><em>注入依赖的测试实现是有可能的, 这就使得测试变得更加容易.</em></strong></p>
+</li>
+</ul>
+<h3 id="Lambda-表达式-Retrolambda"><a href="#Lambda-表达式-Retrolambda" class="headerlink" title="Lambda 表达式: Retrolambda"></a>Lambda 表达式: Retrolambda</h3><p><strong><em>没有人会反对在我们的代码中使用Java 8 的 Lambdas</em></strong>, 使用Lambdas可以省去大量的样板代码, 就像下面的代码块:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">final</span> Action1&lt;UserEntity&gt; saveToCacheAction =</div><div class="line">    userEntity -&gt; &#123;</div><div class="line">         <span class="keyword">if</span> (userEntity != <span class="keyword">null</span>) &#123;</div><div class="line">             CloudUserDataStore.<span class="keyword">this</span>.userCache.put(userEntity);</div><div class="line">         &#125;</div><div class="line">   &#125;;</div></pre></td></tr></table></figure>
+<p>但是这个问题我非常纠结. 在我们<a href="https://developers.soundcloud.com/blog/" target="_blank" rel="external">@SoundCloud</a>, 曾经有过一次关于<br> <a href="https://github.com/orfjackal/retrolambda" target="_blank" rel="external">Retrolambda</a>的讨论, <strong><em>主要的分歧是要不要用它</em></strong> 讨论的结果是:</p>
+<ol>
+<li><p>利:</p>
+<ul>
+<li>Lambda 和方法的引用</li>
+<li>尝试着用资源的方式.</li>
+<li>Dev karma</li>
+</ul>
+</li>
+<li><p>弊:</p>
+<ul>
+<li>java 8新特性的意外使用.</li>
+<li>第三方jar包很扰人.</li>
+<li>要在Android工程中使用它,必须引入第三方gradle插件.</li>
+</ul>
+</li>
+</ol>
+<p>最终我们决定Retrolambda并不是一个能解决我们任何问题的库: <strong><em>使用了Retrolambda后代码的确好看易理解, 但这对我们来说并不是必须的, 因为现在大部分的IDE已经可以是实现这一功能, 至少是以可以接受的方式</em></strong></p>
+<p>老实说, 我在这里提到Retrolambda的主要原因是想用一用它, 体验一把在Android代码里使用lambda是什么感觉. 也许<strong><em>在我的业余项目中可能会用到这个库</em></strong>. 我只是把我的想法放在这里, 用不用它的最终决定权在大家手里. <strong><em>当然了, 该<a href="https://github.com/orfjackal" target="_blank" rel="external">作者</a>创造了这么伟大的一个库也非常值得赞扬</em></strong></p>
+<h3 id="测试途径"><a href="#测试途径" class="headerlink" title="测试途径"></a>测试途径</h3><p>说到测试, 和之前的例子并没有什么太大的不同.</p>
+<ul>
+<li><p><strong><em>Presentation层</em></strong> : 用Espresso 2 和 Android Instrumentation 测试UI界面.</p>
+</li>
+<li><p><strong><em>Domain 层:</em></strong> 因为只是正常的java模块,所以用JUnit + Mockito测试就好了.</p>
+</li>
+<li><p><strong><em>Data层</em></strong>: 用 Robolectric 3 + JUnit + Mockito做迁移测试. 因为以前(案例第一个版本的时候)<strong><em>没有内置单元测试支持,手动构造一个类似robolectric的框架非常复杂而且为了使它正常工作,还要一系列hack操作.</em></strong></p>
+</li>
+</ul>
+<p>庆幸的是那都过去了, 现在所有的东西都可以直接用, 所以我重新把它们放在了数据模块中, 特别是可以放在默认的测试文件夹 <strong><em>src/test/java</em></strong> 下.</p>
+<h3 id="包结构组织"><a href="#包结构组织" class="headerlink" title="包结构组织"></a>包结构组织</h3><p>我认为代码/包的组织是一个良好架构的关键要素之一: <strong><em>包结构是一个程序员看项目代码时最先注意到的</em></strong> 其他的一切要素都由它而来,也都取决于它.</p>
+<p>下面是组织包结构常见的两种方式:</p>
+<ul>
+<li><p><strong><em>根据层级关系的不同</em></strong>: 单独看每个包下面的代码通常情况下并没有什么联系, 这就降低了单个包里的内聚性和模块性,而提高了包与包之间的耦合程度. 修改一个功能需要同时修改多个包下的多个文件.而且, 要删除一个功能也变得不是那么简单.</p>
+</li>
+<li><p><strong><em>根据功能的不同</em></strong>: 根据不同的包名可以找到对应的功能, 将功能(而且是只有此功能)下的所有组件全都放在了一起. 这就提高了包里的内举性和模块性,而降低了包与包之间的耦合程度. 将协同工作的代码放在了一起,而不是将它们分布在程序的各个地方.</p>
+</li>
+</ul>
+<p><strong><em>我的建议是根据功能的不同来组织包结构</em></strong>, 可以带来下面这些好处:</p>
+<ul>
+<li><p><strong><em>更完善的模块化</em></strong></p>
+</li>
+<li><p><strong><em>代码更加容易查阅</em></strong></p>
+</li>
+<li><p><strong><em>最小化代码的作用域</em></strong></p>
+</li>
+</ul>
+<p>有趣的是, 如果你在一个所谓的 <strong><em>功能性团队</em></strong> 工作,(比如<a href="https://twitter.com/soundcloud" target="_blank" rel="external">@SoundCloud</a>), <strong><em>代码结构的分配会变得更加容易更加模块化</em></strong>, 如果许多工程师在同样的基础代码上开发时这个优点就变得格外明显.</p>
+<p><img src="http://fernandocejas.com/wp-content/uploads/2015/07/package_organization-795x1024.png" alt="包结构组织样图"></p>
+<p>大家可以看出, 我的包结构看起来像是根据层级关系组织的: <strong><em>这里可能有举例不太恰当的地方(比如将一切都放在’user’下面)</em></strong> 但是我会<strong><em>原谅自己这一次</em></strong>, 因为举这个例子是为了供大家学习,为了表达我的观点,主要目的是包含简洁的架构思路. <strong><em>照我说的做, 而不是照我做的做</em></strong> :)</p>
+<h3 id="附加彩蛋-组织你的打包逻辑"><a href="#附加彩蛋-组织你的打包逻辑" class="headerlink" title="附加彩蛋: 组织你的打包逻辑"></a>附加彩蛋: 组织你的打包逻辑</h3><p><strong><em>我们都知道房子都是从地基开始修筑的</em></strong>. 软件开发也是一个道理, 我这里要强调的是,  <strong><em>代码架构中, 打包系统(及其组织架构)是非常重要的一部分</em></strong></p>
+<p>在Android开发中, 我们使用一个叫做gradle的非常强大的打包系统.  这里有 <strong><em>一系列窍门</em></strong> 帮助大家在组织打包脚本时变得格外轻松:</p>
+<ul>
+<li>根据功能的不同, 将打包系统分成多个脚本文件.</li>
+</ul>
+<p><img src="http://fernandocejas.com/wp-content/uploads/2015/07/gradle_organization-283x300.png" alt="脚本结构截图"></p>
+<p>ci.gradle:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">def ciServer = &apos;TRAVIS&apos;</div><div class="line">def executingOnCI = &quot;true&quot;.equals(System.getenv(ciServer))</div><div class="line"></div><div class="line">// Since for CI we always do full clean builds, we don&apos;t want to pre-dex</div><div class="line">// See http://tools.android.com/tech-docs/new-build-system/tips</div><div class="line">subprojects &#123;</div><div class="line">  project.plugins.whenPluginAdded &#123; plugin -&gt;</div><div class="line">    if (&apos;com.android.build.gradle.AppPlugin&apos;.equals(plugin.class.name) ||</div><div class="line">        &apos;com.android.build.gradle.LibraryPlugin&apos;.equals(plugin.class.name)) &#123;</div><div class="line">      project.android.dexOptions.preDexLibraries = !executingOnCI</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>build.gradle:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">apply from: &apos;buildsystem/ci.gradle&apos;</div><div class="line">apply from: &apos;buildsystem/dependencies.gradle&apos;</div><div class="line"></div><div class="line">buildscript &#123;</div><div class="line">  repositories &#123;</div><div class="line">    jcenter()</div><div class="line">  &#125;</div><div class="line">  dependencies &#123;</div><div class="line">    classpath &apos;com.android.tools.build:gradle:1.2.3&apos;</div><div class="line">    classpath &apos;com.neenbedankt.gradle.plugins:android-apt:1.4&apos;</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">allprojects &#123;</div><div class="line">  ext &#123;</div><div class="line">	...</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line">...</div></pre></td></tr></table></figure>
+<p>如上图, 你可以利用 “<strong><em>apply from: ‘buildsystem/ci.gradle’</em></strong>“ 将配置文件导入任意build脚本中. <strong><em>不要将所有打包脚本写在一个build.gradle文件中, 否则你会慢慢制造出一个怪物. 我已经受过教训了</em></strong>.</p>
+<ul>
+<li>将依赖整合到map中</li>
+</ul>
+<p>dependencies.gradle:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line">...</div><div class="line"></div><div class="line">ext &#123;</div><div class="line">  //Libraries</div><div class="line">  daggerVersion = &apos;2.0&apos;</div><div class="line">  butterKnifeVersion = &apos;7.0.1&apos;</div><div class="line">  recyclerViewVersion = &apos;21.0.3&apos;</div><div class="line">  rxJavaVersion = &apos;1.0.12&apos;</div><div class="line"></div><div class="line">  //Testing</div><div class="line">  robolectricVersion = &apos;3.0&apos;</div><div class="line">  jUnitVersion = &apos;4.12&apos;</div><div class="line">  assertJVersion = &apos;1.7.1&apos;</div><div class="line">  mockitoVersion = &apos;1.9.5&apos;</div><div class="line">  dexmakerVersion = &apos;1.0&apos;</div><div class="line">  espressoVersion = &apos;2.0&apos;</div><div class="line">  testingSupportLibVersion = &apos;0.1&apos;</div><div class="line"></div><div class="line">  ...</div><div class="line"></div><div class="line">  domainDependencies = [</div><div class="line">      daggerCompiler:     &quot;com.google.dagger:dagger-compiler:$&#123;daggerVersion&#125;&quot;,</div><div class="line">      dagger:             &quot;com.google.dagger:dagger:$&#123;daggerVersion&#125;&quot;,</div><div class="line">      javaxAnnotation:    &quot;org.glassfish:javax.annotation:$&#123;javaxAnnotationVersion&#125;&quot;,</div><div class="line">      rxJava:             &quot;io.reactivex:rxjava:$&#123;rxJavaVersion&#125;&quot;,</div><div class="line">  ]</div><div class="line"></div><div class="line">  domainTestDependencies = [</div><div class="line">      junit:              &quot;junit:junit:$&#123;jUnitVersion&#125;&quot;,</div><div class="line">      mockito:            &quot;org.mockito:mockito-core:$&#123;mockitoVersion&#125;&quot;,</div><div class="line">  ]</div><div class="line"></div><div class="line">  ...</div><div class="line"></div><div class="line">  dataTestDependencies = [</div><div class="line">      junit:              &quot;junit:junit:$&#123;jUnitVersion&#125;&quot;,</div><div class="line">      assertj:            &quot;org.assertj:assertj-core:$&#123;assertJVersion&#125;&quot;,</div><div class="line">      mockito:            &quot;org.mockito:mockito-core:$&#123;mockitoVersion&#125;&quot;,</div><div class="line">      robolectric:        &quot;org.robolectric:robolectric:$&#123;robolectricVersion&#125;&quot;,</div><div class="line">  ]</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>build.gradle:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">apply plugin: &apos;java&apos;</div><div class="line"></div><div class="line">sourceCompatibility = 1.7</div><div class="line">targetCompatibility = 1.7</div><div class="line"></div><div class="line">...</div><div class="line"></div><div class="line">dependencies &#123;</div><div class="line">  def domainDependencies = rootProject.ext.domainDependencies</div><div class="line">  def domainTestDependencies = rootProject.ext.domainTestDependencies</div><div class="line"></div><div class="line">  provided domainDependencies.daggerCompiler</div><div class="line">  provided domainDependencies.javaxAnnotation</div><div class="line"></div><div class="line">  compile domainDependencies.dagger</div><div class="line">  compile domainDependencies.rxJava</div><div class="line"></div><div class="line">  testCompile domainTestDependencies.junit</div><div class="line">  testCompile domainTestDependencies.mockito</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong><em>如果你希望在不同的模块中重复利用相同的依赖的版本,上面的建议就会变得非常有用</em></strong>  或者你想将不同的依赖版本放到不同的模块中去也是一样的. 另一个好处是 <strong><em>可以在一个地方控制所有的依赖</em></strong></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>这差不多就是我要说的了, 大家要记住 <strong><em>并没有包治百病的药, 但是一个好的程序架构可以帮助我们保持代码的整洁和健康, 同时也保证整了灵活性和可维护性</em></strong></p>
+<p>下面是一些我想指出的当你遇到程序问题时应有的态度:</p>
+<ul>
+<li><p><strong><em>遵守 SOLID 原则</em></strong></p>
+</li>
+<li><p><strong><em>不要想的太多(不要过度开发)</em></strong></p>
+</li>
+<li><p><strong><em>要实际</em></strong></p>
+</li>
+<li><p><strong><em>最大限度的在工程中减少对 android 框架的依赖</em></strong></p>
+</li>
+</ul>
+<h3 id="源代码"><a href="#源代码" class="headerlink" title="源代码"></a>源代码</h3><ol>
+<li><p><a href="https://github.com/android10/Android-CleanArchitecture" target="_blank" rel="external">Clean architecture github repository – master branch</a></p>
+</li>
+<li><p><a href="https://github.com/android10/Android-CleanArchitecture/releases" target="_blank" rel="external">Clean architecture github repository – releases</a></p>
+</li>
+</ol>
+<h3 id="更多阅读"><a href="#更多阅读" class="headerlink" title="更多阅读:"></a>更多阅读:</h3><ol>
+<li><a href="http://fernandocejas.com/2014/09/03/architecting-android-the-clean-way/" target="_blank" rel="external">Architecting Android..the clean way</a></li>
+<li><a href="http://fernandocejas.com/2015/04/11/tasting-dagger-2-on-android/" target="_blank" rel="external">Tasting Dagger 2 on Android</a></li>
+<li><a href="https://speakerdeck.com/android10/the-mayans-lost-guide-to-rxjava-on-android" target="_blank" rel="external">The Mayans Lost Guide to RxJava on Android</a></li>
+<li><a href="https://speakerdeck.com/android10/it-is-about-philosophy-culture-of-a-good-programmer" target="_blank" rel="external">It is about philosophy: Culture of a good programmer</a></li>
+</ol>
+<h3 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h3><ol>
+<li><a href="https://github.com/ReactiveX/RxJava/wiki" target="_blank" rel="external">RxJava wiki by Netflix</a></li>
+<li><a href="https://blog.8thlight.com/uncle-bob/2014/05/11/FrameworkBound.html" target="_blank" rel="external">Framework bound by Uncle Bob</a></li>
+<li><a href="https://docs.gradle.org/current/userguide/userguide.html" target="_blank" rel="external">Gradle user guide</a></li>
+<li><a href="http://www.javapractices.com/topic/TopicAction.do?Id=205" target="_blank" rel="external">Package by feature, not layer</a></li>
+</ol>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://kevin1202.github.io/2017/04/27/Android架构演化之路/" data-title="Android架构演化之路 | Kevin博客" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/04/27/Android自动截屏工具/" title="Android 自动截屏工具">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Android 自动截屏工具</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/04/27/Android进行单元测试难在哪-part1/"  title="Android 进行单元测试难在哪-part1">
+ <strong>下一篇：</strong><br/> 
+ <span>Android 进行单元测试难在哪-part1
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2017/04/27/Android架构演化之路/" data-title="Android架构演化之路" data-url="https://kevin1202.github.io/2017/04/27/Android架构演化之路/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#架构的演化"><span class="toc-number">1.</span> <span class="toc-text">架构的演化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#反应式方法-RxJava"><span class="toc-number">1.1.</span> <span class="toc-text">反应式方法: RxJava</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#依赖注入-Dagger-2"><span class="toc-number">1.2.</span> <span class="toc-text">依赖注入: Dagger 2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Lambda-表达式-Retrolambda"><span class="toc-number">1.3.</span> <span class="toc-text">Lambda 表达式: Retrolambda</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#测试途径"><span class="toc-number">1.4.</span> <span class="toc-text">测试途径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#包结构组织"><span class="toc-number">1.5.</span> <span class="toc-text">包结构组织</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#附加彩蛋-组织你的打包逻辑"><span class="toc-number">1.6.</span> <span class="toc-text">附加彩蛋: 组织你的打包逻辑</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#总结"><span class="toc-number">1.7.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#源代码"><span class="toc-number">1.8.</span> <span class="toc-text">源代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#更多阅读"><span class="toc-number">1.9.</span> <span class="toc-text">更多阅读:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#引用"><span class="toc-number">1.10.</span> <span class="toc-text">引用</span></a></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="carrie1217" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Android/" title="Android">Android<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/git/" title="git">git<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/mac/" title="mac">mac<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/TimerTask/" title="TimerTask">TimerTask<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/size/" title="size">size<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Travis-CI/" title="Travis-CI">Travis-CI<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://coderq.com" target="_blank" title="一个面向程序员交流分享的新一代社区">码农圈</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://wuchong.me" target="_blank" title="Jark&#39;s Blog">Jark&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> 活着就要学习，学习不是为了活着。 <br/>
+			情况是在不断的变化，要使自己的思想适应新的情况，就得学习。</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/carrie1217" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Kevin">Kevin</a>
+		
+		
+		</p>
+		<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','DBjSFU5kGEcv8E-m-m_m','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"kevinbolg"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

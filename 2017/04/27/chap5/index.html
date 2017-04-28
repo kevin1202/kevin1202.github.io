@@ -1,0 +1,611 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>RxJava开发精要5 - Observables变换 | Kevin博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Kevin">
+    
+
+    
+    <meta name="description" content="原文出自《RxJava Essentials》
+原文作者 : Ivan Morgillo
+译文出自 : 开发技术前线 www.devtf.cn
+转载声明: 本译文已授权开发者头条享有独家转载权，未经允许，不得转载!
+译者 : yuxingxin 
+项目地址 : RxJava-Essentials-CN
+
+在上一章中，我们探索了RxJava通用过滤方法。我们学习了如何使用filter()方法过滤我">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RxJava开发精要5 - Observables变换">
+<meta property="og:url" content="https://kevin1202.github.io/2017/04/27/chap5/index.html">
+<meta property="og:site_name" content="Kevin博客">
+<meta property="og:description" content="原文出自《RxJava Essentials》
+原文作者 : Ivan Morgillo
+译文出自 : 开发技术前线 www.devtf.cn
+转载声明: 本译文已授权开发者头条享有独家转载权，未经允许，不得转载!
+译者 : yuxingxin 
+项目地址 : RxJava-Essentials-CN
+
+在上一章中，我们探索了RxJava通用过滤方法。我们学习了如何使用filter()方法过滤我">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_1.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_2.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_3.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_4.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_5.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_6.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_7.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_8.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_9.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_10.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_11.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_12.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_13.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_14.png">
+<meta property="og:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_15.png">
+<meta property="og:updated_time" content="2017-04-28T06:09:49.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RxJava开发精要5 - Observables变换">
+<meta name="twitter:description" content="原文出自《RxJava Essentials》
+原文作者 : Ivan Morgillo
+译文出自 : 开发技术前线 www.devtf.cn
+转载声明: 本译文已授权开发者头条享有独家转载权，未经允许，不得转载!
+译者 : yuxingxin 
+项目地址 : RxJava-Essentials-CN
+
+在上一章中，我们探索了RxJava通用过滤方法。我们学习了如何使用filter()方法过滤我">
+<meta name="twitter:image" content="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_1.png">
+
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/pacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/pacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="Kevin博客" title="Kevin博客"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Kevin博客">Kevin博客</a></h1>
+				<h2 class="blog-motto">梦想还是要有的，万一实现了呢？</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" class="st-default-search-input" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/chap5/" title="RxJava开发精要5 - Observables变换" itemprop="url">RxJava开发精要5 - Observables变换</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#map家族"><span class="toc-number">1.</span> <span class="toc-text">*map家族</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Map"><span class="toc-number">2.</span> <span class="toc-text">Map</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#FlatMap"><span class="toc-number">3.</span> <span class="toc-text">FlatMap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ConcatMap"><span class="toc-number">4.</span> <span class="toc-text">ConcatMap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#FlatMapIterable"><span class="toc-number">5.</span> <span class="toc-text">FlatMapIterable</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SwitchMap"><span class="toc-number">6.</span> <span class="toc-text">SwitchMap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Scan"><span class="toc-number">7.</span> <span class="toc-text">Scan</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GroupBy"><span class="toc-number">8.</span> <span class="toc-text">GroupBy</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Buffer"><span class="toc-number">9.</span> <span class="toc-text">Buffer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Window"><span class="toc-number">10.</span> <span class="toc-text">Window</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Cast"><span class="toc-number">11.</span> <span class="toc-text">Cast</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">12.</span> <span class="toc-text">总结</span></a></li></ol>
+		
+		</div>
+		
+		<ul>
+<li>原文出自《RxJava Essentials》</li>
+<li>原文作者 : <a href="https://www.packtpub.com/books/info/authors/ivan-morgillo" target="_blank" rel="external">Ivan Morgillo</a></li>
+<li>译文出自 : <a href="http://www.devtf.cn" target="_blank" rel="external">开发技术前线 www.devtf.cn</a></li>
+<li>转载声明: 本译文已授权<a href="http://toutiao.io/download" target="_blank" rel="external">开发者头条</a>享有独家转载权，未经允许，不得转载!</li>
+<li>译者 : <a href="https://github.com/yuxingxin" target="_blank" rel="external">yuxingxin</a> </li>
+<li>项目地址 : <a href="https://github.com/yuxingxin/RxJava-Essentials-CN" target="_blank" rel="external">RxJava-Essentials-CN</a></li>
+</ul>
+<p>在上一章中，我们探索了RxJava通用过滤方法。我们学习了如何使用<code>filter()</code>方法过滤我们不需要的值，如何使用<code>take()</code>得到发射元素的子集，如何使用<code>distinct()</code>函数来去除重复的。我们学习了如何使用<code>timeout()</code>，<code>sample()</code>，以及<code>debounce()</code>来利用时间。</p>
+<p>这一章中，我们将学习如何变换可观测序列来创建一个更好满足我们需求的序列。</p>
+<h2 id="map家族"><a href="#map家族" class="headerlink" title="*map家族"></a>*map家族</h2><p>RxJava提供了几个mapping函数：<code>map()</code>,<code>flatMap()</code>,<code>concatMap()</code>,<code>flatMapIterable()</code>以及<code>switchMap()</code>.所有这些函数都作用于一个可观测序列，然后变换它发射的值，最后用一种新的形式返回它们。让我们用“真实世界”合适的例子一个个的学习下。</p>
+<h2 id="Map"><a href="#Map" class="headerlink" title="Map"></a>Map</h2><p>RxJava的<code>map</code>函数接收一个指定的<code>Func</code>对象然后将它应用到每一个由Observable发射的值上。下图展示了如何将一个乘法函数应用到每个发出的值上以此创建一个新的Observable来发射转换的数据。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_1.png" alt=""></p>
+<p>考虑我们已安装的应用列表。我们怎么才能够显示同样的列表，但是所有的名字都是小写。</p>
+<p>我们的<code>loadList()</code>函数可以改成这样：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">loadList</span><span class="params">(List&lt;AppInfo&gt; apps)</span> </span>&#123;</div><div class="line">    mRecyclerView.setVisibility(View.VISIBLE);</div><div class="line">    Observable.from(apps)</div><div class="line">        .map(<span class="keyword">new</span> Func1&lt;AppInfo,AppInfo&gt;()&#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> Appinfo <span class="title">call</span><span class="params">(AppInfo appInfo)</span></span>&#123;</div><div class="line">                String currentName = appInfo.getName();</div><div class="line">                String lowerCaseName = currentName.toLowerCase();</div><div class="line">                appInfo.setName(lowerCaseName);</div><div class="line">                <span class="keyword">return</span> appInfo;</div><div class="line">            &#125;</div><div class="line">        &#125;)</div><div class="line">        .subscribe(<span class="keyword">new</span> Observable&lt;AppInfo&gt;() &#123;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123;</div><div class="line">                mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">                Toast.makeText(getActivity(), <span class="string">"Something went wrong!"</span>, Toast.LENGTH_SHORT).show();</div><div class="line">                mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(AppInfo appInfo)</span> </span>&#123;</div><div class="line">                mAddedApps.add(appInfo); </div><div class="line">                mAdapter.addApplication(mAddedApps.size() - <span class="number">1</span>,appInfo);</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>正如你看到的，像往常一样创建我们发射的Observable，我们加一个<code>map</code>调用，我们可以创建一个简单的函数来更新<code>AppInfo</code>对象并提供一个名字小写的新版本给观察者。</p>
+<h2 id="FlatMap"><a href="#FlatMap" class="headerlink" title="FlatMap"></a>FlatMap</h2><p>在复杂的场景中，我们有一个这样的Observable：它发射一个数据序列，这些数据本身也可以发射Observable。RxJava的<code>flatMap()</code>函数提供一种铺平序列的方式，然后合并这些Observables发射的数据，最后将合并后的结果作为最终的Observable。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_2.png" alt=""></p>
+<p>当我们在处理可能有大量的Observables时，重要是记住任何一个Observables发生错误的情况，<code>flatMap()</code>函数将会触发它自己的<code>onError()</code>函数并放弃整个链。</p>
+<p>重要的一点是关于合并部分：它允许交叉。正如上图所示，这意味着<code>flatMap()</code>函数在最后的Observable中不能够保证源Observables确切的发射顺序。</p>
+<h2 id="ConcatMap"><a href="#ConcatMap" class="headerlink" title="ConcatMap"></a>ConcatMap</h2><p>RxJava的<code>concatMap()</code>函数解决了<code>flatMap()</code>的交叉问题，提供了一种能够把发射的值连续在一起的铺平函数，而不是合并它们，如下图所示：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_3.png" alt=""></p>
+<h2 id="FlatMapIterable"><a href="#FlatMapIterable" class="headerlink" title="FlatMapIterable"></a>FlatMapIterable</h2><p>作为*map家族的一员，<code>flatMapInterable()</code>和<code>flatMap()</code>很像。仅有的本质不同是它将源数据两两结成对，然后生成Iterable而不是原始数据和生成的Observables。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_4.png" alt=""></p>
+<h2 id="SwitchMap"><a href="#SwitchMap" class="headerlink" title="SwitchMap"></a>SwitchMap</h2><p>如下图所示，<code>switchMap()</code>和<code>flatMap()</code>很像，除了一点：当原始Observable发射一个新的数据（Observable）时，它将取消订阅并停止监视之前那个数据的Observable产生的Observable，并开始监视当前这一个。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_5.png" alt=""></p>
+<h2 id="Scan"><a href="#Scan" class="headerlink" title="Scan"></a>Scan</h2><p>RxJava的<code>scan()</code>函数可以看做是一个累加器函数。<code>scan()</code>函数对原始Observable发射的每一项数据都应用一个函数，它将函数的结果填充回可观测序列，等待和下一次发射的数据一起使用。</p>
+<p>作为一个通用的例子，给出一个累加器：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">Observable.just(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>)</div><div class="line">        .scan((sum,item) -&gt; sum + item)</div><div class="line">        .subscribe(<span class="keyword">new</span> Subscriber&lt;Integer&gt;() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123;</div><div class="line">                Log.d(<span class="string">"RXJAVA"</span>, <span class="string">"Sequence completed."</span>);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">                Log.e(<span class="string">"RXJAVA"</span>, <span class="string">"Something went south!"</span>);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(Integer item)</span> </span>&#123;</div><div class="line">                Log.d(<span class="string">"RXJAVA"</span>, <span class="string">"item is: "</span> + item);</div><div class="line">            &#125;</div><div class="line">        &#125;);</div></pre></td></tr></table></figure></p>
+<p>我们得到的结果是：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">RXJAVA: item is: <span class="number">1</span></div><div class="line">RXJAVA: item is: <span class="number">3</span></div><div class="line">RXJAVA: item is: <span class="number">6</span></div><div class="line">RXJAVA: item is: <span class="number">10</span></div><div class="line">RXJAVA: item is: <span class="number">15</span></div><div class="line">RXJAVA: Sequence completed.</div></pre></td></tr></table></figure></p>
+<p>我们也可以创建一个新版本的<code>loadList()</code>函数用来比较每个安装应用的名字从而创建一个名字长度递增的列表。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">loadList</span><span class="params">(List&lt;AppInfo&gt; apps)</span> </span>&#123;</div><div class="line">    mRecyclerView.setVisibility(View.VISIBLE);</div><div class="line">    Observable.from(apps)</div><div class="line">            .scan((appInfo,appInfo2) -&gt; &#123;</div><div class="line">                <span class="keyword">if</span>(appInfo.getName().length &gt; appInfo2.getName().length())&#123;</div><div class="line">                    <span class="keyword">return</span> appInfo;</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    <span class="keyword">return</span> appInfo2;</div><div class="line">                &#125;</div><div class="line">            &#125;)</div><div class="line">            .distinct()</div><div class="line">            .subscribe(<span class="keyword">new</span> Observable&lt;AppInfo&gt;() &#123;</div><div class="line"></div><div class="line">                <span class="meta">@Override</span></div><div class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123;</div><div class="line">                    mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">                &#125;</div><div class="line"></div><div class="line">                <span class="meta">@Override</span></div><div class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">                    Toast.makeText(getActivity(), <span class="string">"Something went wrong!"</span>, Toast.LENGTH_SHORT).show();</div><div class="line">                    mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">                &#125;</div><div class="line"></div><div class="line">                <span class="meta">@Override</span></div><div class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(AppInfo appInfo)</span> </span>&#123;</div><div class="line">                    mAddedApps.add(appInfo); </div><div class="line">                    mAdapter.addApplication(mAddedApps.size() - <span class="number">1</span>,appInfo);</div><div class="line">                &#125;</div><div class="line">            &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>结果如下：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_6.png" width="240"></p>
+<p>有一个<code>scan()</code>函数的变体，它用初始值作为第一个发射的值，方法特征就像：<code>scan(R,Func2)</code>，就像下图中的例子这样：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_7.png"></p>
+<h2 id="GroupBy"><a href="#GroupBy" class="headerlink" title="GroupBy"></a>GroupBy</h2><p>拿第一个例子开始，我们安装的应用程序列表按照字母表的顺序排序。然而，如果现在我们想按照最近更新日期来排序我们的App时该怎么办？RxJava提供了一个有用的函数从列表中按照指定的规则：<code>groupBy()</code>来分组元素。下图中的例子展示了<code>groupBy()</code>如何将发射的值根据他们的形状来进行分组。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_8.png" alt=""></p>
+<p>这个函数将源Observable变换成一个发射Observables的新的Observable。它们中的每一个新的Observable都发射一组指定的数据。</p>
+<p>为了创建一个分组了的已安装应用列表，我们在<code>loadList()</code>函数中引入了一个新的元素：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">Observable&lt;GroupedObservable&lt;String,AppInfo&gt;&gt; groupedItems = Observable.from(apps)</div><div class="line">    .groupBy(<span class="keyword">new</span> Func1&lt;AppInfo,String&gt;()&#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> String <span class="title">call</span><span class="params">(AppInfo appInfo)</span></span>&#123;</div><div class="line">            SimpleDateFormat formatter = <span class="keyword">new</span> SimpleDateFormat(<span class="string">"MM/yyyy"</span>);</div><div class="line">            <span class="keyword">return</span> formatter.format(<span class="keyword">new</span> Date(appInfo.getLastUpdateTime()));</div><div class="line">        &#125;</div><div class="line">    &#125;);</div></pre></td></tr></table></figure></p>
+<p>现在我们创建了一个新的Observable，<code>groupedItems</code>，将会发射一个带有<code>GroupedObservable</code>的序列。<code>GroupedObservable</code>是一个特殊的Observable，它源自一个分组的key。在这个例子中，key就是<code>String</code>，代表的意思是<code>Month/Year</code>格式化的最近更新日期。</p>
+<p>这一点，我们已经创建了几个发射<code>AppInfo</code>数据的Observable，用来填充我们的列表。我们想保留字母排序和分组排序。我们将创建一个新的Observable将所有的联系起来，像通常一样然后订阅它：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">Observable.concat(groupedItems)</div><div class="line">    .subscribe(<span class="keyword">new</span> Observable&lt;AppInfo&gt;() &#123;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123;</div><div class="line">            mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">            Toast.makeText(getActivity(), <span class="string">"Something went wrong!"</span>, Toast.LENGTH_SHORT).show();</div><div class="line">            mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(AppInfo appInfo)</span> </span>&#123;</div><div class="line">            mAddedApps.add(appInfo); </div><div class="line">            mAdapter.addApplication(mAddedApps.size() - <span class="number">1</span>,appInfo);</div><div class="line">        &#125;</div><div class="line">    &#125;);</div></pre></td></tr></table></figure>
+<p>我们的<code>loadList()</code>函数完成了，结果是：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_9.png" width="240"></p>
+<h2 id="Buffer"><a href="#Buffer" class="headerlink" title="Buffer"></a>Buffer</h2><p>RxJava中的<code>buffer()</code>函数将源Observable变换一个新的Observable，这个新的Observable每次发射一组列表值而不是一个一个发射。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_10.png" alt=""></p>
+<p>上图中展示了<code>buffer()</code>如何将<code>count</code>作为一个参数来指定有多少数据项被包在发射的列表中。实际上，<code>buffer()</code>函数有几种变体。其中有一个时允许你指定一个<code>skip</code>值：此后每当收到skip项数据，用count项数据就填充缓存。如下图所示：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_11.png" alt=""></p>
+<p><code>buffer()</code>带一个<code>timespan</code>的参数，会创建一个每隔timespan时间段就会发射一个列表的Observable。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_12.png" alt=""></p>
+<h2 id="Window"><a href="#Window" class="headerlink" title="Window"></a>Window</h2><p>RxJava的<code>window()</code>函数和<code>buffer()</code>很像，但是它发射的时Observable而不是列表。下图展示了<code>window()</code>如何缓存3个数据项并把它们作为一个新的Observable发射出去。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_13.png" alt=""></p>
+<p>这些Observables中的每一个都发射原始Observable数据的一个子集，数量由<code>count</code>指定,最后发射一个<code>onCompleted()</code>结束。正如<code>buffer()</code>一样,<code>window()</code>也有一个<code>skip</code>变体,如下图所示：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_14.png" alt=""></p>
+<h2 id="Cast"><a href="#Cast" class="headerlink" title="Cast"></a>Cast</h2><p>RxJava的<code>cast()</code>函数是本章中最后一个操作符。它是<code>map()</code>操作符的特殊版本。它将源Observable中的每一项数据都转换为新的类型，把它变成了不同的<code>Class</code>。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_15.png" alt=""></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这一章中，我们学习了RxJava时如何控制和转换可观测序列。用我们现在所学的知识，我们可以创建、过滤、转换我们所想要的任何种类的可观测序列。</p>
+<p>下一章，我们将学习如何组合Observable，合并它们，连接它们，再或者打包它们。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://kevin1202.github.io/2017/04/27/chap5/" data-title="RxJava开发精要5 - Observables变换 | Kevin博客" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/04/27/chap6/" title="RxJava开发精要6 - 组合Observables">
+  <strong>上一篇：</strong><br/>
+  <span>
+  RxJava开发精要6 - 组合Observables</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/04/27/chap8/"  title="RxJava开发精要8 - 与REST无缝结合-RxJava和Retrofit">
+ <strong>下一篇：</strong><br/> 
+ <span>RxJava开发精要8 - 与REST无缝结合-RxJava和Retrofit
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2017/04/27/chap5/" data-title="RxJava开发精要5 - Observables变换" data-url="https://kevin1202.github.io/2017/04/27/chap5/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#map家族"><span class="toc-number">1.</span> <span class="toc-text">*map家族</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Map"><span class="toc-number">2.</span> <span class="toc-text">Map</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#FlatMap"><span class="toc-number">3.</span> <span class="toc-text">FlatMap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ConcatMap"><span class="toc-number">4.</span> <span class="toc-text">ConcatMap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#FlatMapIterable"><span class="toc-number">5.</span> <span class="toc-text">FlatMapIterable</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SwitchMap"><span class="toc-number">6.</span> <span class="toc-text">SwitchMap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Scan"><span class="toc-number">7.</span> <span class="toc-text">Scan</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GroupBy"><span class="toc-number">8.</span> <span class="toc-text">GroupBy</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Buffer"><span class="toc-number">9.</span> <span class="toc-text">Buffer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Window"><span class="toc-number">10.</span> <span class="toc-text">Window</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Cast"><span class="toc-number">11.</span> <span class="toc-text">Cast</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">12.</span> <span class="toc-text">总结</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="carrie1217" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Android/" title="Android">Android<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/git/" title="git">git<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/mac/" title="mac">mac<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/TimerTask/" title="TimerTask">TimerTask<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/size/" title="size">size<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Travis-CI/" title="Travis-CI">Travis-CI<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://coderq.com" target="_blank" title="一个面向程序员交流分享的新一代社区">码农圈</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://wuchong.me" target="_blank" title="Jark&#39;s Blog">Jark&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> 活着就要学习，学习不是为了活着。 <br/>
+			情况是在不断的变化，要使自己的思想适应新的情况，就得学习。</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/carrie1217" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Kevin">Kevin</a>
+		
+		
+		</p>
+		<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','DBjSFU5kGEcv8E-m-m_m','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"kevinbolg"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
