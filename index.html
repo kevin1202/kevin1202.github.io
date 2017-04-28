@@ -78,6 +78,318 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2017/04/27/适用于Android的Flux架构/" title="适用于Android的Flux架构" itemprop="url">适用于Android的Flux架构</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>Flux Architecture on Android</p>
+<p>适用于Android的Flux架构</p>
+<p>Finding a good architecture for Android applications is not easy. Google<br>seems to not care much about it, so there is no official recommendation<br>on patterns beyond Activities lifecycle management.</p>
+<p>找到一个好的应用架构对于Android来说并非易事，Goodle似乎并不那么关心这方面，因为他们并没有推荐一个合适的应用架构。</p>
+<p>But defining an architecture for your application is important. Like it<br>or not, <strong>every application is going to have an architecture</strong>. So you’d<br>better be the one defining it than let it just emerge.</p>
+<p>但是对于应用来说一个良好的架构是非常重要的。不管你是否同意，每个应用都应该有一个架构。因此，你最好为你的应用设计一个架构，而不是任由它发展。</p>
+<h2 id="Today-Clean-Architecture"><a href="#Today-Clean-Architecture" class="headerlink" title="Today: Clean Architecture"></a>Today: Clean Architecture</h2><h2 id="清晰的软件架构"><a href="#清晰的软件架构" class="headerlink" title="清晰的软件架构"></a>清晰的软件架构</h2><p>Current trend is to adapt <a href="https://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html" target="_blank" rel="external">Clean<br>Architecture</a>,<br>a 2012 Uncle Bob proposal for web applications.</p>
+<p>现在比较流行的架构是Bob大叔在2012年发表的、针对于Web应用的<a href="https://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html" target="_blank" rel="external">清晰的软件架构</a>。</p>
+<p>I find Clean Architecture a little bit <strong>over-engineered</strong> for most of<br>the Android apps out there.</p>
+<p>但是我发现这个清晰的软件架构对于Android应用来说太过重量级了。</p>
+<p>Typically <strong>mobile apps live shorter than web apps</strong>. Mobile technology<br>is evolving so fast that any app released today is going to be<br>completely deprecated in twelve months.</p>
+<p>通常来说，移动应用都比web应用要简单。移动技术变化得很快，以至于今天发布的应用可能在一年之后就过时了。</p>
+<p>Mobile apps usually <strong>do very little</strong>. A very high percent of use cases<br>are just for data consuming. Get data from API, show data to user. Lot<br>of reads, very little writes.</p>
+<p>移动应用通常比较简单，比较多的使用场景只是对数据的处理。从API获取数据、向用户展示数据。更多的是阅读，很少有写内容的需求。</p>
+<p>As a result its <strong>business logic is not complex</strong>. At least not as<br>complex as backend apps. Well you have to deal with platform issues:<br>memory, storage, pause, resume, network, location, etc. But that is not<br>your app business logic. You have all of that in every app.</p>
+<p>这也使得移动应用的<code>业务逻辑不会太过于复杂</code>，至少不会比后端的应用复杂。当然，你也需要处理一些移动平台的问题:内存，存储，暂停，重新运行，网络，地理位置等等。但是这些并不是你的业务逻辑。 </p>
+<p>So it seems that most of the apps out there will not benefit from things<br>like complex layer divisions or job priority execution queues.</p>
+<p>因此，对于大多数应用来说并不会从复杂的分层架构或者具有优先级的任务队列中获得太多益处。</p>
+<p>They may just need a <strong>simple way to organise code, work together<br>efficiently and find bugs easily</strong>.</p>
+<p>它们可能只是需要简单的方式来组织代码，使得各部分组件之间高效的一起工作，并且容易查找bug。</p>
+<h2 id="Introducing-Flux-Architecture"><a href="#Introducing-Flux-Architecture" class="headerlink" title="Introducing Flux Architecture"></a>Introducing Flux Architecture</h2><h2 id="Flux-应用架构简介"><a href="#Flux-应用架构简介" class="headerlink" title="Flux 应用架构简介"></a>Flux 应用架构简介</h2><p><a href="https://facebook.github.io/flux/docs/overview.html" target="_blank" rel="external">Flux Architecture</a> is used by Facebook to build their client- side web applications. Like<br><em>Clean Architecture</em> it is not intended for mobile apps, but its<br>features and simplicity will allow us to adapt it very well to Android<br>projects.</p>
+<p><strong><a href="https://facebook.github.io/flux/docs/overview.html" target="_blank" rel="external">Flux应用架构</a></strong>被facebook用于架构客户端Web应用，与<em>Clean Architecture</em>类似它也不是针对于移动应用的，它更简洁性能够让我们很方面的适用于Android应用。</p>
+<p><img src="http://img.blog.csdn.net/20150810172158465" alt="flux-graph-simple"></p>
+<p>There are two <strong>key features</strong> to understand Flux:</p>
+<p>有两个关键特性能够帮助我们理解Flux : </p>
+<ul>
+<li><p>The data flow is always <strong>unidirectional</strong>.</p>
+<p>An <a href="https://www.youtube.com/watch?v=i__969noyAM" target="_blank" rel="external">unidirectional data<br>flow</a> is the <strong>core</strong><br>of the Flux architecture and is what makes it so easy to learn. It<br>also provides great advantages when testing the application as<br>discussed below.</p>
+</li>
+<li><p>数据流总是单向的</p>
+<pre><code>一个 [单向数据流](https://www.youtube.com/watch?v=i__969noyAM)是Flux 应用架构的核心，这也使得它很容易学习。当你需要测试应用时它也提供了很便利的条件。
+</code></pre></li>
+<li><p>The application is divided into <strong>three main parts</strong>:</p>
+<ul>
+<li><strong>View</strong>: Application interface. It create actions in response<br>to user interactions.</li>
+<li><strong>Dispatcher</strong>: Central hub through which pass all actions and<pre><code>whose responsibility is to make them arrive to every Store.
+</code></pre></li>
+<li><strong>Store</strong>: Maintain the state for a particular application<pre><code>domain. They respond to actions according to current state,
+execute business logic and emit a *change* event when they are
+done. This event is used by the view to update its interface.
+</code></pre></li>
+</ul>
+</li>
+<li>应用分为三部分 : <ul>
+<li><strong>View</strong> : 应用接口,它用于将用户的交互转换为Action。</li>
+<li><strong>Dispatcher</strong> : 中央分发器,将所有action分发到处理它们每个Store;</li>
+<li><strong>Store</strong> : 维护特定应用领域的状态。它们根据当前的状态对action做出处理,执行业务逻辑,并且在处理完成时发出<em>change</em>事件。这个事件用于通知View更新UI。</li>
+</ul>
+</li>
+</ul>
+<p>This three parts communicate through <strong>Actions</strong>: Simple plain objects,<br>identified by a type, containing the data related to that action.</p>
+<p>这三部分通过<strong>Action</strong>交互,Action是通过type标识的简单对象,它包含了一些与action相关的数据。</p>
+<h2 id="Flux-Android-Architecture"><a href="#Flux-Android-Architecture" class="headerlink" title="Flux Android Architecture"></a>Flux Android Architecture</h2><h2 id="适用于Android的Flux架构"><a href="#适用于Android的Flux架构" class="headerlink" title="适用于Android的Flux架构"></a>适用于Android的Flux架构</h2><p>The main target of using Flux principles on Android development is to<br>build an architecture with a good balance between simplicity and ease of<br>scale and test.<br>在Android开发中使用Flux原则的主要目标就是创建一个简单、可伸缩、易于测试的应用架构。</p>
+<p>First step is to <strong>map Flux elements with Android app components</strong>.</p>
+<p>第一步需要做的就是<strong>在Android组件之间建立Flux元素的关系映射</strong>。</p>
+<p>Two of this elements are very easy to figure out and implement.</p>
+<p>这两类元素非常容易实现 : </p>
+<ul>
+<li><strong>View</strong>: Activity or Fragment</li>
+<li><p><strong>Dispatcher</strong>: An event bus. I will use Otto in my examples but any</p>
+<pre><code>other implementation should be fine.
+</code></pre></li>
+<li><p><strong>View</strong>: Activity 或 Fragment;</p>
+</li>
+<li><strong>Dispatcher</strong>: 一个事件总线,我在示例中使用了Otto，但是其他实现也是可以考虑的，例如<a href="https://github.com/bboyfeiyu/AndroidEventBus" target="_blank" rel="external">AndroidEventBus</a>。</li>
+</ul>
+<h3 id="Actions"><a href="#Actions" class="headerlink" title="Actions"></a>Actions</h3><p>Actions are not complex either. They will be implemented as simple POJOs<br>with two main attributes:</p>
+<p>Action也不复杂,它们通常是一些含有如下两个主要属性的简单的对象: </p>
+<ul>
+<li>Type: a <code>String</code> identifying the type of event.</li>
+<li><p>Data: a <code>Map</code> with the payload for this action.</p>
+</li>
+<li><p>Type : 标识事件类型的一个String字段;</p>
+</li>
+<li>Data : 一个含有该Action信息的map字段。</li>
+</ul>
+<p>For example, a typical action to show some User details will look like<br>this:</p>
+<p>例如,一个显示一些用户详细的action大致如下所示 : </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Bundle data = <span class="keyword">new</span> Bundle();</div><div class="line">data.put(<span class="string">"USER_ID"</span>, id);</div><div class="line">Action action = <span class="keyword">new</span> ViewAction(<span class="string">"SHOW_USER"</span>, data);</div></pre></td></tr></table></figure>
+<h3 id="Stores"><a href="#Stores" class="headerlink" title="Stores"></a>Stores</h3><p>This is perhaps the <strong>most difficult</strong> to get Flux concept.</p>
+<p>Stores应该是Flux概念里最难理解的了。</p>
+<p>Also if you have worked with Clean Architecture before it also will be<br>uncomfortable to accept, because Stores will assume responsibilities<br>that were previously separated into different layers.</p>
+<p>如果你以前使用过Clean Architecture,你会感觉它也不是那么容易理解，因为Stores会假设职责已经被分割到不同的层。</p>
+<p>Stores contain the <strong>status of the application and its business logic</strong>.<br>They are similar to <em>rich data models</em> but they can manage the status of<br><strong>various objects</strong>, not just one.</p>
+<p>Stores包含了<strong>应用的状态以及业务逻辑</strong>，它们很像<strong>功能完备的数据模型</strong>,但它们能够管理各种对象的状态,而不仅仅是其中一个。</p>
+<p>Stores <strong>react to Actions emitted by the Dispatcher</strong>, execute business<br>logic and emit a change event as result.</p>
+<p>Stores对Dispatcher发出的Action做出响应,执行业务逻辑,处理完成之后发出一个change事件。</p>
+<p>Stores only output is this single event: <em>change</em>. Any other component<br>interested in a Store internal status must listen to this event and use<br>it to get the data it needs.</p>
+<p>Stores只会输出一个<strong>change</strong>事件,任何对一个Store的内部状态感兴趣的组件都需要监听该事件,并且使用它来获取数据。</p>
+<p>No other component of the system should need to know anything about the<br>status of the application.</p>
+<p>系统中的其他部分并不需要了解应用的状态。</p>
+<p>Finally, stores must <strong>expose an interface</strong> to obtain application<br>Status. This way, view elements can query the Stores and update<br>application UI in response.</p>
+<p>最终,Store必须暴露一个接口来获取应用状态.这样一来，View元素就能够查询Store的状态以及更新UI。</p>
+<p><img src="http://img.blog.csdn.net/20150810172207045" alt="flux-graph-store"></p>
+<p>For example, in a Pub Discovery App a SearchStore will be used to keep<br>track of searched item, search results and the history of past searches.<br>In the same application a ReviewedStore will contain a list of reviewed<br>pubs and the necessary logic to, for example, sort by review.</p>
+<p>例如，在一个酒吧查找App中，SearchStore被用于追踪搜索到的酒吧、搜索结果和经过的酒吧历史数据。另一个ReviewedStore包含查看过的酒吧列表以及必须的逻辑，例如排序。</p>
+<p>However there is one important concept to keep in mind: <strong>Stores are not<br>Repositories</strong>. Their responsibility is <em>not</em> to get data from an<br>external source (API or DB) but only keep track of data provided by<br>actions.</p>
+<p>然后，有有一个重要的概念你必须要记住 : <strong>Store不是Repositories</strong>。它们的职责不是从外部资源（API或者数据库）中获取数据，只是追中action提供的数据。</p>
+<p>So how Flux application obtain data?</p>
+<p>那么Flux如何获取数据呢 ？</p>
+<h2 id="Network-requests-and-asynchronous-calls"><a href="#Network-requests-and-asynchronous-calls" class="headerlink" title="Network requests and asynchronous calls"></a>Network requests and asynchronous calls</h2><h2 id="网络请求与异步调用"><a href="#网络请求与异步调用" class="headerlink" title="网络请求与异步调用"></a>网络请求与异步调用</h2><p>In the initial Flux graph I intentionally skipped one part: <strong>network<br>calls</strong>. Next graph completes first one adding more details:</p>
+<p>在前面的Flux图表中我特意省略了一部分: <strong>网络调用</strong>。下一个图表将会完善这部分细节。</p>
+<p><img src="http://img.blog.csdn.net/20150810172211077" alt="flux-graph-complete"></p>
+<p>Asynchronous network calls are triggered from an <strong>Actions Creator</strong>. A<br>Network Adapter makes the asynchronous call to the corresponding API and<br>returns the result to the Actions Creator.</p>
+<p>异步网络调用会从<strong>Actions Creator</strong>触发，一个网络适配器会触发一个异步的网络调用并且将结果返回到<strong>Actions Creator</strong>中。</p>
+<p>Finally the Actions Creator dispatch the corresponding typed Action with<br>returned data.</p>
+<p>最终<strong>Actions Creator</strong>将含有相应type与数据的Action分发出去。</p>
+<p>Having all the network and asynchronous work out of the Stores has has<br><strong>two main advantages</strong>:</p>
+<p>所有的网络请求和异步操作从Store中隔离出来有两个优点 : </p>
+<ul>
+<li><p><strong>Your Stores are completely synchronous</strong>: This makes the logic<br>inside a Store very easy to follow. Bugs will be much easier to<br>trace. And since <strong>all state changes will be synchronous</strong> testing a<br>Store becomes an easy job: launch actions and assert expected final<br>state.</p>
+</li>
+<li><p><strong>Store中的操作都是是完全同步的</strong> : 这使得Store中的业务逻辑非常简单，bug也易于发现。并且，自从”所有的状态变化都必须是同步的”的运用到实际中，测试Store变得非常容易，只需要加载action，然后对最终的状态做一个断言判断;</p>
+</li>
+<li><p><strong>All actions are triggered from an Action Creator</strong>: Having a</p>
+<pre><code>single point at which you create and launch all user actions greatly
+simplifies finding errors. Forget about digging into classes to find
+out where an action is originated. **Everything starts here**. And
+because asynchronous calls occur *before*, everything that comes out
+of ActionCreator is synchronous. This is a huge win that
+significantly improves traceability and testability of the code.
+</code></pre></li>
+<li><p><strong>所有Action都是从Action Creator被触发</strong> : 从一个统一的点创建和启动所有用户的action使得查找错误变得很简单。省去了在各种Class之间查找该action的发出点,<strong>所有的action都出自Action Creator</strong>。因为异步调用在action发出之前已经调用，因此其他ActionCreator的函数都是同步的，这很大程度上提升了代码的可追踪性和可测试性。</p>
+</li>
+</ul>
+<h2 id="Show-me-the-code-To-Do-App"><a href="#Show-me-the-code-To-Do-App" class="headerlink" title="Show me the code: To-Do App"></a>Show me the code: To-Do App</h2><p><a href="https://github.com/lgvalle/android-flux-todo-app" target="_blank" rel="external">In this example</a> you<br>will find a classical <strong>To-Do App</strong> implemented on Android using a Flux<br>Architecture.</p>
+<p><a href="https://github.com/lgvalle/android-flux-todo-app" target="_blank" rel="external">这个例子</a>是按照Flux架构实现的To-Do Android应用。</p>
+<p>I tried to keep the project as simple as possible just to show how this<br>architecture can produce <strong>very well organised apps</strong>.</p>
+<p>我尝试着尽量简单的演示如何使用Flux架构来构建一个组织良好的应用。</p>
+<p>Some comments about implementation:</p>
+<p>关于这个实现的一些解释 : </p>
+<ul>
+<li><p>The <code>Dispatcher</code> is implemented using Otto Bus. Any bus<br>implementation will mostly work. There is a <strong>Flux restriction</strong> on<br>events I’m not applying here. On original Flux definition<br>dispatching an event before previous one has finish is forbidden and<br>will throw an exception. To keep the project simple I’m not<br>implementing that here.</p>
+</li>
+<li><p>Dispatcher是使用了Otto事件总线实现。任何的事件总线也都可以的啦。在原来的Flux定义中,在上一个事件结束前就分发一个新的事件是不允许的,此时会抛出异常。为了代码比较简单，我在这个项目中并没有实现这个功能;</p>
+</li>
+<li><p>There is an <code>ActionsCreator</code> class to help creating <code>Actions</code> and</p>
+<pre><code>posting them into the `Dispatcher`. It is a pretty common pattern in
+Flux which keeps things organised.
+</code></pre></li>
+<li><p>ActionsCreator类用于创建Action和将它们投递到<code>Dispatcher</code>。在Flux中这是一种比较常见的模式。</p>
+</li>
+<li><p><code>Actions</code> types are just <code>String</code> constants. It is probably not the</p>
+<pre><code>best implementation but is quick and helps keeping things simple.
+</code></pre></li>
+<li>Action类型只有字符串常量。这也许不是最好的实现,但是是最快、最能保持简洁性的。</li>
+</ul>
+<p>Same thing with <code>Actions</code> data: they are just a <code>HashMap</code> with a<br><code>String</code> key and <code>Object</code> as a value. This forces ugly castings on<br>Stores to extract actual data. Of course, this is not type safe but<br>again, keeps the example easy to understand.</p>
+<p>Action中的数据也只是使用key为String、value为Object类型的<code>HashMap</code>来存储。因此这需要你在Store中进行强制类型转换，一般得到具体的Action数据。当然，这并不是类型安全的,还是那句话 : 为了保持简单性。</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>There is <strong>no such thing as the Best Architecture for an Android app</strong>.<br>There <em>is</em> the Best Architecture for your current app. And it is the one<br>that let you collaborate with your teammates easily, finish the project<br>on time, with quality and as less bugs as possible.</p>
+<p>没有什么最好的Android应用架构，只有最适合你应用的架构。这个架构能够使你你和你的队友很方便地一起协作,在规定的时间内高质量的完成你的应用。</p>
+<p>I believe Flux is very good for all of that.</p>
+<p>我相信Flux架构在这些方面还是比较靠谱的，不信就自己动手试试吧！</p>
+<h2 id="示例代码"><a href="#示例代码" class="headerlink" title="示例代码"></a>示例代码</h2><p><a href="https://github.com/lgvalle/android-flux-todo-app" target="_blank" rel="external">代码在这里</a></p>
+<h2 id="深度阅读"><a href="#深度阅读" class="headerlink" title="深度阅读"></a>深度阅读</h2><ul>
+<li><a href="https://facebook.github.io/flux/docs/overview.html" target="_blank" rel="external">Facebook Flux<br>Overview</a></li>
+<li>[Testing Flux<pre><code>Applications](https://facebook.github.io/flux/docs/testing-flux-applications.html#content)
+</code></pre></li>
+<li>[Flux architecture Step by<pre><code>Step](http://blogs.atlassian.com/2014/08/flux-architecture-step-by-step/)
+</code></pre></li>
+<li>[Async Requests and<pre><code>Flux](http://www.code-experience.com/async-requests-with-react-js-and-flux-revisited/)
+</code></pre></li>
+<li>[Flux and<pre><code>Android](http://armueller.github.io/android/2015/03/29/flux-and-android.html)
+</code></pre></li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/适用于Android的Flux架构/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/适用于Android的Flux架构/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/延迟共享元素的过渡动画/" title="延迟共享元素的过渡动画 (part 3b)" itemprop="url">延迟共享元素的过渡动画 (part 3b)</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ul>
+<li>原文链接 : <a href="http://www.androiddesignpatterns.com/2015/03/activity-postponed-shared-element-transitions-part3b.html" target="_blank" rel="external">Postponed Shared Element Transitions (part 3b)</a></li>
+</ul>
+<p>通过讨论 Lollipop Transition API 的一个重要的特性：延迟共享元素的过渡动画，这篇博文将继续我们关于共享元素 Transition 的深度解析。这也是我关于 Transition 这个专栏的第四篇文章。</p>
+<ul>
+<li>Part 1: <a href="https://github.com/bboyfeiyu/android-tech-frontier/tree/master/others/%E6%B7%B1%E5%85%A5%E6%B5%85%E5%87%BAAndroid%20%E6%96%B0%E7%89%B9%E6%80%A7-Transition-Part-1" target="_blank" rel="external">在 Activity 和 Fragment 中使用 Transition </a></li>
+<li>Part 2: <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-content-transitions-in-depth-part2.html" target="_blank" rel="external">深入理解 Transition</a></li>
+<li>Part 3a: <a href="http://www.androiddesignpatterns.com/2015/01/activity-fragment-shared-element-transitions-in-depth-part3a.html" target="_blank" rel="external">深入理解共享元素的 Transition</a></li>
+<li>Part 3b:  <a href="http://www.androiddesignpatterns.com/2015/03/activity-postponed-shared-element-transitions-part3b.html" target="_blank" rel="external">延迟共享元素的 Transition</a></li>
+<li>Part 3c: 共享元素回调实践 (coming soon!)</li>
+<li>Part 4:  Activity &amp; Fragment 过渡动画示例(coming soon!)</li>
+</ul>
+<p>我们通过一个常见的问题来解释为什么需要推迟某些共享元素的过渡动画。</p>
+<p>##理解问题</p>
+<p>通常问题的根源是框架在 Activity 生命周期非常早的时候启动共享元素 Transition 。回想我们的第一篇文章，Transitions 必须捕获目标 View 的起始和结束状态来构建合适的动画。因此，如果框架在共享元素获得它在调用它的 Activity 中所给定的大小和位置前启动共享元素的过渡动画，这个 Transition 将不能正确捕获到共享元素的结束状态值,生成动画也会失败(一个过渡失败的例子<a href="http://www.androiddesignpatterns.com/assets/videos/posts/2015/03/09/postpone-bug-opt.mp4" target="_blank" rel="external">Video 3.3</a>).</p>
+<p>Transition 开始前，能否计算出正确的共享元素的结束值主要依靠两个因素:</p>
+<p>(1) 调用共享元素的 Activity 的布局复杂度以及布局层次结构的深度<br>(2)调用共享元素Activity载入数据消耗的时间</p>
+<p>布局越复杂，在屏幕上确定共享元素的大小位置耗时越长。同样，如果调用共享元素的 Activity 依赖一个异步的数据载入，框架仍有可能会在数据载入完成前自动开始共享元素 Transition。下面列出的是你可能遇到的常见问题:</p>
+<ul>
+<li><p><strong>存在于 Activity 托管的 Fragment 中的共享元素</strong>。<a href="https://developer.android.com/reference/android/app/FragmentTransaction.html#commit()" target="_blank" rel="external">FragmentTransactions 在 commit 后并不会被立即执行</a>，它们会被安排到主线程中等待执行。因此，如果共享元素存在的 Fragment 的视图层和FragmentTransaction没有被及时执行，框架有可能在共享元素被正确测量大小和布局到屏幕前启动共享元素 Transition。<a id="b1" href="#1">(1)</a></p>
+</li>
+<li><p><strong>共享元素是一个高分辨率的图片</strong>。给 <strong>ImageView</strong> 设置一个超过其初始化边界的高分辨率图片，最终可能会导致在这个视图层里出现<a href="https://github.com/android/platform_frameworks_base/blob/lollipop-release/core/java/android/widget/ImageView.java#L453-L455" target="_blank" rel="external">额外的布局传递</a>，由此增加在共享元素准备好前就启动 Transition 的几率。流行的异步图片处理库比如 <a href="https://android.googlesource.com/platform/frameworks/volley" target="_blank" rel="external"><code>Volley</code></a> 和 <a href="http://square.github.io/picasso/" target="_blank" rel="external"><code>Picasso</code></a> ，也不能可靠的解决这个问题：框架不能预先了解图片是要被下载，缩放还是在后台线程中从磁盘读取，也不管图片是否处理完毕就启动共享元素 Transition。</p>
+</li>
+<li><p><strong>共享元素依赖于异步的数据加载</strong>如果共享元素所需的数据是通过<strong>AsyncTask</strong>，<strong>AsyncQueryHandler</strong>,<strong>Loader</strong>或者其他类似的东西加载，在它们获得在调用它们的 Activity 的最终数据（大小、位置）前，框架就有可能在主线程中启动 Transition。</p>
+</li>
+</ul>
+<p>现在你可能会想：如果有办法能让暂时延迟 Transition 的使用，直到我们确定了共享元素的确切大小和位置才使用它就好了。幸好 Activity Transitions API<a id="b2" href="#2">(2)</a> 为我们提供了解决方案。</p>
+<p>在 Activity 的<code>onCreate()</code>中调用<a href="https://developer.android.com/reference/android/app/Activity.html#postponeEnterTransition()" target="_blank" rel="external"><code>postponeEnterTransition()</code></a> 方法来暂时阻止启动共享元素 Transition。之后，你需要在共享元素准备好后调用 <a href="https://developer.android.com/reference/android/app/Activity.html#startPostponedEnterTransition()" target="_blank" rel="external"><code>startPostponedEnterTransition</code></a> 来恢复过渡效果。常见的模式是在一个<a href="http://developer.android.com/reference/android/view/ViewTreeObserver.OnPreDrawListener.html" target="_blank" rel="external"><code>OnPreDrawListener</code></a>中启动延时 Transition，它会在共享元素测量和布局完毕后被调用<a id="b3" href="#3">(3)</a>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">    setContentView(R.layout.activity_main);</div><div class="line"></div><div class="line">    <span class="comment">// Postpone the shared element enter transition.</span></div><div class="line">    postponeEnterTransition();</div><div class="line"></div><div class="line">    <span class="comment">// <span class="doctag">TODO:</span> Call the "scheduleStartPostponedTransition()" method</span></div><div class="line">    <span class="comment">// below when you know for certain that the shared element is</span></div><div class="line">    <span class="comment">// ready for the transition to begin.</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * Schedules the shared element transition to be started immediately</div><div class="line"> * after the shared element has been measured and laid out within the</div><div class="line"> * activity's view hierarchy. Some common places where it might make</div><div class="line"> * sense to call this method are:</div><div class="line"> *</div><div class="line"> * (1) Inside a Fragment's onCreateView() method (if the shared element</div><div class="line"> *     lives inside a Fragment hosted by the called Activity).</div><div class="line"> *</div><div class="line"> * (2) Inside a Picasso Callback object (if you need to wait for Picasso to</div><div class="line"> *     asynchronously load/scale a bitmap before the transition can begin).</div><div class="line"> *</div><div class="line"> * (3) Inside a LoaderCallback's onLoadFinished() method (if the shared</div><div class="line"> *     element depends on data queried by a Loader).</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">scheduleStartPostponedTransition</span><span class="params">(<span class="keyword">final</span> View sharedElement)</span> </span>&#123;</div><div class="line">    sharedElement.getViewTreeObserver().addOnPreDrawListener(</div><div class="line">        <span class="keyword">new</span> ViewTreeObserver.OnPreDrawListener() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onPreDraw</span><span class="params">()</span> </span>&#123;</div><div class="line">                sharedElement.getViewTreeObserver().removeOnPreDrawListener(<span class="keyword">this</span>);</div><div class="line">                startPostponedEnterTransition();</div><div class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>忽略方法名，这里还有第二种方法可以延迟共享元素的返回 Transition，在调用Activity的<a href="https://developer.android.com/reference/android/app/Activity.html#onActivityReenter(int,%20android.content.Intent)" target="_blank" rel="external"><code>onActivityReenter()</code></a> 方法中延缓返回 Transition<a id="b4" href="#4">(4)</a></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Don't forget to call setResult(Activity.RESULT_OK) in the returning</div><div class="line"> * activity or else this method won't be called!</div><div class="line"> */</div><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onActivityReenter</span><span class="params">(<span class="keyword">int</span> resultCode, Intent data)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onActivityReenter(resultCode, data);</div><div class="line"></div><div class="line">    <span class="comment">// Postpone the shared element return transition.</span></div><div class="line">    postponeEnterTransition();</div><div class="line"></div><div class="line">    <span class="comment">// <span class="doctag">TODO:</span> Call the "scheduleStartPostponedTransition()" method</span></div><div class="line">    <span class="comment">// above when you know for certain that the shared element is</span></div><div class="line">    <span class="comment">// ready for the transition to begin.</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>尽管添加延时可以让共享元素 Transition 更加流畅准确，但是你也要知道在应用中引入共享元素 Transition 的延迟可能会产生一些负面影响：</p>
+<ul>
+<li><strong>调用<code>postponeEnterTransition</code>后不要忘记调用<code>startPostponedEnterTransition</code></strong>。<br>忘记调用<code>startPostponedEnterTransition</code>会让你的应用处于死锁状态，用户无法进入下个Activity。</li>
+</ul>
+<ul>
+<li><strong>不要将共享元素 Transition 延迟设置到1s以上</strong>。延迟时间过长会在应用中产生不必要的卡顿，影响用户体验。</li>
+</ul>
+<p>感谢阅读！希望这篇文章对你有所帮助。</p>
+<p><a id="1" href="#b1"><strong>1</strong></a>: 当然，许多应用通过调用 <a href="https://developer.android.com/reference/android/app/FragmentManager.html#executePendingTransactions(" target="_blank" rel="external"><code>FragmentManager#executePendingTransactions()</code></a>) 来避开这个问题，这样会强制立即执行FragmentTransactions而不是异步。</p>
+<p><a id="2" href="#b2"><strong>2</strong></a>: 注意!<code>postponeEnterTransition()</code>和<code>startPostponedEnterTransition()</code>只对 Activity Transition起作用，对Fragment无效。详细信息可以在这里找到 <a href="http://stackoverflow.com/questions/26977303/how-to-postpone-a-fragments-enter-transition-in-android-lollipop" target="_blank" rel="external">StackOverflow</a> &amp; <a href="https://plus.google.com/+AlexLockwood/posts/3DxHT42rmmY" target="_blank" rel="external">Google+</a></p>
+<p><a id="3" href="#b3"><strong>3</strong></a>: 小贴士:你可以先调用 <a href="http://developer.android.com/reference/android/view/View.html#isLayoutRequested(" target="_blank" rel="external"><code>View#isLayoutRequested()</code></a>) 来确认是否需要调用 <a href="http://developer.android.com/reference/android/view/ViewTreeObserver.OnPreDrawListener.html" target="_blank" rel="external"><code>OnPreDrawListener</code></a>，有必要的话 <a href="http://developer.android.com/reference/android/view/View.html#isLaidOut(" target="_blank" rel="external"><code>View#isLaidOut()</code></a>) 在一些情况下也能派上用场</p>
+<p><a id="4" href="#b4"><strong>4</strong></a>: 在开发者选项中启用不保留 Activity 选项可以方便调试共享元素返回/重新进入时对应过渡动画的行为，这也可以帮助测试在返回的过渡效果开始之前可能发生最糟糕的情况( Activity 需要重新构造布局加载数据…)</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/延迟共享元素的过渡动画/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/延迟共享元素的过渡动画/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2017/02/16/理解Java中的ThreadLocal/" title="理解Java中的ThreadLocal" itemprop="url">理解Java中的ThreadLocal</a>
   </h1>
   <p class="article-author">By
@@ -310,7 +622,7 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2016/12/05/图标尺寸/" title="图标尺寸" itemprop="url">图标尺寸</a>
+      <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/" title="使用微信SDK遇到的问题汇总" itemprop="url">使用微信SDK遇到的问题汇总</a>
   </h1>
   <p class="article-author">By
        
@@ -323,76 +635,13 @@
 </header>
     <div class="article-content">
         
-        <h2 id="Pixel-Densities"><a href="#Pixel-Densities" class="headerlink" title="Pixel Densities"></a>Pixel Densities</h2><p>Android icons require five separate sizes for different screen pixel densities. Icons for lower resolution are created automatically from the baseline.</p>
+        <p>在正式开始之前这里要着啰嗦一下，进来的同学一定要看，在申请应用的时候要填一个签名，这个签名是由应用的签名文件keystore决定的，那么你在填这个签名的时候，一定要把你的应用用正式的keyStore生成apk，安装到手机，然后用微信提供的获取应用签名的apk工具获取你应用的签名，然后这会生成的这个签名才是正确的，千万记得，不要使用dubug的ketStore测试，不然后面虽然可以修改，修改了后要审核，但是审核也是需要时间的，会很麻烦。<br>还有一点，你在测试微信分享的时候可能会直接在Eclipse好或者Studio运行项目，那样使用的肯定是dubug的keyStore了，这样分享的时候会被微信拒绝，微信会生成缓存，就算你这会换了正式的keystore来分享显示的还会是被微信拒绝，就算重启微信重启手机也不管用，那你就要清空微信的数据了；很多东西是不是丢了？好吧，啰嗦够了，正式进入主题。</p>
+<p>今天会提供如果实现微信分享，并且对怎么成功接受回调结果做一个详细的介绍和教程，有回调结果失败的同学，往下看吧</p>
         
         
         <p class="article-more-link">
           
-            <a href="/2016/12/05/图标尺寸/#more">阅读全文</a>
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-<div class="article-categories">
-  <span></span>
-  <a class="article-category-link" href="/categories/Android/">Android</a>
-</div>
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/size/">size</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2016/12/05/图标尺寸/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/图标尺寸/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/12/05/Android机型适配之痛/" title="Android机型适配之痛" itemprop="url">Android机型适配之痛</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>Android项目中Camera的适配。</p>
-        
-        
-        <p class="article-more-link">
-          
-            <a href="/2016/12/05/Android机型适配之痛/#more">阅读全文</a>
+            <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#more">阅读全文</a>
           
        </p>
     </div>
@@ -408,72 +657,7 @@
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2016/12/05/Android机型适配之痛/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/Android机型适配之痛/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/12/05/mac_library_show_hide/" title="解决git status/commit时中文文件名乱码" itemprop="url">解决git status/commit时中文文件名乱码</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>#不对0x80以上的字符进行quote，解决git status/commit时中文文件名乱码</p>
-<p><code>git config --global core.quotepath false</code></p>
-<p><a href="http://xstarcd.github.io/wiki/shell/git_chinese.html" target="_blank" rel="external">http://xstarcd.github.io/wiki/shell/git_chinese.html</a></p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-<div class="article-categories">
-  <span></span>
-  <a class="article-category-link" href="/categories/git/">git</a>
-</div>
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/git/">git</a>
-  </div>
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2016/12/05/mac_library_show_hide/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/mac_library_show_hide/" data-count-type="comments">&nbsp;</a>
+		<a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/微信SDK使用时遇到的问题汇总/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -552,6 +736,60 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2016/12/05/Android机型适配之痛/" title="Android机型适配之痛" itemprop="url">Android机型适配之痛</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>Android项目中Camera的适配。</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/12/05/Android机型适配之痛/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/05/Android机型适配之痛/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/Android机型适配之痛/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2016/12/05/Android最佳实践/" title="Android最佳实践" itemprop="url">Android最佳实践</a>
   </h1>
   <p class="article-author">By
@@ -592,61 +830,6 @@
 	
 	  	<span></span>
 		<a href="/2016/12/05/Android最佳实践/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/Android最佳实践/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/" title="使用微信SDK遇到的问题汇总" itemprop="url">使用微信SDK遇到的问题汇总</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>在正式开始之前这里要着啰嗦一下，进来的同学一定要看，在申请应用的时候要填一个签名，这个签名是由应用的签名文件keystore决定的，那么你在填这个签名的时候，一定要把你的应用用正式的keyStore生成apk，安装到手机，然后用微信提供的获取应用签名的apk工具获取你应用的签名，然后这会生成的这个签名才是正确的，千万记得，不要使用dubug的ketStore测试，不然后面虽然可以修改，修改了后要审核，但是审核也是需要时间的，会很麻烦。<br>还有一点，你在测试微信分享的时候可能会直接在Eclipse好或者Studio运行项目，那样使用的肯定是dubug的keyStore了，这样分享的时候会被微信拒绝，微信会生成缓存，就算你这会换了正式的keystore来分享显示的还会是被微信拒绝，就算重启微信重启手机也不管用，那你就要清空微信的数据了；很多东西是不是丢了？好吧，啰嗦够了，正式进入主题。</p>
-<p>今天会提供如果实现微信分享，并且对怎么成功接受回调结果做一个详细的介绍和教程，有回调结果失败的同学，往下看吧</p>
-        
-        
-        <p class="article-more-link">
-          
-            <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#more">阅读全文</a>
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/微信SDK使用时遇到的问题汇总/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -783,6 +966,135 @@
 	
 	  	<span></span>
 		<a href="/2016/12/05/处理表情和文字输入的正确姿势/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/处理表情和文字输入的正确姿势/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/mac_library_show_hide/" title="解决git status/commit时中文文件名乱码" itemprop="url">解决git status/commit时中文文件名乱码</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>#不对0x80以上的字符进行quote，解决git status/commit时中文文件名乱码</p>
+<p><code>git config --global core.quotepath false</code></p>
+<p><a href="http://xstarcd.github.io/wiki/shell/git_chinese.html" target="_blank" rel="external">http://xstarcd.github.io/wiki/shell/git_chinese.html</a></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/git/">git</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/git/">git</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/05/mac_library_show_hide/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/mac_library_show_hide/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/图标尺寸/" title="图标尺寸" itemprop="url">图标尺寸</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="Pixel-Densities"><a href="#Pixel-Densities" class="headerlink" title="Pixel Densities"></a>Pixel Densities</h2><p>Android icons require five separate sizes for different screen pixel densities. Icons for lower resolution are created automatically from the baseline.</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/12/05/图标尺寸/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Android/">Android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/size/">size</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/05/图标尺寸/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/图标尺寸/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -1106,11 +1418,11 @@
 			
 		
 			
-				<li><a href="/tags/TimerTask/" title="TimerTask">TimerTask<sup>1</sup></a></li>
+				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
+				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
 			
 		
 			
@@ -1118,11 +1430,11 @@
 			
 		
 			
-				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
+				<li><a href="/tags/TimerTask/" title="TimerTask">TimerTask<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
+				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
 			
 		
 			
