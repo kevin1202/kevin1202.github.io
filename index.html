@@ -1,0 +1,1331 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Kevin博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Kevin">
+    
+
+    
+    <meta name="description" content="欢迎大家来到我的博客，希望可以帮到你们，很高兴认识你们。我的github地址：https:github.com/kevin1202">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Kevin博客">
+<meta property="og:url" content="https://kevin1202.github.io/index.html">
+<meta property="og:site_name" content="Kevin博客">
+<meta property="og:description" content="欢迎大家来到我的博客，希望可以帮到你们，很高兴认识你们。我的github地址：https:github.com/kevin1202">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kevin博客">
+<meta name="twitter:description" content="欢迎大家来到我的博客，希望可以帮到你们，很高兴认识你们。我的github地址：https:github.com/kevin1202">
+
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/pacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/pacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="Kevin博客" title="Kevin博客"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Kevin博客">Kevin博客</a></h1>
+				<h2 class="blog-motto">梦想还是要有的，万一实现了呢？</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" class="st-default-search-input" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main">
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/16/理解Java中的ThreadLocal/" title="理解Java中的ThreadLocal" itemprop="url">理解Java中的ThreadLocal</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-02-16T05:55:28.000Z" itemprop="datePublished"> 发表于 2017-02-16</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h1 id="理解Java中的ThreadLocal"><a href="#理解Java中的ThreadLocal" class="headerlink" title="理解Java中的ThreadLocal"></a>理解Java中的ThreadLocal</h1><p>之前面试的时候，面试官问题threadlocal怎么用？当时就懵逼了，只是见过，却不知道如何使用。</p>
+<p>提到ThreadLocal，有些Android或者Java程序员可能有所陌生，可能会提出种种问题，它是做什么的，是不是和线程有关，怎么使用呢？等等问题，本文将总结一下我对ThreadLocal的理解和认识，希望让大家理解ThreadLocal更加透彻一些。</p>
+<h4 id="ThreadLocal是什么？"><a href="#ThreadLocal是什么？" class="headerlink" title="ThreadLocal是什么？"></a>ThreadLocal是什么？</h4><p>ThreadLocal是一个关于创建线程局部变量的类。</p>
+<p>通常情况下，我们创建的变量是可以被任何一个线程访问并修改的。而使用ThreadLocal创建的变量只能被当前线程访问，其他线程则无法访问和修改。</p>
+<h3 id="用法简介"><a href="#用法简介" class="headerlink" title="用法简介"></a>用法简介</h3><ul>
+<li><p>创建，支持泛型</p>
+<p><code>ThreadLocal&lt;String&gt; mStringThreadLocal = new ThreadLocal&lt;&gt;();</code></p>
+</li>
+<li><p>set方法</p>
+<p><code>mStringThreadLocal.set(&quot;droidyue.com&quot;);</code></p>
+</li>
+<li><p>get方法</p>
+<p><code>mStringThreadLocal.get();</code></p>
+</li>
+</ul>
+<h3 id="完整的使用示例"><a href="#完整的使用示例" class="headerlink" title="完整的使用示例"></a>完整的使用示例</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">private void testThreadLocal() &#123;</div><div class="line">    Thread t = new Thread() &#123;</div><div class="line">        ThreadLocal&lt;String&gt; mStringThreadLocal = new ThreadLocal&lt;&gt;();</div><div class="line"></div><div class="line">        @Override</div><div class="line">        public void run() &#123;</div><div class="line">            super.run();</div><div class="line">            mStringThreadLocal.set(&quot;droidyue.com&quot;);</div><div class="line">            mStringThreadLocal.get();</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    t.start();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h3><ul>
+<li>实现单个线程单例以及单个线程上下文信息存储，比如交易id等</li>
+<li>实现线程安全，非线程安全的对象使用ThreadLocal之后就会变得线程安全，因为每个线程都会有一个对应的实例</li>
+<li>承载一些线程相关的数据，避免在方法中来回传递参数</li>
+</ul>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/02/16/理解Java中的ThreadLocal/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/02/16/理解Java中的ThreadLocal/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/15/Java之数组array和集合list、set、map/" title="数组与集合" itemprop="url">数组与集合</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-02-15T09:16:28.000Z" itemprop="datePublished"> 发表于 2017-02-15</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h1 id="Java之数组array和集合list、set、map"><a href="#Java之数组array和集合list、set、map" class="headerlink" title="Java之数组array和集合list、set、map"></a>Java之数组array和集合list、set、map</h1><p>最基础的是array,所有的集合都是通过array实现的。</p>
+<p>在代码中进行随机访问和存储，array的效率是最高的，但是array是固定的，不能动态改变，且一个array只能存放同一种数据类型。针对以上缺点，就出现了集合就是list,set,map。</p>
+<p>java集合可以存储和操作不固定的一组数据，但是只能存放引用类型的数据，不能放基本数据类型。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/02/15/Java之数组array和集合list、set、map/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/02/15/Java之数组array和集合list、set、map/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/08/git命令使用大全/" title="Git命令使用大全" itemprop="url">Git命令使用大全</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-08T04:10:15.000Z" itemprop="datePublished"> 发表于 2016-12-08</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h4 id="1-新建代码库"><a href="#1-新建代码库" class="headerlink" title="1.新建代码库"></a>1.新建代码库</h4><ul>
+<li><p>在当前目录新建一个Git代码库</p>
+<p><code>$ git init</code></p>
+</li>
+<li><p>新建一个目录，将其初始化为Git代码库</p>
+<p><code>$ git init [project-name]</code></p>
+</li>
+<li><p>下载一个项目和它的整个代码历史</p>
+<p><code>$ git clone [url]</code></p>
+</li>
+</ul>
+<h4 id="2-配置"><a href="#2-配置" class="headerlink" title="2.配置"></a>2.配置</h4><p>Git的设置文件为.gitconfig，它可以在用户主目录下（全局配置），也可以在项目目录下（项目配置）。</p>
+<ul>
+<li><p>显示当前的Git配置</p>
+<p><code>$ git config —list</code></p>
+</li>
+<li><p>编辑Git配置文件</p>
+<p><code>$ git config -e [—global]</code></p>
+</li>
+<li><p>设置提交代码时的用户信息</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ git config [--global] user.name &quot;[name]&quot;</div><div class="line">$ git config [--global] user.email &quot;[email address]&quot;</div></pre></td></tr></table></figure>
+<h4 id="3-增加-删除文件"><a href="#3-增加-删除文件" class="headerlink" title="3.增加/删除文件"></a>3.增加/删除文件</h4><ul>
+<li><p>添加指定文件到暂存区</p>
+<p><code>$ git add [file1][file2] …</code></p>
+</li>
+<li><p>添加指定目录到暂存区，包括子目录</p>
+<p><code>$ git add [dir]</code></p>
+</li>
+<li><p>添加当前目录的所有文件到暂存区</p>
+<p><code>$ git add .</code></p>
+</li>
+<li><p>添加每个变化前，都会要求确认,对于同一个文件的多处变化，可以实现分次提交</p>
+<p><code>$ git add -p</code></p>
+</li>
+<li><p>删除工作区文件，并且将这次删除放入暂存区</p>
+<p><code>$ git rm [file1][file2] …</code></p>
+</li>
+<li><p>停止追踪指定文件，但该文件会保留在工作区</p>
+<p><code>$ git rm --cached [file]</code></p>
+</li>
+<li><p>改名文件，并且将这个改名放入暂存区</p>
+<p><code>$ git mv [file-original][file-renamed]</code></p>
+</li>
+</ul>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/12/08/git命令使用大全/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/git/">git</a>
+</div>
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/08/git命令使用大全/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/08/git命令使用大全/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/" title="基于Travis-CI搭建Android自动打包发布工作流" itemprop="url">基于Travis-CI搭建Android自动打包发布工作流</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>未自动化前安卓开发总是避免不了这样的工作流程：</p>
+<ol>
+<li>开发一些新功能，提交代码</li>
+<li>完成一部分功能后，打包一个测试版APK</li>
+<li>将测试版APK上传到QQ群 / 网盘 / Fir.im / 蒲公英等</li>
+<li>在QQ群或发布平台解释当前版本所完成的功能</li>
+<li>通知测试人员测试</li>
+</ol>
+<p>实现了这套自动化发布后，工作流程被简化成：</p>
+<ol>
+<li>开发新功能，提交代码</li>
+<li>通过git tag对代码打一个内测版的tag，</li>
+</ol>
+<p>Tag提交后Travis CI会自动编译代码，生成APK文件并分发到Github和fir.im，Github和fir.im中会保持Tag的描述信息，分发完成后会有邮件通知所有参与测试的人员。而作为开发人员，只需要专注于对代码打好一个Tag就可以了。</p>
+<p>整个流程看似做了不少工作，其实体现在Travis CI只有数行指令而已，以下逐一讲解：</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Android/">Android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Travis-CI/">Travis-CI</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/mac_library_show_hide/" title="解决git status/commit时中文文件名乱码" itemprop="url">解决git status/commit时中文文件名乱码</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>#不对0x80以上的字符进行quote，解决git status/commit时中文文件名乱码</p>
+<p><code>git config --global core.quotepath false</code></p>
+<p><a href="http://xstarcd.github.io/wiki/shell/git_chinese.html" target="_blank" rel="external">http://xstarcd.github.io/wiki/shell/git_chinese.html</a></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/git/">git</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/git/">git</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/05/mac_library_show_hide/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/mac_library_show_hide/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/" title="使用微信SDK遇到的问题汇总" itemprop="url">使用微信SDK遇到的问题汇总</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>在正式开始之前这里要着啰嗦一下，进来的同学一定要看，在申请应用的时候要填一个签名，这个签名是由应用的签名文件keystore决定的，那么你在填这个签名的时候，一定要把你的应用用正式的keyStore生成apk，安装到手机，然后用微信提供的获取应用签名的apk工具获取你应用的签名，然后这会生成的这个签名才是正确的，千万记得，不要使用dubug的ketStore测试，不然后面虽然可以修改，修改了后要审核，但是审核也是需要时间的，会很麻烦。<br>还有一点，你在测试微信分享的时候可能会直接在Eclipse好或者Studio运行项目，那样使用的肯定是dubug的keyStore了，这样分享的时候会被微信拒绝，微信会生成缓存，就算你这会换了正式的keystore来分享显示的还会是被微信拒绝，就算重启微信重启手机也不管用，那你就要清空微信的数据了；很多东西是不是丢了？好吧，啰嗦够了，正式进入主题。</p>
+<p>今天会提供如果实现微信分享，并且对怎么成功接受回调结果做一个详细的介绍和教程，有回调结果失败的同学，往下看吧</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/微信SDK使用时遇到的问题汇总/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/开发规范/" title="开发规范" itemprop="url">开发规范</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>Android 开发中类、方法、变量、资源等命名规则。</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/12/05/开发规范/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Android/">Android</a>
+</div>
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/05/开发规范/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/开发规范/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/Android机型适配之痛/" title="Android机型适配之痛" itemprop="url">Android机型适配之痛</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>Android项目中Camera的适配。</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/12/05/Android机型适配之痛/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/05/Android机型适配之痛/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/Android机型适配之痛/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/图标尺寸/" title="图标尺寸" itemprop="url">图标尺寸</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="Pixel-Densities"><a href="#Pixel-Densities" class="headerlink" title="Pixel Densities"></a>Pixel Densities</h2><p>Android icons require five separate sizes for different screen pixel densities. Icons for lower resolution are created automatically from the baseline.</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/12/05/图标尺寸/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Android/">Android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/size/">size</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/05/图标尺寸/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/图标尺寸/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/处理表情和文字输入的正确姿势/" title="处理表情和文字输入的正确姿势" itemprop="url">处理表情和文字输入的正确姿势</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ol>
+<li>点击“输入框”以外的区域，如果当前他们显示的话，需要隐藏表情面板或者软键盘。</li>
+<li>点击“输入框”，如果当前表情面板显示的话，需要先隐藏之，然后弹出软键盘。</li>
+<li>输入框中一般会有显示当前输入状态的提示按钮（有的在输入框左边，有的在右边），比如，如果当前是表情输入状态，该提示按钮的图标应该是软键盘，以提示用户点击该按钮切换到文字输入状态。这个提示按钮的图标和点击后的响应要分情况处理，是动态的。</li>
+<li><p>键盘相关操作方法</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/12/05/处理表情和文字输入的正确姿势/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/05/处理表情和文字输入的正确姿势/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/处理表情和文字输入的正确姿势/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/Android最佳实践/" title="Android最佳实践" itemprop="url">Android最佳实践</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ol>
+<li>定义变量时，UI变量单独放一块，数据变量放一块，空行隔开不要掺杂在一块。</li>
+<li><p>使用UIL时，如果只是简单加载一个图片的bitmap，可以使用SimpleImageLoadingListener方法，而不是ImageLoadingListener。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">imageLoader.displayImage(detailModel.getData().getPicture(), </div><div class="line">                        headerBg, </div><div class="line">                        new SimpleImageLoadingListener() &#123;</div><div class="line"></div><div class="line">                    @Override</div><div class="line">                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) &#123;</div><div class="line">                        headerBg.setImageBitmap(loadedImage);</div><div class="line">                        setBitmap(loadedImage);</div><div class="line">                    &#125;</div><div class="line"></div><div class="line">                &#125;);</div></pre></td></tr></table></figure>
+</li>
+<li><p>Activity或Fragment中对adapter.updateDataSet(data);时，<code>notifyDataSetChanged</code>的操作放在adapter的updateDataSet方法内执行。</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/12/05/Android最佳实践/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/05/Android最佳实践/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/Android最佳实践/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/02/获取屏幕原始高度(工作中遇到的问题)/" title="获取屏幕原始高度" itemprop="url">获取屏幕原始高度</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-02T08:39:19.000Z" itemprop="datePublished"> 发表于 2016-12-02</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>android带有虚拟键的手机， 获取屏幕宽度默认不包含虚拟键的高度，以下代码是获取屏幕原始高度。</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/12/02/获取屏幕原始高度(工作中遇到的问题)/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Android/">Android</a>
+</div>
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/02/获取屏幕原始高度(工作中遇到的问题)/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/02/获取屏幕原始高度(工作中遇到的问题)/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/11/28/mac_library_show_hide/" title="Mac 中显示资源库（Library）文件夹目录的几种方法" itemprop="url">Mac 中显示资源库（Library）文件夹目录的几种方法</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-11-28T09:02:10.000Z" itemprop="datePublished"> 发表于 2016-11-28</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>Mac中Library目录在10.6.7系统之后默认隐藏的，要想找到此文件夹有如下几种方法：</p>
+<ul>
+<li>用命令可以使其显示**</li>
+</ul>
+<blockquote>
+<p>在终端中执行命令：</p>
+<p>chflags nohidden ~/Library</p>
+<p>可显示资源库文件夹</p>
+<p>如想隐藏，可以在终端中执行命令：</p>
+<p>chflags hidden ~/Library  </p>
+</blockquote>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/11/28/mac_library_show_hide/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/mac/">mac</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Mac/">Mac</a><a href="/tags/Library/">Library</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/11/28/mac_library_show_hide/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/11/28/mac_library_show_hide/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/11/24/TimerTask更新UI线程/" title="TimerTask更新UI" itemprop="url">TimerTask更新UI</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-11-24T02:41:59.000Z" itemprop="datePublished"> 发表于 2016-11-24</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>昨天犯了一个低级的错误，在TimerTask任务里执行activity跳转，导致activity切入动画无效。查阅相关资料，有以下两种方法更新UI</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/11/24/TimerTask更新UI线程/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Android/">Android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/TimerTask/">TimerTask</a><a href="/tags/Timer/">Timer</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/11/24/TimerTask更新UI线程/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/11/24/TimerTask更新UI线程/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/11/22/spannable/" title="Spannable的用法" itemprop="url">Spannable的用法</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-11-22T03:17:33.000Z" itemprop="datePublished"> 发表于 2016-11-22</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>Spannable继承自Spanned接口，而实际上，Spanned继承自CharSequence接口。<br>在TextView的<code>setText(CharSequence text)</code>方法中，要求的参数正好是一个CharSequence对象，因此，我们可以通过Spannable对象来直接使用setText来完成文本的设置。在使用中通常使用<code>Spannable spn = new SpannableString(&quot;字符串&quot;)</code>;或者通过SpannableStringBuilder对象来进行构建。<br>在构建除了Spannable对象以后，就可以使用<code>spannable.setSpan(Obj what, int start, int end, int flags)</code>方法来进行样式的设置了，其中参数what是具体样式的实现对象，start则是该样式开始的位置，end对应的是样式结束的位置，参数flags，定义在Spannable中的常量，常用的有：</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/11/22/spannable/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Android/">Android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Spannable/">Spannable</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/11/22/spannable/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/11/22/spannable/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+
+</div>
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="carrie1217" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Android/" title="Android">Android<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/git/" title="git">git<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/mac/" title="mac">mac<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/TimerTask/" title="TimerTask">TimerTask<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/size/" title="size">size<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Travis-CI/" title="Travis-CI">Travis-CI<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://coderq.com" target="_blank" title="一个面向程序员交流分享的新一代社区">码农圈</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://wuchong.me" target="_blank" title="Jark&#39;s Blog">Jark&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> 活着就要学习，学习不是为了活着。 <br/>
+			情况是在不断的变化，要使自己的思想适应新的情况，就得学习。</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/carrie1217" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Kevin">Kevin</a>
+		
+		
+		</p>
+		<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','DBjSFU5kGEcv8E-m-m_m','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+ </html>
