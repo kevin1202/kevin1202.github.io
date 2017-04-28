@@ -136,6 +136,148 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/" title="基于Travis-CI搭建Android自动打包发布工作流" itemprop="url">基于Travis-CI搭建Android自动打包发布工作流</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>未自动化前安卓开发总是避免不了这样的工作流程：</p>
+<ol>
+<li>开发一些新功能，提交代码</li>
+<li>完成一部分功能后，打包一个测试版APK</li>
+<li>将测试版APK上传到QQ群 / 网盘 / Fir.im / 蒲公英等</li>
+<li>在QQ群或发布平台解释当前版本所完成的功能</li>
+<li>通知测试人员测试</li>
+</ol>
+<p>实现了这套自动化发布后，工作流程被简化成：</p>
+<ol>
+<li>开发新功能，提交代码</li>
+<li>通过git tag对代码打一个内测版的tag，</li>
+</ol>
+<p>Tag提交后Travis CI会自动编译代码，生成APK文件并分发到Github和fir.im，Github和fir.im中会保持Tag的描述信息，分发完成后会有邮件通知所有参与测试的人员。而作为开发人员，只需要专注于对代码打好一个Tag就可以了。</p>
+<p>整个流程看似做了不少工作，其实体现在Travis CI只有数行指令而已，以下逐一讲解：</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Android/">Android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Travis-CI/">Travis-CI</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/图标尺寸/" title="图标尺寸" itemprop="url">图标尺寸</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h2 id="Pixel-Densities"><a href="#Pixel-Densities" class="headerlink" title="Pixel Densities"></a>Pixel Densities</h2><p>Android icons require five separate sizes for different screen pixel densities. Icons for lower resolution are created automatically from the baseline.</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/12/05/图标尺寸/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Android/">Android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/size/">size</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/05/图标尺寸/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/图标尺寸/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2016/12/05/Android最佳实践/" title="Android最佳实践" itemprop="url">Android最佳实践</a>
   </h1>
   <p class="article-author">By
@@ -304,7 +446,7 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/" title="基于Travis-CI搭建Android自动打包发布工作流" itemprop="url">基于Travis-CI搭建Android自动打包发布工作流</a>
+      <a href="/2016/12/05/开发规范/" title="开发规范" itemprop="url">开发规范</a>
   </h1>
   <p class="article-author">By
        
@@ -317,26 +459,12 @@
 </header>
     <div class="article-content">
         
-        <p>未自动化前安卓开发总是避免不了这样的工作流程：</p>
-<ol>
-<li>开发一些新功能，提交代码</li>
-<li>完成一部分功能后，打包一个测试版APK</li>
-<li>将测试版APK上传到QQ群 / 网盘 / Fir.im / 蒲公英等</li>
-<li>在QQ群或发布平台解释当前版本所完成的功能</li>
-<li>通知测试人员测试</li>
-</ol>
-<p>实现了这套自动化发布后，工作流程被简化成：</p>
-<ol>
-<li>开发新功能，提交代码</li>
-<li>通过git tag对代码打一个内测版的tag，</li>
-</ol>
-<p>Tag提交后Travis CI会自动编译代码，生成APK文件并分发到Github和fir.im，Github和fir.im中会保持Tag的描述信息，分发完成后会有邮件通知所有参与测试的人员。而作为开发人员，只需要专注于对代码打好一个Tag就可以了。</p>
-<p>整个流程看似做了不少工作，其实体现在Travis CI只有数行指令而已，以下逐一讲解：</p>
+        <p>Android 开发中类、方法、变量、资源等命名规则。</p>
         
         
         <p class="article-more-link">
           
-            <a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/#more">阅读全文</a>
+            <a href="/2016/12/05/开发规范/#more">阅读全文</a>
           
        </p>
     </div>
@@ -349,11 +477,6 @@
 </div>
 
 
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/Travis-CI/">Travis-CI</a>
-  </div>
-
 </div>
 
 
@@ -362,7 +485,7 @@
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/" data-count-type="comments">&nbsp;</a>
+		<a href="/2016/12/05/开发规范/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/开发规范/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 

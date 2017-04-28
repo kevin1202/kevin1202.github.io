@@ -1,0 +1,554 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Android测试框架Dagger 2 + Espresso 2 + Mockito | Kevin博客</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="Kevin">
+    
+
+    
+    <meta name="description" content="原文链接 : Dagger 2 + Espresso 2 + Mockito
+
+我一直在用Dagger, Espresso和Mockito做Android测试，爱死这个组合了！为了庆祝Dagger 2的推出，我分享了一个用Dagger 2, Espresso 2和Mockito做Android测试的Demo
+Dagger 组件(Components)Dependency injection(依赖">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android测试框架Dagger 2 + Espresso 2 + Mockito">
+<meta property="og:url" content="https://kevin1202.github.io/2017/04/27/Android测试框架Dagger 2 + Espresso 2 + Mockito/index.html">
+<meta property="og:site_name" content="Kevin博客">
+<meta property="og:description" content="原文链接 : Dagger 2 + Espresso 2 + Mockito
+
+我一直在用Dagger, Espresso和Mockito做Android测试，爱死这个组合了！为了庆祝Dagger 2的推出，我分享了一个用Dagger 2, Espresso 2和Mockito做Android测试的Demo
+Dagger 组件(Components)Dependency injection(依赖">
+<meta property="og:updated_time" content="2017-04-28T06:15:33.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android测试框架Dagger 2 + Espresso 2 + Mockito">
+<meta name="twitter:description" content="原文链接 : Dagger 2 + Espresso 2 + Mockito
+
+我一直在用Dagger, Espresso和Mockito做Android测试，爱死这个组合了！为了庆祝Dagger 2的推出，我分享了一个用Dagger 2, Espresso 2和Mockito做Android测试的Demo
+Dagger 组件(Components)Dependency injection(依赖">
+
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/pacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/pacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="Kevin博客" title="Kevin博客"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Kevin博客">Kevin博客</a></h1>
+				<h2 class="blog-motto">梦想还是要有的，万一实现了呢？</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">主页</a></li>
+					
+						<li><a href="/archives">归档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="/search/index.html" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" class="st-default-search-input" maxlength="20" placeholder="Search" />
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/Android测试框架Dagger 2 + Espresso 2 + Mockito/" title="Android测试框架Dagger 2 + Espresso 2 + Mockito" itemprop="url">Android测试框架Dagger 2 + Espresso 2 + Mockito</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#Dagger-组件-Components"><span class="toc-number">1.</span> <span class="toc-text">Dagger 组件(Components)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Mockito"><span class="toc-number">2.</span> <span class="toc-text">Mockito</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#更多"><span class="toc-number">3.</span> <span class="toc-text">更多</span></a></li></ol>
+		
+		</div>
+		
+		<ul>
+<li>原文链接 : <a href="http://blog.sqisland.com/2015/04/dagger-2-espresso-2-mockito.html" target="_blank" rel="external">Dagger 2 + Espresso 2 + Mockito</a></li>
+</ul>
+<p>我一直在用Dagger, Espresso和Mockito做Android测试，爱死这个组合了！为了庆祝<a href="http://google.github.io/dagger/" target="_blank" rel="external">Dagger 2</a>的推出，我分享了一个用Dagger 2, Espresso 2和Mockito做Android测试的<a href="https://github.com/chiuki/android-test-demo" target="_blank" rel="external">Demo</a></p>
+<h3 id="Dagger-组件-Components"><a href="#Dagger-组件-Components" class="headerlink" title="Dagger 组件(Components)"></a>Dagger 组件(Components)</h3><p><a href="http://en.wikipedia.org/wiki/Dependency_injection" target="_blank" rel="external">Dependency injection(依赖注入)</a> 允许我们在App开发和测试中可以获取到不同的模块，非常有利于创建可重用的测试用例，这个Demo App的功能是以<code>&quot;yyyy-MM-dd&quot;</code>格式显示今天的日期，我们需要测试一下来应对一些已知的日期，而非依赖于运行测试时的真实日期。</p>
+<p>在<code>Dagger 2</code>中，一个组件(Component)接口可以给整个App提供模块，并且定义了在哪注入它们。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">DemoComponent</span> </span>&#123;</div><div class="line">	<span class="function"><span class="keyword">void</span> <span class="title">inject</span><span class="params">(MainActivity mainActivity)</span></span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="meta">@Singleton</span></div><div class="line"><span class="meta">@Component</span>(modules = ClockModule.class)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ApplicationComponent</span> <span class="keyword">extends</span> <span class="title">DemoComponent</span> </span>&#123;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="meta">@Singleton</span></div><div class="line"><span class="meta">@Component</span>(modules = MockClockModule.class)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">TestComponent</span> <span class="keyword">extends</span> <span class="title">DemoComponent</span> </span>&#123;</div><div class="line">	<span class="function"><span class="keyword">void</span> <span class="title">inject</span><span class="params">(MainActivityTest mainActivityTest)</span></span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong><code>ApplicationComponent</code></strong>组件用于App的正常运行, 而<strong><code>TestComponent</code></strong>组件则用于测试，这两个组件都可以被注入到<strong><code>MainActivity</code></strong>中。</p>
+<p><strong><code>MainActivity</code></strong>如何知道使用的哪个组件(component)? 答案是通过<strong><code>DemoApplication</code></strong>来注入, 它保存着该组件(component)的引用。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> DemoComponent component = <span class="keyword">null</span>;</div><div class="line"></div><div class="line"><span class="meta">@Override</span> </div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</div><div class="line">	<span class="keyword">super</span>.onCreate();</div><div class="line">	<span class="keyword">if</span> (component == <span class="keyword">null</span>) &#123;</div><div class="line">		component = DaggerDemoApplication_ApplicationComponent</div><div class="line">					.builder()</div><div class="line">					.clockModule(<span class="keyword">new</span> ClockModule())</div><div class="line">					.build();</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setComponent</span><span class="params">(DemoComponent component)</span> </span>&#123;</div><div class="line">	<span class="keyword">this</span>.component = component;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> DemoComponent <span class="title">component</span><span class="params">()</span> </span>&#123;</div><div class="line">	<span class="keyword">return</span> component;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>测试时，我们需要在<strong><code>onCreate()</code></strong>方法执行之前调用<strong><code>setComponent()</code></strong>方法，将组件设置为<strong><code>TestComponent</code></strong>。而App正常运行时,组件在<strong><code>onCreate()</code></strong>方法中就被设置为<strong><code>ApplicationComponent</code></strong>了。</p>
+<h3 id="Mockito"><a href="#Mockito" class="headerlink" title="Mockito"></a>Mockito</h3><p>App中有一个<strong><code>Clock</code></strong>类，其中有一个方法可以返回当前的时间:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> DateTime <span class="title">getNow</span><span class="params">()</span> </span>&#123;</div><div class="line">	<span class="keyword">return</span> <span class="keyword">new</span> DateTime();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong><code>TestComponent</code></strong>组件中包含<strong><code>MockClockModule</code></strong>模块，后者使用<a href="http://mockito.org/" target="_blank" rel="external">Mockito</a>提供了一个模拟的<strong><code>Clock</code></strong>。这样<a href="https://github.com/chiuki/android-test-demo/blob/master/app/src/androidTest/java/com/sqisland/android/test_demo/MainActivityTest.java" target="_blank" rel="external"><strong><code>MainActivityTest</code></strong></a>就可以在测试期间提供一个预先设置的日期了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Mockito.when(clock.getNow()).thenReturn(<span class="keyword">new</span> DateTime(<span class="number">2008</span>, <span class="number">9</span>, <span class="number">23</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>));</div></pre></td></tr></table></figure>
+<p>因为我们使用了单例, 相同的模拟<strong><code>Clock</code></strong>将为整个App提供日期，这样就能被显示提供的日期，而非今天的日期了:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">onView(withId(R.id.date)).check(matches(withText(<span class="string">"2008-09-23"</span>)));</div></pre></td></tr></table></figure>
+<h3 id="更多"><a href="#更多" class="headerlink" title="更多"></a>更多</h3><p>这里还有很多示例, 包括使用intent启动的activity的测试和使用JUnit测试的单元测试，请点击下面链接查看:</p>
+<p><a href="https://github.com/chiuki/android-test-demo" target="_blank" rel="external">Click Me</a></p>
+<p>相关阅读:</p>
+<blockquote>
+<ul>
+<li><a href="http://engineering.circle.com/instrumentation-testing-with-dagger-mockito-and-espresso/" target="_blank" rel="external">Instrumentation Testing with Dagger, Mockito, and Espresso</a></li>
+<li><a href="https://gist.github.com/JakeWharton/1c2f2cadab2ddd97f9fb" target="_blank" rel="external">A JUnit @Rule which launches an activity when your test starts</a></li>
+<li><a href="https://code.google.com/p/android-test-kit/wiki/EspressoStartGuide" target="_blank" rel="external">EspressoStartGuide</a> </li>
+<li><a href="http://wiebe-elsinga.com/blog/whats-new-in-android-testing/" target="_blank" rel="external">What’s new in Android Testing</a></li>
+<li><a href="https://github.com/googlesamples/android-testing" target="_blank" rel="external">https://github.com/googlesamples/android-testing</a></li>
+</ul>
+</blockquote>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://kevin1202.github.io/2017/04/27/Android测试框架Dagger 2 + Espresso 2 + Mockito/" data-title="Android测试框架Dagger 2 + Espresso 2 + Mockito | Kevin博客" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/04/27/还在用Toast？你Out啦，试试Snackbar吧！/" title="还在用Toast？你Out啦，试试Snackbar吧！">
+  <strong>上一篇：</strong><br/>
+  <span>
+  还在用Toast？你Out啦，试试Snackbar吧！</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/04/27/Android架构演化之路/"  title="Android架构演化之路">
+ <strong>下一篇：</strong><br/> 
+ <span>Android架构演化之路
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section id="comments" class="comment">
+	<div class="ds-thread" data-thread-key="2017/04/27/Android测试框架Dagger 2 + Espresso 2 + Mockito/" data-title="Android测试框架Dagger 2 + Espresso 2 + Mockito" data-url="https://kevin1202.github.io/2017/04/27/Android测试框架Dagger 2 + Espresso 2 + Mockito/"></div>
+</section>
+
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#Dagger-组件-Components"><span class="toc-number">1.</span> <span class="toc-text">Dagger 组件(Components)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Mockito"><span class="toc-number">2.</span> <span class="toc-text">Mockito</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#更多"><span class="toc-number">3.</span> <span class="toc-text">更多</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="carrie1217" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Android/" title="Android">Android<sup>6</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/git/" title="git">git<sup>2</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/mac/" title="mac">mac<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/TimerTask/" title="TimerTask">TimerTask<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/size/" title="size">size<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Travis-CI/" title="Travis-CI">Travis-CI<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://coderq.com" target="_blank" title="一个面向程序员交流分享的新一代社区">码农圈</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="http://wuchong.me" target="_blank" title="Jark&#39;s Blog">Jark&#39;s Blog</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> 活着就要学习，学习不是为了活着。 <br/>
+			情况是在不断的变化，要使自己的思想适应新的情况，就得学习。</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		
+		<a href="https://github.com/carrie1217" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="Kevin">Kevin</a>
+		
+		
+		</p>
+		<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+  
+  _st('install','DBjSFU5kGEcv8E-m-m_m','2.0.0');
+</script>
+</div></footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"kevinbolg"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
