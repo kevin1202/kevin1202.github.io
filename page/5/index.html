@@ -78,6 +78,61 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2017/02/15/Java之数组array和集合list、set、map/" title="数组与集合" itemprop="url">数组与集合</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-02-15T09:16:28.000Z" itemprop="datePublished"> 发表于 2017-02-15</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h1 id="Java之数组array和集合list、set、map"><a href="#Java之数组array和集合list、set、map" class="headerlink" title="Java之数组array和集合list、set、map"></a>Java之数组array和集合list、set、map</h1><p>最基础的是array,所有的集合都是通过array实现的。</p>
+<p>在代码中进行随机访问和存储，array的效率是最高的，但是array是固定的，不能动态改变，且一个array只能存放同一种数据类型。针对以上缺点，就出现了集合就是list,set,map。</p>
+<p>java集合可以存储和操作不固定的一组数据，但是只能存放引用类型的数据，不能放基本数据类型。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/02/15/Java之数组array和集合list、set、map/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/02/15/Java之数组array和集合list、set、map/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2016/12/08/git命令使用大全/" title="Git命令使用大全" itemprop="url">Git命令使用大全</a>
   </h1>
   <p class="article-author">By
@@ -304,7 +359,7 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/" title="基于Travis-CI搭建Android自动打包发布工作流" itemprop="url">基于Travis-CI搭建Android自动打包发布工作流</a>
+      <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/" title="使用微信SDK遇到的问题汇总" itemprop="url">使用微信SDK遇到的问题汇总</a>
   </h1>
   <p class="article-author">By
        
@@ -317,42 +372,19 @@
 </header>
     <div class="article-content">
         
-        <p>未自动化前安卓开发总是避免不了这样的工作流程：</p>
-<ol>
-<li>开发一些新功能，提交代码</li>
-<li>完成一部分功能后，打包一个测试版APK</li>
-<li>将测试版APK上传到QQ群 / 网盘 / Fir.im / 蒲公英等</li>
-<li>在QQ群或发布平台解释当前版本所完成的功能</li>
-<li>通知测试人员测试</li>
-</ol>
-<p>实现了这套自动化发布后，工作流程被简化成：</p>
-<ol>
-<li>开发新功能，提交代码</li>
-<li>通过git tag对代码打一个内测版的tag，</li>
-</ol>
-<p>Tag提交后Travis CI会自动编译代码，生成APK文件并分发到Github和fir.im，Github和fir.im中会保持Tag的描述信息，分发完成后会有邮件通知所有参与测试的人员。而作为开发人员，只需要专注于对代码打好一个Tag就可以了。</p>
-<p>整个流程看似做了不少工作，其实体现在Travis CI只有数行指令而已，以下逐一讲解：</p>
+        <p>在正式开始之前这里要着啰嗦一下，进来的同学一定要看，在申请应用的时候要填一个签名，这个签名是由应用的签名文件keystore决定的，那么你在填这个签名的时候，一定要把你的应用用正式的keyStore生成apk，安装到手机，然后用微信提供的获取应用签名的apk工具获取你应用的签名，然后这会生成的这个签名才是正确的，千万记得，不要使用dubug的ketStore测试，不然后面虽然可以修改，修改了后要审核，但是审核也是需要时间的，会很麻烦。<br>还有一点，你在测试微信分享的时候可能会直接在Eclipse好或者Studio运行项目，那样使用的肯定是dubug的keyStore了，这样分享的时候会被微信拒绝，微信会生成缓存，就算你这会换了正式的keystore来分享显示的还会是被微信拒绝，就算重启微信重启手机也不管用，那你就要清空微信的数据了；很多东西是不是丢了？好吧，啰嗦够了，正式进入主题。</p>
+<p>今天会提供如果实现微信分享，并且对怎么成功接受回调结果做一个详细的介绍和教程，有回调结果失败的同学，往下看吧</p>
         
         
         <p class="article-more-link">
           
-            <a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/#more">阅读全文</a>
+            <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#more">阅读全文</a>
           
        </p>
     </div>
     <footer class="article-footer clearfix">
 <div class="article-catetags">
 
-<div class="article-categories">
-  <span></span>
-  <a class="article-category-link" href="/categories/Android/">Android</a>
-</div>
-
-
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/Travis-CI/">Travis-CI</a>
-  </div>
 
 </div>
 
@@ -362,7 +394,7 @@
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/" data-count-type="comments">&nbsp;</a>
+		<a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/微信SDK使用时遇到的问题汇总/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -382,7 +414,7 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2016/12/05/Android最佳实践/" title="Android最佳实践" itemprop="url">Android最佳实践</a>
+      <a href="/2016/12/05/Android机型适配之痛/" title="Android机型适配之痛" itemprop="url">Android机型适配之痛</a>
   </h1>
   <p class="article-author">By
        
@@ -395,17 +427,12 @@
 </header>
     <div class="article-content">
         
-        <ol>
-<li>定义变量时，UI变量单独放一块，数据变量放一块，空行隔开不要掺杂在一块。</li>
-<li><p>使用UIL时，如果只是简单加载一个图片的bitmap，可以使用SimpleImageLoadingListener方法，而不是ImageLoadingListener。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">imageLoader.displayImage(detailModel.getData().getPicture(), </div><div class="line">                        headerBg, </div><div class="line">                        new SimpleImageLoadingListener() &#123;</div><div class="line"></div><div class="line">                    @Override</div><div class="line">                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) &#123;</div><div class="line">                        headerBg.setImageBitmap(loadedImage);</div><div class="line">                        setBitmap(loadedImage);</div><div class="line">                    &#125;</div><div class="line"></div><div class="line">                &#125;);</div></pre></td></tr></table></figure>
-</li>
-<li><p>Activity或Fragment中对adapter.updateDataSet(data);时，<code>notifyDataSetChanged</code>的操作放在adapter的updateDataSet方法内执行。</p>
+        <p>Android项目中Camera的适配。</p>
         
         
         <p class="article-more-link">
           
-            <a href="/2016/12/05/Android最佳实践/#more">阅读全文</a>
+            <a href="/2016/12/05/Android机型适配之痛/#more">阅读全文</a>
           
        </p>
     </div>
@@ -421,7 +448,7 @@
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2016/12/05/Android最佳实践/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/Android最佳实践/" data-count-type="comments">&nbsp;</a>
+		<a href="/2016/12/05/Android机型适配之痛/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/Android机型适配之痛/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -500,7 +527,7 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2016/12/05/Android机型适配之痛/" title="Android机型适配之痛" itemprop="url">Android机型适配之痛</a>
+      <a href="/2016/12/05/Android最佳实践/" title="Android最佳实践" itemprop="url">Android最佳实践</a>
   </h1>
   <p class="article-author">By
        
@@ -513,12 +540,17 @@
 </header>
     <div class="article-content">
         
-        <p>Android项目中Camera的适配。</p>
+        <ol>
+<li>定义变量时，UI变量单独放一块，数据变量放一块，空行隔开不要掺杂在一块。</li>
+<li><p>使用UIL时，如果只是简单加载一个图片的bitmap，可以使用SimpleImageLoadingListener方法，而不是ImageLoadingListener。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">imageLoader.displayImage(detailModel.getData().getPicture(), </div><div class="line">                        headerBg, </div><div class="line">                        new SimpleImageLoadingListener() &#123;</div><div class="line"></div><div class="line">                    @Override</div><div class="line">                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) &#123;</div><div class="line">                        headerBg.setImageBitmap(loadedImage);</div><div class="line">                        setBitmap(loadedImage);</div><div class="line">                    &#125;</div><div class="line"></div><div class="line">                &#125;);</div></pre></td></tr></table></figure>
+</li>
+<li><p>Activity或Fragment中对adapter.updateDataSet(data);时，<code>notifyDataSetChanged</code>的操作放在adapter的updateDataSet方法内执行。</p>
         
         
         <p class="article-more-link">
           
-            <a href="/2016/12/05/Android机型适配之痛/#more">阅读全文</a>
+            <a href="/2016/12/05/Android最佳实践/#more">阅读全文</a>
           
        </p>
     </div>
@@ -534,7 +566,85 @@
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2016/12/05/Android机型适配之痛/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/Android机型适配之痛/" data-count-type="comments">&nbsp;</a>
+		<a href="/2016/12/05/Android最佳实践/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/Android最佳实践/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/" title="基于Travis-CI搭建Android自动打包发布工作流" itemprop="url">基于Travis-CI搭建Android自动打包发布工作流</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>未自动化前安卓开发总是避免不了这样的工作流程：</p>
+<ol>
+<li>开发一些新功能，提交代码</li>
+<li>完成一部分功能后，打包一个测试版APK</li>
+<li>将测试版APK上传到QQ群 / 网盘 / Fir.im / 蒲公英等</li>
+<li>在QQ群或发布平台解释当前版本所完成的功能</li>
+<li>通知测试人员测试</li>
+</ol>
+<p>实现了这套自动化发布后，工作流程被简化成：</p>
+<ol>
+<li>开发新功能，提交代码</li>
+<li>通过git tag对代码打一个内测版的tag，</li>
+</ol>
+<p>Tag提交后Travis CI会自动编译代码，生成APK文件并分发到Github和fir.im，Github和fir.im中会保持Tag的描述信息，分发完成后会有邮件通知所有参与测试的人员。而作为开发人员，只需要专注于对代码打好一个Tag就可以了。</p>
+<p>整个流程看似做了不少工作，其实体现在Travis CI只有数行指令而已，以下逐一讲解：</p>
+        
+        
+        <p class="article-more-link">
+          
+            <a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/#more">阅读全文</a>
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/Android/">Android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Travis-CI/">Travis-CI</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/基于Travis-CI搭建Android自动打包发布工作流/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -600,61 +710,6 @@
 	
 	  	<span></span>
 		<a href="/2016/12/05/mac_library_show_hide/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/mac_library_show_hide/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/" title="使用微信SDK遇到的问题汇总" itemprop="url">使用微信SDK遇到的问题汇总</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2016-12-05T10:12:00.000Z" itemprop="datePublished"> 发表于 2016-12-05</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>在正式开始之前这里要着啰嗦一下，进来的同学一定要看，在申请应用的时候要填一个签名，这个签名是由应用的签名文件keystore决定的，那么你在填这个签名的时候，一定要把你的应用用正式的keyStore生成apk，安装到手机，然后用微信提供的获取应用签名的apk工具获取你应用的签名，然后这会生成的这个签名才是正确的，千万记得，不要使用dubug的ketStore测试，不然后面虽然可以修改，修改了后要审核，但是审核也是需要时间的，会很麻烦。<br>还有一点，你在测试微信分享的时候可能会直接在Eclipse好或者Studio运行项目，那样使用的肯定是dubug的keyStore了，这样分享的时候会被微信拒绝，微信会生成缓存，就算你这会换了正式的keystore来分享显示的还会是被微信拒绝，就算重启微信重启手机也不管用，那你就要清空微信的数据了；很多东西是不是丢了？好吧，啰嗦够了，正式进入主题。</p>
-<p>今天会提供如果实现微信分享，并且对怎么成功接受回调结果做一个详细的介绍和教程，有回调结果失败的同学，往下看吧</p>
-        
-        
-        <p class="article-more-link">
-          
-            <a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#more">阅读全文</a>
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2016/12/05/微信SDK使用时遇到的问题汇总/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/05/微信SDK使用时遇到的问题汇总/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
