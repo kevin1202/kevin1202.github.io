@@ -78,7 +78,7 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/04/27/在Activity中使用Thread导致的内存泄漏/" title="在Activity中使用Thread导致的内存泄漏" itemprop="url">在Activity中使用Thread导致的内存泄漏</a>
+      <a href="/2017/04/27/在Android Lollipop中使用Palette抽取Bitmap颜色/" title="在Android Lollipop中使用Palette抽取Bitmap颜色" itemprop="url">在Android Lollipop中使用Palette抽取Bitmap颜色</a>
   </h1>
   <p class="article-author">By
        
@@ -92,35 +92,75 @@
     <div class="article-content">
         
         <ul>
-<li>原文链接 : <a href="http://www.androiddesignpatterns.com/2013/04/activitys-threads-memory-leaks.html" target="_blank" rel="external">Activitys, Threads, &amp; Memory Leaks</a></li>
+<li>原文链接 : <a href="https://www.bignerdranch.com/blog/extracting-colors-to-a-palette-with-android-lollipop/" target="_blank" rel="external">Extracting Colors to a Palette with Android Lollipop</a></li>
 </ul>
-<blockquote>
-<p>注：这篇博文涉及的源码可以在 <a href="https://github.com/alexjlockwood/leaky-threads" target="_blank" rel="external">GitHub</a> 上面下载哦</p>
-</blockquote>
-<p>做 Android 开发最常遇到的问题就是在 Activity 的生命周期中协调耗时任务，避免执行任务导致不易察觉的内存泄漏。不妨先读一读下面的代码，代码写了一个简单的 Activity，Activity 在启动后就会开启一个线程，并循环执行该线程中的任务</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="comment">/** </span></div><div class="line"> *  示例向我们展示了在 Activity 的配置改变时（配置改变会导致其下的 Activity 实例被销</div><div class="line">    *  毁）存活。此外，Activity 的 context 也是内存泄漏的一部分，因为每一个线程都被初始</div><div class="line">    *  化为匿名内部类，使得每一个线程都持有一个外部 Activity 实例的隐式引用，使得</div><div class="line">    *  Activity 不会被 Java 的垃圾回收机制回收。</div><div class="line">    */  </div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span> </span>&#123;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span></div><div class="line">  <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">    exampleOne();</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">exampleOne</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">new</span> Thread() &#123;</div><div class="line">      <span class="meta">@Override</span></div><div class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</div><div class="line">          SystemClock.sleep(<span class="number">1000</span>);</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    &#125;.start();</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>Activity 配置发生改变会使 Activity 被销毁，并新建一个 Activity，我们总会觉得 Android 系统会将与被销毁的 Activity 相关的一切清理干净，例如回收与 Activity 关联的内存，Activity 执行的线程等等……然而，现实总是很残酷的，刚刚提到的这些东西都不会被回收，并导致内存泄漏，从而显著地影响应用的性能表现。</p>
-<h2 id="Activity-内存泄漏的根源"><a href="#Activity-内存泄漏的根源" class="headerlink" title="Activity 内存泄漏的根源"></a>Activity 内存泄漏的根源</h2><p>如果你读过我以前写的一篇有关 Handler 和 内部类的博文，那我接下来要讲的知识你肯定知道。在 Java 中，非静态匿名内部类会持有其外部类的隐式引用，如果你没有考虑过这一点，那么存储该引用会导致 Activity 被保留，而不是被垃圾回收机制回收。Activity 对象持有其 View 层以及相关联的所有资源文件的引用，换句话说，如果你的内存泄漏发生在 Activity 中，那么你将损失大量的内存空间。</p>
-<p>而这样的问题在 Activity 配置改变时会更加严重，因为 Activity 的配置改变表示 Android 系统将要销毁当前 Activity 并新建一个 Activity。举例来说吧，在使用应用的时候，你执行了10次横屏/竖屏操作，每一次方向的改变都会执行下面的代码，那么我们会发现（使用<a href="http://www.eclipse.org/mat/" target="_blank" rel="external"> Eclipse 的内存分析工具</a>可以看到）每一个 Activity 对象都会因为留有一个隐式引用而被保留在内存中。</p>
-<p><img src="http://www.androiddesignpatterns.com/assets/images/posts/2013/04/15/activity-leak.png" alt=""></p>
-<p>每一次配置的改变都会使 Android 系统新建一个 Activity 并把改变前的 Activity 交给垃圾回收机制回收。但因为线程持有旧 Activity 的隐式引用，使该 Activity 没有被垃圾回收机制回收。这样的问题会导致每一个新建的 Activity 都将发生内存泄漏，与 Activity 相关的所有资源文件也不会被回收，其中的内存泄漏有多严重可想而知。</p>
-<p>看到这里可能你会很害怕，很惶恐，很无助，那我们该怎么办……莫慌，解决办法非常简单，既然我们已经确定了问题的根源，那么对症下药就可以了：我们把该线程类声明为私有的静态内部类就可以解决这个问题：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"> <span class="comment">/**</span></div><div class="line">     * 示例通过将线程类声明为私有的静态内部类避免了 Activity context 的内存泄漏问题，但</div><div class="line">     * 在配置发生改变后，线程仍然会执行。原因在于，DVM 虚拟机持有所有运行线程的引用，无论</div><div class="line">     * 这些线程是否被回收，都与 Activity 的生命周期无关。运行中的线程只会继续运行，直到</div><div class="line">     * Android 系统将整个应用进程杀死</div><div class="line">     */ </div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span> </span>&#123;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span></div><div class="line">  <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">    exampleTwo();</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">exampleTwo</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">new</span> MyThread().start();</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MyThread</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">      <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</div><div class="line">        SystemClock.sleep(<span class="number">1000</span>);</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>通过上面的代码，新线程再也不会持有一个外部 Activity 的隐式引用，而且该 Activity 也会在配置改变后被回收。</p>
-<h2 id="线程内存泄漏的根源"><a href="#线程内存泄漏的根源" class="headerlink" title="线程内存泄漏的根源"></a>线程内存泄漏的根源</h2><p>第二个问题是：对于每个新建 Activity,如果 Activity 中的线程发生发生内存泄漏。在Java中线程是垃圾回收机制的根源，也就是说，在运行系统中DVM虚拟机总会使硬件持有所有运行状态的进程的引用，结果导致处于运行状态的线程将永远不会被回收。因此，你必须为你的后台线程实现销毁逻辑！下面是一种解决办法：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line">    * 除了我们需要实现销毁逻辑以保证线程不会发生内存泄漏，其他代码和示例2相同。在退出当前</div><div class="line">    * Activity 前使用 onDestroy() 方法结束你的运行中线程是个不错的选择</div><div class="line"> */</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span> </span>&#123;</div><div class="line">  <span class="keyword">private</span> MyThread mThread;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span></div><div class="line">  <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">    exampleThree();</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">exampleThree</span><span class="params">()</span> </span>&#123;</div><div class="line">    mThread = <span class="keyword">new</span> MyThread();</div><div class="line">    mThread.start();</div><div class="line">  &#125;</div><div class="line"></div><div class="line">     <span class="comment">/**</span></div><div class="line">   * 私有的静态内部类不会持有其外部类的引用，使得 Activity 实例不会在配置改变时发生内</div><div class="line">   * 存泄漏</div><div class="line">      */</div><div class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MyThread</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> mRunning = <span class="keyword">false</span>;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">      mRunning = <span class="keyword">true</span>;</div><div class="line">      <span class="keyword">while</span> (mRunning) &#123;</div><div class="line">        SystemClock.sleep(<span class="number">1000</span>);</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> </span>&#123;</div><div class="line">      mRunning = <span class="keyword">false</span>;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span></div><div class="line">  <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onDestroy</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onDestroy();</div><div class="line">    mThread.close();</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>通过上面的代码，我们在 onDestroy() 方法中结束了线程，确保不会发生意外的线程的内存泄漏问题。如果你想要在配置改变后保留该线程（而不是每一次在关闭 Activity 后都要新建一个线程），那我建议你使用 Fragment 去完成该耗时任务。你可以翻我以前的博文，一名叫作<strong>“Handling Configuration Changes with Fragments”</strong>应该能满足你的需求，在API demo中也提供了很好理解的例子来为你阐述相关概念。</p>
-<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>Android 开发过程中，在 Activity 的生命周期里协调耗时任务可能会很困难，你一不小心就会导致内存泄漏问题。下面是一些小提示，能帮助你预防内存泄漏问题的发生：</p>
+<p>一些Support库随着Android Lollipop的发布而诞生了，其中就有Palette。这个库可以让你很轻松地从一幅图中抽取特征颜色，这在你希望界面的颜色风格适应指定图片时非常有用，它还会提供与指定颜色相搭配的字体颜色。</p>
+<p>Palette有一个用法我特别喜欢：它可以定制图像波纹的颜色。这是其实一个微不足道的效果，但是我认为相比于纯灰色波纹来说是一个很大的提升。你需要在工程下的<code>build.gradle</code>里添加依赖才可以使用Palette，像如下代码所示：</p>
+<pre><code>dependencies {
+  compile &apos;com.android.support:palette-v7:21.0.0&apos;
+}
+</code></pre><p>生成一幅图像的Palette有两种方法：</p>
 <ul>
-<li><p><strong>尽可能使用静态内部类而不是非静态内部类。</strong>每一个非静态内部类实例都会持有一个外部类的引用，若该引用是 Activity 的引用，那么该 Activity 在被销毁时将无法被回收。如果你的静态内部类需要一个相关 Activity 的引用以确保功能能够正常运行，那么你得确保你在对象中使用的是一个 Activity 的弱引用，否则你的 Activity 将会发生意外的内存泄漏。</p>
-</li>
-<li><p><strong>不要总想着 Java 的垃圾回收机制会帮你解决所有内存回收问题。</strong>就像上面的示例，我们以为垃圾回收机制会帮我们将不需要使用的内存回收，例如：我们需要结束一个 Activity，那么它的实例和相关的线程都该被回收。但现实并不会像我们剧本那样走。Java 线程会一直存活，直到他们都被显式关闭，抑或是其进程被 Android 系统杀死。所以，为你的后台线程实现销毁逻辑是你在使用线程时必须时刻铭记的细节，此外，你在设计销毁逻辑时要根据 Activity 的生命周期去设计，避免出现 Bug。</p>
-</li>
-<li><p><strong>考虑你是否真的需要使用线程。</strong>Android 应用的框架层为我们提供了很多便于开发者执行后台操作的类。例如：我们可以使用 Loader 代替在 Activity 的生命周期中用线程通过注入执行短暂的异步后台查询操作，考虑用 Service 将结构通知给 UI 的 BroadcastReceiver。最后，记住，这篇博文中对线程进行的讨论同样适用于 AsyncTask（因为 AsyncTask 使用 ExecutorService 执行它的任务）。然而，虽说 ExecutorService 只能在短暂操作（文档说最多几秒）中被使用，那么这些方法导致的 Activity 内存泄漏应该永远不会发生。</p>
-</li>
+<li><code>generate(Bitmap)</code> 生成含有16种颜色种类的Palette；</li>
+<li><code>generate(Bitmap, int)</code> 生成含有指定数量颜色种类的Palette，数量越多需要的时间越久。</li>
 </ul>
-<p>这篇博文的源码可以在 <a href="https://github.com/alexjlockwood/leaky-threads" target="_blank" rel="external">GitHub</a> 中下载，你也可以在 <a href="https://play.google.com/store/apps/details?id=com.adp.leaky.threads" target="_blank" rel="external">Google Play</a> 下载 APK 使用。</p>
-<p><img src="http://www.androiddesignpatterns.com/assets/images/posts/2013/04/15/leaky-threads-screenshot.png" alt=""></p>
+<p>这两个方法是同步方法，由于他们很可能会比较耗时（在分析大图片或者所需颜色较多时），所以它们不应该在主线程中执行。你应该先在别的线程中使用这两个函数进行解析，解析成功之后再使用。</p>
+<p>不过有时候你不会在加载图片的线程（非主线程）中使用解析出的颜色，所以Palette提供了异步方法，他们与之前的函数的区别就是需要传入<code>PaletteAsyncListener</code>，提供在图片解析完成后的回调函数：</p>
+<ul>
+<li><code>generateAsync(Bitmap, PaletteAsyncListener)</code></li>
+<li><code>generateAsync(Bitmap, int, PaletteAsyncListener)</code></li>
+</ul>
+<p><code>PaletteAsyncListener</code>的实现是非常简单的（参考下面这几行代码），它只要重写<code>onGenerated</code>就好了。如此一来你就可以在任何需要的时候使用这两个函数创建Palette。</p>
+<pre><code>Palette.PaletteAsyncListener listener = new Palette.PaletteAsyncListener() {
+  public void onGenerated(Palette palette) {
+    // 使用Palette对象，获取解析出的颜色
+  }
+}
+</code></pre><p>Palette默认会解析出图像的16种特征颜色种类，但是这六种颜色是你最经常用到的：</p>
+<ul>
+<li>vibrant(鲜艳色)</li>
+<li>dark vibrant(鲜艳色中的暗色)</li>
+<li>light vibrant(鲜艳色中的亮色)</li>
+<li>muted(柔和色)</li>
+<li>dark muted(柔和色中的暗色)</li>
+<li>light muted(柔和色中的亮色)</li>
+</ul>
+<p>这是一个Palette解析六个主颜色种类的例子：</p>
+<p><img src="http://img.blog.csdn.net/20150827183303088" alt="Six Color"></p>
+<p>你获取Palette对象之后，可以通过以下这些内置getter函数直接获取这六个颜色。你需要传入默认颜色防止Palette无法解析到指定颜色种类，返回的类型是24位RGB颜色数值。</p>
+<pre><code>Palette palette = Palette.generate(myBitmap);
+int vibrant = palette.getVibrantColor(0x000000);
+int vibrantLight = palette.getLightVibrantColor(0x000000);
+int vibrantDark = palette.getDarkVibrantColor(0x000000);
+int muted = palette.getMutedColor(0x000000);
+int mutedLight = palette.getLightMutedColor(0x000000);
+int mutedDark = palette.getDarkMutedColor(0x000000);
+</code></pre><p>###Swatch</p>
+<p>Palette解析出的颜色都来自于对应的<code>Swatch</code>，在<code>Swatch</code>里面含有很多关于对应颜色的有用信息。你可以从<code>Swatch</code>中获取RGB颜色值、HSL颜色向量、对应颜色在图像中所占的比例、与对应颜色搭配的标题字体颜色和正文字体颜色（这两个颜色和对应颜色的对比值是处理好的，你不必再去操心）。如下面这段代码所示：</p>
+<pre><code>Palette palette  = Palette.generate(myBitmap);
+Palette.Swatch swatch = palette.getVibrantSwatch();
+//rgb颜色值
+int rgbColor = swatch.getRgb();
+//hsl颜色向量
+float[] hslValues = swatch.getHsl();
+//该颜色在图像中所占的像素数
+int pixelCount = swatch.getPopulation();
+//对应的标题字体颜色
+int titleTextColor = swatch.getTitleTextColor();
+//对应的正文字体颜色
+int bodyTextColor = swatch.getBodyTextColor();
+</code></pre><p>获取六个主颜色的<code>Swatch</code>要使用与之前直接获取颜色不同的getter函数，如下面这部分代码所示。它们不需要提供默认值，如果Palette没有解析到对应<code>Swatch</code>，它会直接返回null。</p>
+<pre><code>Palette palette = Palette.generate(myBitmap);
+Palette.Swatch vibrantSwatch = palette.getVibrantSwatch();
+Palette.Swatch vibrantLightSwatch = palette.getLightVibrantSwatch();
+Palette.Swatch vibrantDarkSwatch = palette.getDarkVibrantSwatch();
+Palette.Swatch mutedSwatch = palette.getMutedSwatch();
+Palette.Swatch mutedLightSwatch = palette.getLightMutedSwatch();
+Palette.Swatch mutedDarkSwatch = palette.getDarkMutedSwatch();
+</code></pre><p>Palette只为六种主颜色种类<code>Swatch</code>提供了getter，如果你要使用其他颜色种类的<code>Swatch</code>（一共有16种颜色种类），你需要手动获取它。调用<code>getSwatchs()</code>会返回一个列表，里面有所有获取到的<code>Swatch</code>。</p>
+<p>这里是一个Palette获取所有<code>Swatch</code>的例子，里面展示了它们分别在图像中所占的比例：</p>
+<p><img src="http://img.blog.csdn.net/20150827183359416" alt="all color"></p>
+<p>Palette的异步方法使得它非常容易去使用，而且我也看到了它用在很多地方。它真是一个非常棒的工具，能够收集一幅图中所有的颜色，并将它们总结到几个不同种类的颜色中。我建议你阅读<a href="https://android.googlesource.com/platform/frameworks/support/+/master/v7/palette/src/android/support/v7/graphics" target="_blank" rel="external">源码</a>来更多地学习它！</p>
 
         
         
@@ -140,7 +180,7 @@
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2017/04/27/在Activity中使用Thread导致的内存泄漏/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/在Activity中使用Thread导致的内存泄漏/" data-count-type="comments">&nbsp;</a>
+		<a href="/2017/04/27/在Android Lollipop中使用Palette抽取Bitmap颜色/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/在Android Lollipop中使用Palette抽取Bitmap颜色/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -345,6 +385,70 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2017/04/27/用组合代替继承能为Activity带来什么/" title="用组合代替继承能为 Activity 带来什么" itemprop="url">用组合代替继承能为 Activity 带来什么</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ul>
+<li>原文链接 : <a href="https://plus.google.com/+JoshBrown42/posts/FzNghPbKk2s" target="_blank" rel="external">Composition over Inheritance，What it means for your Activities</a></li>
+</ul>
+<p>事实上我们在很多 Java 进阶书籍上看到过“开发时应该更倾向于选择组合而不是继承”的建议，为什么建议我们<strong>更倾向于</strong>而不是<strong>完全代替</strong>呢，因为当类 A 能完全代替另一个类 B（我们想让 B 成为 A 的父类）时，我们就应该使用继承，如果 A 仅仅是和 B 有着某些共同的<strong>行为</strong>，是不应该使用继承的（更多的讨论<a href="http://stackoverflow.com/questions/49002/prefer-composition-over-inheritance" target="_blank" rel="external">戳我</a>）。然而，在我阅读别人的源码时，滥用继承的情况实在是太多了，多少人创建了一个 BaseActivity 后，就让所有 Activity 继承它，在子 Activity 中实现业务逻辑。</p>
+<p>而且这样做问题大大的有，最鲜活的例子就是：Joe Newguy 加入到我们组，并实现了 ShinyFeatureActivity，那会组里没有任何规定强迫他必须让 ShinyFeatureActivity 继承于 BaseActivity，但他还是这么干了……万幸我们在 Code Review 时发现了这个问题。此外，如果每一个 Activity 都继承于 BaseActivity，在某些情况下，你可能要继承的是其他 Activity（例如：PreferenceActivity、ListActivity）。尽管大部分 Activity 的子类都有相应的 Fragment 代替，但还是有一部分是没有对应 Fragment 的，某些库仍然需要相应的 Activity 子类。</p>
+<p>有些更潜在的问题是：有时候某些 Activity 需要这些行为，其他的 Activity 需要其他行为，而 Java 并不支持多继承，这就意味着我们得将行为有交集的 Activity 的所有行为放到一个独立的类里面。但这样做会降低可维护性，甚至带来性能影响。</p>
+<p>事实上，我们会这么干的动机很简单：代码复用。确实，代码复用很重要。而我们大部分公共逻辑需要在 Activity 生命周期的某一环实现。但 Application.ActivityLifecycleCallbacks 是一个让人很蛋疼的玩意，而且可能需要在 Application.onCreate() 方法里注册它，最讽刺的是：我们想尽办法避免在 Application.onCreate() 方法里注册它……</p>
+<p>这也是无绑定 View 的 Fragment 的由来了，当无数 Android 开发者把 Fragment 看作 UI 组件时，事实上 Fragment 更像生命周期的组件。为什么要说这些 Fragment 是无绑定 View 的呢？因为在这些开发者的手里，Fragment 的 onCreateView() 方法既没有被重写，也没有返回 null。本质上，Fragment 就是一个能够处理或操控事件的组件，而它自身没有对应的 View。</p>
+<p>为了区分无绑定 View 的 Fragment 和面向 View 的 Fragemnt，我在命名时会将无绑定 View 的 Fragemnt 命名为 <strong> XXHelper</strong>，其他的就命名为<strong>XXFragment</strong>。例如，AnalyticsHelper 代表的就是关联分析逻辑的 Fragment，而 HeaderFragment 则显示了一个标题栏。当然了，大家可以尝试这么干，也可以无视我的建议，我自己是感觉满有用的哈～</p>
+<p>因为这些无绑定 View 的 Fragment 里面没有 UI 组件，也就意味着在这些 Fragment 里我们不需要考虑初始化布局所需的 Layout-ID，或者是 View 需要的动画，那么我们完全可以用工厂模式开发这些 Fragment，提高工厂方法的易用性和可操控性。就这一点来说，他们还能完成添加 Fragment 自身的操作，我创建了一个 <a href="https://gist.github.com/keyboardr/ddf35148ca2c1a2bfbde" target="_blank" rel="external">Gist</a> 来为大家介绍要怎么做到，有兴趣的话可以点进去看看哈。如果使用 Android-Studio 进行开发的话，你可以将它添加到设置的 <code>File and Code Templates</code> 选项中，然后当你创建一个新的类时，在 <strong>Kind</strong> 下拉选项中选择它。</p>
+<p>将 FooHelper 添加到它的父类中非常简单，只要调用 FooHelper.attach(this) 就可以了。但如果相应的父类没有实现 FooHelper 的回调接口的话会出现编译错误，此外，如果 attach() 方法已经被调用了，该方法的返回值会是之前的 Fragment。这个 Gist 包含对 Fragment 和 Activity 的重载，而且将它们转换为使用支持的 Fragement 和 FragmentActivity，其中的意义非常中大。而且它还包含了 FragmentUtils.getParent() 的简化版 —— getParent() 方法（详情<a href="https://gist.github.com/keyboardr/5455206" target="_blank" rel="external">戳我</a>）。</p>
+<p>显然，无绑定 View 的 Fragment 比 BaseActivity 好用得多，它们很好地封装了需要生命周期回调（或者是 onActivityResult()，FragmentManager）的处理方法。最棒的是，我们可以将 Activity 共用的某些逻辑分解到职责单一的模块组件中，Activity 需要什么逻辑，就选择什么模块使用。如果你的 Activity 大部分都需要许多相同的模块，那么你没有理由不实现 CommonComponentsHelper 用于处理这些共用逻辑，而且你也不需要把 Activity 的所有共用依赖放在一个基类中。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/用组合代替继承能为Activity带来什么/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/用组合代替继承能为Activity带来什么/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2017/04/27/在滚动列表中播放视频/" title="在滚动列表中播放视频" itemprop="url">在滚动列表中播放视频</a>
   </h1>
   <p class="article-author">By
@@ -516,7 +620,7 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/04/27/用组合代替继承能为Activity带来什么/" title="用组合代替继承能为 Activity 带来什么" itemprop="url">用组合代替继承能为 Activity 带来什么</a>
+      <a href="/2017/04/27/深入理解Shared-Element-Transition/" title="深入理解 Shared Element Transition" itemprop="url">深入理解 Shared Element Transition</a>
   </h1>
   <p class="article-author">By
        
@@ -529,18 +633,76 @@
 </header>
     <div class="article-content">
         
-        <ul>
-<li>原文链接 : <a href="https://plus.google.com/+JoshBrown42/posts/FzNghPbKk2s" target="_blank" rel="external">Composition over Inheritance，What it means for your Activities</a></li>
+        <p>这篇文章会深度分析共享元素 transitions 和它在 Activity &amp; Fragment Transitions API 中的作用。这篇文章是下面这个系列中的第三篇</p>
+<ul>
+<li>Part 1 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-transitions-in-android-lollipop-part1.html" target="_blank" rel="external">在 Activity 和 Fragment 中使用 Transition </a></li>
+<li>Part 2 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-content-transitions-in-depth-part2.html" target="_blank" rel="external">深入理解 Content Transition</a></li>
+<li>Part 3a <a href="http://www.androiddesignpatterns.com/2015/01/activity-fragment-shared-element-transitions-in-depth-part3a.html" target="_blank" rel="external">深入理解共享元素 Transition</a></li>
+<li>Part 3b <a href="http://www.androiddesignpatterns.com/2015/03/activity-postponed-shared-element-transitions-part3b.html" target="_blank" rel="external">延迟共享元素的 Transition</a></li>
+<li>Part 3c 共享元素回调实践 (coming soon!)</li>
+<li>Part 4  Activity &amp; Fragment 过渡动画示例(coming soon!)</li>
 </ul>
-<p>事实上我们在很多 Java 进阶书籍上看到过“开发时应该更倾向于选择组合而不是继承”的建议，为什么建议我们<strong>更倾向于</strong>而不是<strong>完全代替</strong>呢，因为当类 A 能完全代替另一个类 B（我们想让 B 成为 A 的父类）时，我们就应该使用继承，如果 A 仅仅是和 B 有着某些共同的<strong>行为</strong>，是不应该使用继承的（更多的讨论<a href="http://stackoverflow.com/questions/49002/prefer-composition-over-inheritance" target="_blank" rel="external">戳我</a>）。然而，在我阅读别人的源码时，滥用继承的情况实在是太多了，多少人创建了一个 BaseActivity 后，就让所有 Activity 继承它，在子 Activity 中实现业务逻辑。</p>
-<p>而且这样做问题大大的有，最鲜活的例子就是：Joe Newguy 加入到我们组，并实现了 ShinyFeatureActivity，那会组里没有任何规定强迫他必须让 ShinyFeatureActivity 继承于 BaseActivity，但他还是这么干了……万幸我们在 Code Review 时发现了这个问题。此外，如果每一个 Activity 都继承于 BaseActivity，在某些情况下，你可能要继承的是其他 Activity（例如：PreferenceActivity、ListActivity）。尽管大部分 Activity 的子类都有相应的 Fragment 代替，但还是有一部分是没有对应 Fragment 的，某些库仍然需要相应的 Activity 子类。</p>
-<p>有些更潜在的问题是：有时候某些 Activity 需要这些行为，其他的 Activity 需要其他行为，而 Java 并不支持多继承，这就意味着我们得将行为有交集的 Activity 的所有行为放到一个独立的类里面。但这样做会降低可维护性，甚至带来性能影响。</p>
-<p>事实上，我们会这么干的动机很简单：代码复用。确实，代码复用很重要。而我们大部分公共逻辑需要在 Activity 生命周期的某一环实现。但 Application.ActivityLifecycleCallbacks 是一个让人很蛋疼的玩意，而且可能需要在 Application.onCreate() 方法里注册它，最讽刺的是：我们想尽办法避免在 Application.onCreate() 方法里注册它……</p>
-<p>这也是无绑定 View 的 Fragment 的由来了，当无数 Android 开发者把 Fragment 看作 UI 组件时，事实上 Fragment 更像生命周期的组件。为什么要说这些 Fragment 是无绑定 View 的呢？因为在这些开发者的手里，Fragment 的 onCreateView() 方法既没有被重写，也没有返回 null。本质上，Fragment 就是一个能够处理或操控事件的组件，而它自身没有对应的 View。</p>
-<p>为了区分无绑定 View 的 Fragment 和面向 View 的 Fragemnt，我在命名时会将无绑定 View 的 Fragemnt 命名为 <strong> XXHelper</strong>，其他的就命名为<strong>XXFragment</strong>。例如，AnalyticsHelper 代表的就是关联分析逻辑的 Fragment，而 HeaderFragment 则显示了一个标题栏。当然了，大家可以尝试这么干，也可以无视我的建议，我自己是感觉满有用的哈～</p>
-<p>因为这些无绑定 View 的 Fragment 里面没有 UI 组件，也就意味着在这些 Fragment 里我们不需要考虑初始化布局所需的 Layout-ID，或者是 View 需要的动画，那么我们完全可以用工厂模式开发这些 Fragment，提高工厂方法的易用性和可操控性。就这一点来说，他们还能完成添加 Fragment 自身的操作，我创建了一个 <a href="https://gist.github.com/keyboardr/ddf35148ca2c1a2bfbde" target="_blank" rel="external">Gist</a> 来为大家介绍要怎么做到，有兴趣的话可以点进去看看哈。如果使用 Android-Studio 进行开发的话，你可以将它添加到设置的 <code>File and Code Templates</code> 选项中，然后当你创建一个新的类时，在 <strong>Kind</strong> 下拉选项中选择它。</p>
-<p>将 FooHelper 添加到它的父类中非常简单，只要调用 FooHelper.attach(this) 就可以了。但如果相应的父类没有实现 FooHelper 的回调接口的话会出现编译错误，此外，如果 attach() 方法已经被调用了，该方法的返回值会是之前的 Fragment。这个 Gist 包含对 Fragment 和 Activity 的重载，而且将它们转换为使用支持的 Fragement 和 FragmentActivity，其中的意义非常中大。而且它还包含了 FragmentUtils.getParent() 的简化版 —— getParent() 方法（详情<a href="https://gist.github.com/keyboardr/5455206" target="_blank" rel="external">戳我</a>）。</p>
-<p>显然，无绑定 View 的 Fragment 比 BaseActivity 好用得多，它们很好地封装了需要生命周期回调（或者是 onActivityResult()，FragmentManager）的处理方法。最棒的是，我们可以将 Activity 共用的某些逻辑分解到职责单一的模块组件中，Activity 需要什么逻辑，就选择什么模块使用。如果你的 Activity 大部分都需要许多相同的模块，那么你没有理由不实现 CommonComponentsHelper 用于处理这些共用逻辑，而且你也不需要把 Activity 的所有共用依赖放在一个基类中。</p>
+<p>Part 3 会分成三个部分: part3a 介绍 共享元素 transitions 的底层操作，part3b 和 part3c<br>主要关注 API 的具体实现细节，例如推迟某些 共享元素 transition 的重要性和如何实现<br>SharedElementCallbacks。</p>
+<p>我们首先会总结下在 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-transitions-in-android-lollipop-part1.html" target="_blank" rel="external">part 1</a> 中提到的关于 共享元素 transition 的知识点，然后说一说在 Android Lollipop 中是怎样使用它来构建合适的过渡动画。</p>
+<p>##什么是 共享元素 Transition ?</p>
+<p>共享元素 transition 决定了 共享元素 视图(也叫做主角视图)在<br>Activity/Fragment 场景过渡时的动画效果。共享元素 的动画<br>在被调用 Activity/Fragment  的 <strong>进入/返回</strong>  共享元素 transition<br><a id="1" href="#b1">(1)</a> 中执行，<br>可以通过下面的<a href="http://developer.android.com/reference/android/view/Window.html" target="_blank" rel="external">Window</a>/<a href="http://developer.android.com/reference/android/app/Fragment.html" target="_blank" rel="external">Fragment</a> 方法设置：</p>
+<ul>
+<li><strong>setSharedElementEnterTransition()</strong> -  <strong>B</strong> 的 <strong>进入</strong> 共享元素 transition ，执行将<br>共享元素视图 从 <strong>A</strong> 中的起始位置移动到它在 <strong>B</strong> 中的最终位置的动画。</li>
+<li><strong>setSharedElementReturnTransition()</strong>  - <strong>B</strong> 的 <strong>返回</strong> 共享元素 transition ，执行将<br>共享元素视图 从 <strong>B</strong> 中起始位置移动到它在 <strong>A</strong> 中的最终位置的动画。</li>
+</ul>
+<p><a href="http://www.androiddesignpatterns.com/assets/videos/posts/2015/01/12/music-opt.mp4" target="_blank" rel="external"><strong>Video 3.1</strong></a> 展示了在 Google Play Music 中是怎样使用共享元素 transition<br>的。这个 transition 包含两个元素：一个 <strong>ImageView</strong>和它的父视图 <strong>CardView</strong>。<br>Transition 期间，<strong>CardView</strong> 会扩展到全屏或收缩回原状，<br><strong>ImageView</strong> 能在这两个 Activity 里无缝的衔接。</p>
+<p>在 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-transitions-in-android-lollipop-part1.html" target="_blank" rel="external">part1 </a> 里只是简单的介绍了下这个话题，这篇文章将会对 共享元素 transition<br>做更深度的分析。例如 共享元素 Transition 在底层是如何实现的？都有哪些类型的 Transition 对象可以使用? Transition 期间 共享元素视图 是在哪里怎样绘制的？接下来的几章里<br>我们会逐个解答这些问题。</p>
+<p>##深入共享元素 Transitions 底层</p>
+<p>之前的文章已经介绍过 Transition 的两个主要任务分别是获取目标视图的 开始&amp;结束 状态和创建这两个状态间视图的过渡动画(Animator)。共享元素 Transition 也一样：<br>在创建动画前需要捕获每一个<br>共享元素视图的起始和结束状态(就是共享元素在 <strong>调用/被调用</strong> Activity/Fragment<br>里的位置，大小和外观)。有了这些信息 共享元素 Transition 就可以确定每一个 共享元素<br>视图应该执行的动画。</p>
+<p>和 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-content-transitions-in-depth-part2.html" target="_blank" rel="external">Content Transitions 的底层</a>相似，框架通过在运行时明确的<br>更改每个 共享元素视图 的属性将这个状态信息提供给 共享元素 Transition 。<br>更准确地说 Activity <strong>A</strong> 启动 Activity <strong>B</strong> 时将会出现以下事件：<a id="2" href="#b2">(2)</a></p>
+<hr>
+<ol>
+<li>Activity <strong>A</strong> 调用 <strong>startActivity()</strong> 构造，测量，布局了一个<br>最初背景色为透明的半透明窗口 Activity <strong>B</strong> 。</li>
+<li>框架将 <strong>B</strong> 中每一个共享元素视图复位到对应的原来在 <strong>A</strong> 中时的位置，接着 <strong>B</strong> 的进入 transition 捕获 <strong>B</strong> 中所有共享元素视图的起始状态。</li>
+<li>框架将 <strong>B</strong> 中每一个共享元素视图复位到对应的在 <strong>B</strong> 的最终位置，接着 <strong>B</strong> 的进入 transition 捕获 B 中所有共享元素视图的结束状态。</li>
+<li><strong>B</strong> 的进入 transition 比较所有共享元素视图的起始和结束状态，根据它们的不同<br>创建一个 <strong>Animator</strong>。</li>
+<li>框架命令 <strong>A</strong> 隐藏共享元素视图，并运行返回的 <strong>Animator</strong>。<strong>B</strong> 中的<br>共享元素视图到位之后，<strong>B</strong> 的窗口背景在 <strong>A </strong>上逐渐显示，直到 <strong>B</strong><br>完全的显示出来，transition 运行完毕。</li>
+</ol>
+<hr>
+<p>Content transitions 是根据每个过渡视图的可见性变化来调节的，<strong>共享元素 transition<br>是根据每个共享元素视图的位置，大小和外观的变化来调节的</strong>。从 API 21 开始，框架提供了<br>几个自定义共享元素场景切换动画的 <strong>Transition</strong> 实现。</p>
+<ul>
+<li><a href="https://developer.android.com/reference/android/transition/ChangeBounds.html" target="_blank" rel="external">ChangeBounds</a> - 捕获共享元素布局边界根据不同构造动画。<br><strong>ChangeBounds</strong> 在共享元素 Transition 中经常使用，大多数共享元素在两个<br>Activity/Fragment 间会有大小 或/和 位置不同。 </li>
+<li><a href="https://developer.android.com/reference/android/transition/ChangeTransform.html" target="_blank" rel="external">ChangeTransform</a>  - 捕获共享元素缩放和角度，<br>根据不同构建动画<a id="3" href="#b3">(3)</a>。</li>
+<li><a href="https://developer.android.com/reference/android/transition/ChangeClipBounds.html" target="_blank" rel="external">ChangeClipBounds</a> - 捕获共享元素的 <a href="https://developer.android.com/reference/android/view/View.html#getClipBounds()" target="_blank" rel="external">clip bounds</a><br>(剪辑边界) ，根据不同构建动画。</li>
+<li><a href="https://developer.android.com/reference/android/transition/ChangeImageTransform.html" target="_blank" rel="external">ChangeImageTransform</a> - 捕获共享元素 ImageView 的<br>变换矩阵( transform matrices) ，根据不同构建动画。结合 <strong>ChangeBounds</strong>，<br>可以让 ImageView<br> 无缝的改变大小，形状和 <a href="https://developer.android.com/reference/android/widget/ImageView.ScaleType.html" target="_blank" rel="external"> ImageView.ScaleType </a>。 </li>
+<li><a href="https://github.com/android/platform_frameworks_base/blob/lollipop-release/core/res/res/transition/move.xml" target="_blank" rel="external">@android:transition/move</a> - 一个 <strong>TransitionSet</strong> ，同时执行上面四种<br>transition 。在 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-transitions-in-android-lollipop-part1.html" target="_blank" rel="external">part 1</a> 里提到过，如果没有明确的声明 进入/返回 共享元素<br>transition ，框架会默认运行这个 transition。</li>
+</ul>
+<hr>
+<p>在上面的例子中，我们还可以发现 <strong>共享元素视图实例并没有在 Activities/Fragments 间<br>“共享”</strong>。事实上，进入/返回 共享元素 transitions期间，用户看到的绝大多数东西都是在<br><strong>B</strong> 的 content view 中绘制的。框架并没有从 <strong>A</strong> 向 <strong>B</strong><br>传递 共享元素视图实例，<br>而是采用了不同的方法实现相同的视觉效果。当 <strong>A</strong> 启动 <strong>B</strong> ，框架收集 <strong>A</strong><br>中共享元素的所有相关信息，并传递给 <strong>B</strong>。接下来 <strong>B</strong> 使用这些信息初始化<br>共享元素视图的起始状态(它们在 <strong>A</strong> 中时对应的大小，位置和外观)。Transition<br>开始时，B 中除了共享元素视图外的所有东西都被初始化为对用户不可见。Tansition<br>的执行过程中，框架将 B 的 Activity 窗口逐渐显示，直到 B<br>中共享元素结束动画窗口变为不透明。</p>
+<hr>
+<p>##使用共享元素 Overlay <a id="4" href="#b4">(4)</a><br>最后，如果想要完全理解共享元素 transition 的运作，我们必须先说说共享元素 overlay。<br>可能不是很明显，<strong>共享元素默认是在整个窗口视图层的顶层  <a href="https://developer.android.com/reference/android/view/ViewOverlay.html" target="_blank" rel="external">ViewOverlay</a><br>上绘制</strong>。简单介绍下 ，<br><strong>ViewOverlay</strong> 这个类是在 API 18 中为了方便在视图层顶层<br>绘制引入的。添加到视图 <strong>ViewOverlay</strong> 之中的Drawable<br>和 view (甚至是一个 <strong>ViewGroup</strong> 的子类) ，<br>将会被绘制在视图的最上层。这就解释了框架为什么<br>默认选择在窗口视图层的  <strong>ViewOverlay</strong> 中绘制共享元素。<br>共享元素视图应该是贯穿整个 transition 的焦点；<br>如果 transitioning views 意外的绘制在共享元素之上就会<br>破坏这个效果<a id="5" href="#b5">(5)</a>。</p>
+<hr>
+<p>虽然共享元素默认绘制在共享元素的 ViewOverlay 之中，但是<br>框架也提供了关闭 overlay 的方法，只要调用<br><a href="https://developer.android.com/reference/android/view/Window.html#setSharedElementsUseOverlay(boolean)" target="_blank" rel="external">Window#setSharedElementsUseOverlay(false) </a><br>就可以了。如果你关闭了 overlay<br>，要留意这样做可能会引起的副作用。例如，<a href="http://www.androiddesignpatterns.com/assets/videos/posts/2015/01/12/overlay-opt.mp4" target="_blank" rel="external">Video 3.2</a><br> 执行了一个简单的共享元素 transition 两次，<br>一次开启和一次关闭 共享元素 overlay 。第一次达到了预期想要的结果，<br>第二次关闭 overlay 后运行的效果不理想。Transition view 从底部向上移入<br>调用 Activity 的 content view 时挡住了部分 共享元素 <strong>ImageView</strong> 。虽然<br>可以改变在 View 上绘制视图的顺序或者通过在共享元素 parent 里调用<br> <strong>setClipChildren(false)</strong> 这些旁门左道来修复问题，但是与可能带来的维护问题<br> 相比真是得不偿失。总之，除非你感觉必须要关掉共享元素 overlay 才能达到你想要的效果，<br> 其他情况尽量不要关闭它，这样会保持代码简洁，并且共享元素 transition 效果更引人注目。</p>
+<p>##结语</p>
+<p>综上所诉，这篇文章讲了三个重点:</p>
+<ol>
+<li>共享元素 transition 确定 共享元素视图(主角视图) 从一个 Activity/Fragment 移动到<br>另一个其间场景过渡的动画。</li>
+<li>共享元素 transition 是根据每一个 共享元素视图 的位置，大小，和外观的变化调节的。</li>
+<li>共享元素默认是绘制在窗口视图的顶层 <strong>ViewOverlay</strong> 上面的。</li>
+</ol>
+<p>希望这篇文章对你有所帮助 ～</p>
+<hr>
+<p>1 Note that the Activity Transition API gives you the ability to also specify exit and reenter shared element transitions using the setSharedElementExitTransition() and setSharedElementReenterTransition() methods, although doing so is usually not necessary. For an example illustrating one possible use case, check out this blog post. For an explanation why exit and reenter shared element transitions are not available for Fragment Transitions, see George Mount’s answer and comments in this StackOverflow post. ↩</p>
+<p>2 A similar sequence of events occurs during the exit/return/reenter transitions for both Activities and Fragments. ↩</p>
+<p>3 One other subtle feature of ChangeTransform is that it can detect and handle changes made to a shared element view’s parent during a transition. This comes in handy when, for example, the shared element’s parent has an opaque background and is by default selected to be a transitioning view during the scene change. In this case, the ChangeTransform will detect that the shared element’s ｀parent is being actively modified by the content transition, pull out the shared element from its parent, and animate the shared element separately. See George Mount’s StackOverflow answer for more information. ↩</p>
+<p>4 Note that this section only pertains to Activity Transitions. Unlike Activity Transitions, shared elements are not drawn in a ViewOverlay by default during Fragment Transitions. That said, you can achieve a similar effect by applying a ChangeTransform transition, which will have the shared element drawn on top of the hierarchy in a ViewOverlay if it detects that its parent has changed. See this StackOverflow post for more information. ↩</p>
+<p>5 Note that one negative side-effect of having shared elements drawn on top of the entire view hierarchy is that this means it will become possible for shared elements to draw on top of the System UI (such as the status bar, navigation bar, and action bar). For more information on how you can prevent this from happening, see this Google+ post. ↩</p>
+<ol>
+<li><p>Activity Transition API 也提供了<br><strong>setSharedElementExitTransition()</strong> 和 <strong>setSharedElementReenterTransition()</strong><br>这两个方法来设置 退出/重入 共享元素过渡，虽然通常来说是不必要的。<br><a href="https://halfthought.wordpress.com/2014/12/08/what-are-all-these-dang-transitions/" target="_blank" rel="external">这篇文章</a>介绍了一个可能会遇到的用例。在这个 <a href="http://stackoverflow.com/questions/27346020/understanding-exit-reenter-shared-element-transitions" target="_blank" rel="external">stackoverflow</a><br>提问中 George Mount 的回答解释了为什么 退出/重入 共享元素 transition 在<br>Fragment Transitions 中不可用。 <a id="b1" href="#1">↩</a></p>
+</li>
+<li><p>Activities 和 Fragments 的 退出/返回/重入 transition 过程中出现事件序列相似  <a id="b2" href="#2">↩</a></p>
+</li>
+<li><strong>ChangeTransform</strong> 还有一个超赞的特性，它可以检测并处理共享元素父视图过渡期间<br>   的改变。当共享元素父视图有一个不透明背景，在场景变换过程中默认被选为<br>   transitioning view 时，<strong>ChangeTransform</strong> 就有了用武之地。如果它检测出<br>   共享元素父视图已被 content transition 更改，就会将共享元素提取出来，单独执行<br>   共享元素的动画。<a href="http://stackoverflow.com/questions/26899779/enter-transition-on-a-fragment-with-a-shared-element-targets-the-shared-element" target="_blank" rel="external">StackOverflow answer</a> 这里有 George Mount<br>   的详细说明。<br>   <a id="b3" href="#3">↩</a></li>
+<li>注意，这部分只与 Activity Transition 有关。和Activity Transition 不同，Fragment Transition<br>   期间共享元素默认不在 <strong>ViewOverlay</strong> 中绘制。尽管如此，你仍可以使用 ChangeTransform<br>   transition 来达到相似的效果，如果它检测到父视图改变了，就会把共享元素绘制在<br>   <strong>ViewOverlay</strong> 的顶层。<a href="http://stackoverflow.com/questions/27892033/is-there-a-setsharedelementsuseoverlay-method-for-fragment-transitions" target="_blank" rel="external">StackOverflow</a> 这里有更多信息。<pre><code>&lt;a id=&quot;b4&quot; href=&quot;#4&quot;&gt;↩&lt;/a&gt;
+</code></pre></li>
+<li>注意，将共享元素绘制在整个图层最顶层也有一些负面效果。有可能<br>   会将共享元素绘制在 System UI 之上(比如 status bar, navigation bar还有 action bar)。<br>   解决方法看这里 <a href="https://plus.google.com/+AlexLockwood/posts/RPtwZ5nNebb" target="_blank" rel="external">Google+ post</a>。<br>   <a id="b5" href="#5">↩</a></li>
+</ol>
+<hr>
 
         
         
@@ -560,87 +722,7 @@
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2017/04/27/用组合代替继承能为Activity带来什么/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/用组合代替继承能为Activity带来什么/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/27/用RxJava替代EventBus/" title="用RxJava替代EventBus" itemprop="url">用RxJava替代EventBus</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <ul>
-<li>原文链接 : <a href="https://medium.com/mobiwise-blog/use-rxjava-instead-of-event-bus-libraries-aa78b5023097#.k0ecseaz7" target="_blank" rel="external">use Rxjava instead of Event Bus libraries</a></li>
-</ul>
-<p>在Android社区，每个人都在讨论RxJava，以及为什么我们应该在Android项目中使用RxJava。当我们开始在Android项目中实现RxJava后，我们注意到，我们的项目不需要引入Otto（或任何其他事件总线库）。通过这篇博客，我将展示我们是如何在项目中用RxJava替代Otto的。</p>
-<h1 id="我们项目中的MVP模式是怎么实现的"><a href="#我们项目中的MVP模式是怎么实现的" class="headerlink" title="我们项目中的MVP模式是怎么实现的"></a>我们项目中的MVP模式是怎么实现的</h1><p>开始开发我们的无线流媒体应用Radyoland的时候，我们决定使用MVP模式来设计我们的代码底层，项目架构等。我们已经分成了几层（domain，model，app等）</p>
-<p><img src="https://cdn-images-1.medium.com/max/800/1*TuU0ZvYeLsaypR8PIeNeyw.png" alt=""></p>
-<p>在model层，我们有基于RESTful的类和接口。在domain层，我们试图实现应用程序的业务逻辑，所以我们写了一些用例类。</p>
-<h1 id="为什么我们当初使用event-bus？"><a href="#为什么我们当初使用event-bus？" class="headerlink" title="为什么我们当初使用event bus？"></a>为什么我们当初使用event bus？</h1><p>如果你的Android应用超过一层，这就意味着你需要在这些层之间传输数据。就我们而言，我们认为，如果我们为数据总线和UI总线定义一个BusUtil类，我们就可以轻松地在这些层（model，domain，presentation）之间传输数据。</p>
-<p>你可以“订阅” ，并从总线发布的特定事件“取消订阅” 。这种方法背后的逻辑是这样运作的。</p>
-<p>在我们的UsecaseController，PresenterImp类中，我们发出一个事件，请求REST实现类中描述的数据并且订阅此事件。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">@Override</div><div class="line">public void getRadioList() &#123;</div><div class="line">    Call&lt;RadioWrapper&gt; radioWrapperCall = restInterface.getRadioList();</div><div class="line">    radioWrapperCall.enqueue(new Callback&lt;RadioWrapper&gt;() &#123;</div><div class="line">        @Override</div><div class="line">        public void onResponse(Response&lt;RadioWrapper&gt; response, Retrofit retrofit) &#123;</div><div class="line">            dataBus.post(response.body());</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        @Override</div><div class="line">        public void onFailure(Throwable t) &#123;</div><div class="line">            Timber.e(t.getMessage());</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>当我们调用了带有回调参数的异步数据请求方法，我们用总线发布结果数据，并订阅该事件。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@Subscribe</div><div class="line">@Override</div><div class="line">public void onRadioListLoaded(RadioWrapper radioWrapper) &#123;</div><div class="line">    new SaveDatabase(radioWrapper, databaseSource).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);</div><div class="line">    uiBus.post(radioWrapper);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>然后发布数据以更新UI 。activity或fragment应该在onResume()中订阅事件并在onPause()中解除订阅 。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@Subscribe</div><div class="line">@Override</div><div class="line">public void onRadioListLoaded(RadioWrapper radioWrapper) &#123;</div><div class="line">    radioListView.onListLoaded(radioWrapper);</div><div class="line">    radioListView.dismissLoading();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这种实现方法效果还不错。但由于我们是优秀的Android程序猿，总是追求更好的解决方案。我们找到了一个方案，可以摆脱所有的回调和订阅方法。我们决定在代码中使用RxJava和RxAndroid。</p>
-<h1 id="let-me-tell-you-how-we-implemented-Rxjava"><a href="#let-me-tell-you-how-we-implemented-Rxjava" class="headerlink" title="let me tell you how we implemented Rxjava"></a>let me tell you how we implemented Rxjava</h1><p>我们是怎么实现Rxjava的</p>
-<p>首先，我们需要改变所有RestInterface的返回类型 。</p>
-<p>在没有RxJava的情况下 ;</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">@GET(&quot;&quot;)</div><div class="line">Call&lt;RadioWrapper&gt; getRadioList();</div></pre></td></tr></table></figure>
-<p>有了Rxjava</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">@GET(&quot;&quot;)</div><div class="line">Observable&lt;RadioWrapper&gt; getRadioList();</div></pre></td></tr></table></figure>
-<p>在REST实现类中，我们有API调用方法。我分享了其中的一个。使用RxJava启动后，我们需要改变这种方法的实现。我们把方法的返回类型改成Observable。经过了必要的改变后，方法看起来像这样。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">@RxLogObservable</div><div class="line">@Override</div><div class="line">public Observable&lt;RadioWrapper&gt; getRadioList() &#123;</div><div class="line">    return restInterface.getRadioList();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>我们完成了REST实现类。在此之后，我们需要改变用例的实现类和方法。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">@Override</div><div class="line">public Observable&lt;RadioWrapper&gt; getRadioList() &#123;</div><div class="line"></div><div class="line">    /**</div><div class="line">     * Get radiolist observable from Cache</div><div class="line">     */</div><div class="line">    Observable&lt;RadioWrapper&gt; radioListDB =  databaseSource.getRadioList()</div><div class="line">            .filter(radioWrapper -&gt; radioWrapper.radioList.size() &gt; 0)</div><div class="line">            .subscribeOn(Schedulers.computation());</div><div class="line"></div><div class="line">    /**</div><div class="line">     * Load radiolist from api layer and save it to DB.</div><div class="line">     */</div><div class="line">    Observable&lt;RadioWrapper&gt; radioListApi = apiSource.getRadioList()</div><div class="line">            .doOnNext(radioWrapper -&gt; &#123;</div><div class="line">                Observable.create(subscriber -&gt; &#123;</div><div class="line">                    databaseSource.save(radioWrapper);</div><div class="line">                    subscriber.onCompleted();</div><div class="line">                &#125;).subscribeOn(Schedulers.computation()).subscribe();</div><div class="line">            &#125;)</div><div class="line">            .subscribeOn(Schedulers.io());</div><div class="line"></div><div class="line">    /**</div><div class="line">     * concat db and api observables</div><div class="line">     */</div><div class="line">    return Observable</div><div class="line">            .concat(radioListDB, radioListApi)</div><div class="line">            .observeOn(AndroidSchedulers.mainThread());</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>现在，我们的方法getRadioList返回一个Observable stream到我们的UI。正如你所看到的，我们根本不<br>需要通过事件总线发送数据。你还可以过滤，合并，缓存，或根据你的需要操作这个数据流。</p>
-<h1 id="我们学到了什么"><a href="#我们学到了什么" class="headerlink" title="我们学到了什么"></a>我们学到了什么</h1><p>虽然RxJava也不是那么好用，但是通过使用RxJava替换Otto，我们已经从代码中删除了许多冗余的回调代码块。在我看来，对于任何REST API的异步数据请求，RxJava都是最佳选择。<br>如果你有更好的解决方法，请随意在这里评论或分享例子。</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2017/04/27/用RxJava替代EventBus/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/用RxJava替代EventBus/" data-count-type="comments">&nbsp;</a>
+		<a href="/2017/04/27/深入理解Shared-Element-Transition/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/深入理解Shared-Element-Transition/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -716,6 +798,180 @@
 	
 	  	<span></span>
 		<a href="/2017/04/27/如何修复编译时的MultiDex崩溃/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/如何修复编译时的MultiDex崩溃/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/如何在本地搭建一个Android应用crashing跟踪系统－ACRA/" title="如何在本地搭建一个Android应用crashing跟踪系统－ACRA" itemprop="url">如何在本地搭建一个Android应用crashing跟踪系统－ACRA</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ul>
+<li>原文链接 : <a href="http://inthecheesefactory.com/blog/how-to-install-and-use-acra-android/en" target="_blank" rel="external">How to setup ACRA, an Android Application Crash Tracking system, on your own host</a></li>
+</ul>
+<p>在开发一款移动app时的一个事实是会有很多约束，比如硬件（CPU、RAM、Battery 等等）。如果你的代码设计不是很好，你会遇到一个非常让人头疼的问题：“Crash”,研究表明：</p>
+<p>&gt;</p>
+<blockquote>
+<p>*应用崩溃时绝大多数应用使用者抱怨的问题。</p>
+</blockquote>
+<p>此外</p>
+<p>&gt;</p>
+<ul>
+<li>如果应用程序联系崩溃三次，大约一半的用户将会卸载这款应用。</li>
+</ul>
+<p>崩溃跟踪系统，帮助开发者能够直接的葱用户的设备收集每一个崩溃原因，是不是发现这个功能很特殊。目前最受欢迎的崩溃跟踪系统是 <a href="http://fabric.io/" target="_blank" rel="external">Crashlytics</a>和<a href="http://blog.parse.com/2014/12/09/introducing-parse-crash-reporting-2/" target="_blank" rel="external">Parse Crash Reporting</a>，这两个系统都是完全免费的。开发者可以免费的集成他们在自己的应用中。不论什么时候app崩溃了，整个bug信息将会发送到后台，允许开发人员用最简单的方式去解决这些bug。通过这个方法，你可以在短时间内迭代一款不会影响正常使用的应用。</p>
+<p>然而，提供崩溃信息收集的厂商收集这些崩溃信息同时也收集了用户信息，这可能让引起大公司担心用户隐私。</p>
+<p>所以，这儿有没有崩溃信息跟踪系统可以让我们搭建在自己的服务器上？那么就不存在泄漏用户隐私的担忧了。当然有了，并且这个系统提供了非常简单的搭建方法。在这里我们来介绍下<a href="https://www.acra.gov.sg/home/" target="_blank" rel="external">Application Crash Reporting on Android (ACRA)</a>,一个库允许Android应用自动地发送崩溃信息到自己的服务器。</p>
+<p>下面将会介绍如何去搭建。</p>
+<h2 id="搭建一个服务器"><a href="#搭建一个服务器" class="headerlink" title="搭建一个服务器"></a>搭建一个服务器</h2><p>服务器端是一个先决条件，让我们先从搭建服务器端开始。</p>
+<p>由于ACRA设计的很好并且很受欢迎。它允许开发者开发自己的服务器系统，并且现在我们可以看到很多这样的系统。即便如此我觉得最好的是Acralyzer，这个也是由ACRA团队研发。Acralyzer工作在Apache CouchDB，所以<br>这里没有必要安装除了CouchDB以外的软件。</p>
+<p>Acralyzer是一个功能相当齐全的后端崩溃跟踪系统。来自不同原因的相同堆栈轨迹将会被分组成一个单一的问题。如果你解决了所有问题，你可以非常便捷的关闭Acralyzer服务，并且这种关闭服务的操作时实时的，我发现系统唯一的缺点是它的ui让人感到不舒服，但是谁会在乎这个？它是为开发者开发的。</p>
+<p>安装起来也很简单，下面将介绍如何在Ubuntu安装Acralyzer。</p>
+<p>打开命令窗口，开始安装couchdb<br>&gt;</p>
+<blockquote>
+<p>*apt-get install couchdb</p>
+</blockquote>
+<p>Test the installation with this command:</p>
+<p>测试是否安装成功。<br>&gt;</p>
+<blockquote>
+<p>*curl <a href="http://127.0.0.1:5984" target="_blank" rel="external">http://127.0.0.1:5984</a></p>
+</blockquote>
+<p>如果正确安装，会显示如下：<br>&gt;</p>
+<blockquote>
+<p>*{“couchdb”:”Welcome”,”version”:”1.2.0”}</p>
+</blockquote>
+<p>编辑etc/couchdb/local.ini允许我们通过外部IP(默认的访问会通过127.0.0.1)去访问CouchDB。仅仅改变两行实现这个功能：<br>&gt;</p>
+<blockquote>
+<p><em>;port = 5984
+</em>;bind_address = 127.0.0.1</p>
+</blockquote>
+<p>改变为<br>&gt;</p>
+<blockquote>
+<p><em>port = 5984
+</em>bind_address = 0.0.0.0</p>
+</blockquote>
+<p>在同一个文件夹下，你需要添加username/password作为管理员账户。找到这一行（应该会在文件末尾）<br>&gt;</p>
+<blockquote>
+<p>*[admins]</p>
+</blockquote>
+<p>下一行添加username/password 形式为username = password，比如：<br>&gt;</p>
+<blockquote>
+<p>*[nuuneoi = 12345]</p>
+</blockquote>
+<p>请不要对在这里书写明文密码感到担心，一旦CouchDB重启后，你的密码将会自动地散列，并且将会是不可读的，</p>
+<p>保存你刚刚编辑的文件同时通过命令行重启hashed：<br>&gt;</p>
+<blockquote>
+<p>*curl -X POST <a href="http://localhost:5984/_restart" target="_blank" rel="external">http://localhost:5984/_restart</a> -H”Content-Type: application/json”</p>
+</blockquote>
+<p>从现在起，你将可以通过浏览器访问CouchDB。这个web服务我们称之为Futon，一个CouchDB UI管理后台。在你的浏览器中打开这个地址。</p>
+<p>&gt;</p>
+<blockquote>
+<p>*http://<your_server_ip>:5984/_utils</your_server_ip></p>
+</blockquote>
+<p>让我们开始吧，Futon。<br><img src="http://inthecheesefactory.com/uploads/source/acra/futon.png" alt=""></p>
+<p>首先，通过你之前设置的管理员账号登陆这个系统。</p>
+<p>现在我们开始安装一个acro-storage (Acralyzer’s Storage Endpoing).在左边的菜单，点击Replicator，然后填写远程存储改为本地存储的表单。<br>&gt;</p>
+<blockquote>
+<p>*from Remote Database: <a href="http://get.acralyzer.com/distrib-acra-storage" target="_blank" rel="external">http://get.acralyzer.com/distrib-acra-storage</a> to Local Database: acra-myapp</p>
+</blockquote>
+<p>点击Replicate然后等待，知道这个过程结束。</p>
+<p>下一步安装Acralyzer通过同样的方法，但是参数是不同的。<br>&gt;</p>
+<blockquote>
+<p>*from Remote Database: <a href="http://get.acralyzer.com/distrib-acralyzer" target="_blank" rel="external">http://get.acralyzer.com/distrib-acralyzer</a> to Local Database: acralyzer</p>
+</blockquote>
+<p>点击Replicate安装。</p>
+<p>如果你操作正确，系统将会有两个数据库，acra-myapp 和 acralyzer。</p>
+<p><img src="http://inthecheesefactory.com/uploads/source/acra/acra3.png" alt=""></p>
+<p>我门就快大功告成了，下一步，我们需要为这个客户端创建一个用户，打开浏览器，然后打开这个网址：<br>&gt;</p>
+<blockquote>
+<p>*http://<your_server_ip>:5984/acralyzer/_design/acralyzer/index.html<br><img src="http://inthecheesefactory.com/uploads/source/acra/admincreateuser.png" alt=""></your_server_ip></p>
+</blockquote>
+<p>填写你想要的Username/Password，然后点击Create User，这些信息将会出现。<br><img src="http://inthecheesefactory.com/uploads/source/acra/users2.png" alt=""></p>
+<p>复制这些信息，然后粘贴到你的文本编辑器，我们可能会用这个在客户端设置。</p>
+<p>最后一件事是限制访问权限来保护在acra-myapp里面的数据，进入acra-myapp然后点击Securities，填写用户角色分配；<br>&gt;</p>
+<blockquote>
+<p>*[“reader”]<br><img src="http://inthecheesefactory.com/uploads/source/acra/reader.png" alt=""></p>
+</blockquote>
+<p>完工！<br>在这些结束后，你可以通过同一个网址访问这个控制台，去Admin选项卡，并选择Users。</p>
+<p>&gt;</p>
+<blockquote>
+<p>*[http://<your_server_ip>:5984/acralyzer/_design/acralyzer/index.html</your_server_ip></p>
+</blockquote>
+<p>请注意acro-myapp只能够为一款应用服务。以防你想为另外一款应用创建一个后台，请通过同样的过程复制另外一个acro-storage，但是改变本地数据库名为acra-<your_app_name>。请注意，有必要去通过acra- 去开启服务，或者它不能够在仪表盘中罗列为选择项供我们去选择。</your_app_name></p>
+<p>如果在系统中有不止一款应用，在Acralyzer的仪表盘中将会有一个下拉列表，让我们去选择看哪一个的问题。你可以试一试。</p>
+<p>在客户端设置ACRA。</p>
+<p>在客户端中设置ACRA很简单，首先，在你的 build.gradle里添加ACRA的依赖配置信息。<br>&gt;</p>
+<blockquote>
+<p>*compile ‘ch.acra:acra:4.6.1’</p>
+</blockquote>
+<p>同步你的gradle文件，然后创建一个自定义Application类，但是不要忘记在AndroidManifest.xml中定义这个Application类。（我假设每一个Android开发者不会忘记这么做）。</p>
+<p>在你创建的自定义的Application类中添加 @ReportCrashes注解。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> android.app.Application;</div><div class="line"><span class="keyword">import</span> org.acra.ACRA;</div><div class="line"><span class="keyword">import</span> org.acra.annotation.ReportsCrashes;</div><div class="line"><span class="keyword">import</span> org.acra.sender.HttpSender;</div><div class="line"> </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Created by nuuneoi on 2/19/2015.</div><div class="line"> */</div><div class="line"> </div><div class="line"><span class="meta">@ReportsCrashes</span>(</div><div class="line">)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainApplication</span> <span class="keyword">extends</span> <span class="title">Application</span> </span>&#123;</div><div class="line"> </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate();</div><div class="line"> </div><div class="line">        ACRA.init(<span class="keyword">this</span>);</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在我们复制服务器端生成的信息，并且像下面那样粘贴到@ReportsCrashes中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">	<span class="meta">@ReportsCrashes</span>(</div><div class="line">    httpMethod = HttpSender.Method.PUT,</div><div class="line">    reportType = HttpSender.Type.JSON,</div><div class="line">    formUri = <span class="string">"http://YOUR_SERVER_IP:5984/acra-myapp/_design/acra-storage/_update/report"</span>,</div><div class="line">    formUriBasicAuthLogin = <span class="string">"tester"</span>,</div><div class="line">    formUriBasicAuthPassword = <span class="string">"12345"</span></div><div class="line">)</div></pre></td></tr></table></figure>
+<p>最后一步，不要忘记添加在AndroidManifest.xml网络访问权限，否则ACRA可能无法发送这些日志信息到你的服务器上。<br>&gt;</p>
+<blockquote>
+<p>*<uses-permission android:name="android.permission.INTERNET"></uses-permission></p>
+</blockquote>
+<p>恭喜，现在所有的配置都已经完成，ACRA可以正常的工作，帮助你收集崩溃日志信息，从而你可以快速解决应用出现的问题。</p>
+<p>##测试##</p>
+<p>现在我们通过在Activity中强制一些崩溃来做一些测试，例子如下： </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">extView tvHello;</div><div class="line"> </div><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">    setContentView(R.layout.activity_main);</div><div class="line"> </div><div class="line">    tvHello.setText(<span class="string">"Test Crash"</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>运行你的应用，然后改变崩溃的原因，再运行一次。查看你的仪表盘，你将会看到这些发送到后台的bug。</p>
+<p><img src="http://inthecheesefactory.com/uploads/source/acra/acra.png" alt=""></p>
+<p>每一个bug来自不同用户不同时间，并且这些报告被分组了。<br><img src="http://inthecheesefactory.com/uploads/source/acra/reportslist.png" alt=""></p>
+<p>仔细看看这些报告信息，你将会发现他们都是完整的崩溃信息。<br><img src="http://inthecheesefactory.com/uploads/source/acra/stacktrace.png" alt=""></p>
+<p>并且非常多的信息，足足有7页。</p>
+<p>如果你修复这些bug后，你可以关闭这个问题，通过简单的点击在页面中高亮显示的”bug”图标，<br><img src="http://inthecheesefactory.com/uploads/source/acra/closeissue.png" alt=""></p>
+<p>希望这篇文章对你们有用，特别是对于一些需要应用崩溃信息收集但是却担心隐私信息的大公司可以来使用这个系统。</p>
+<p>事实上ACRA还有许多其他特性，比如：当一个月崩溃时显示Toast 或者 popup 来报告这些信息。你可以在ACRA网站上发现这些选项。</p>
+<p>Acralytics也一样，这里有许多其他特性可以使用，比如，你可以设置一个服务器来发送邮件给我们。</p>
+<p>下一篇博客再见。</p>
+<p>​    </p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/如何在本地搭建一个Android应用crashing跟踪系统－ACRA/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/如何在本地搭建一个Android应用crashing跟踪系统－ACRA/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -928,180 +1184,6 @@ htmlOutput file(&quot;$project.buildDir/reports/lint/lint.html&quot;)
 	
 	  	<span></span>
 		<a href="/2017/04/27/如何提高你的代码质量/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/如何提高你的代码质量/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/27/如何在本地搭建一个Android应用crashing跟踪系统－ACRA/" title="如何在本地搭建一个Android应用crashing跟踪系统－ACRA" itemprop="url">如何在本地搭建一个Android应用crashing跟踪系统－ACRA</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <ul>
-<li>原文链接 : <a href="http://inthecheesefactory.com/blog/how-to-install-and-use-acra-android/en" target="_blank" rel="external">How to setup ACRA, an Android Application Crash Tracking system, on your own host</a></li>
-</ul>
-<p>在开发一款移动app时的一个事实是会有很多约束，比如硬件（CPU、RAM、Battery 等等）。如果你的代码设计不是很好，你会遇到一个非常让人头疼的问题：“Crash”,研究表明：</p>
-<p>&gt;</p>
-<blockquote>
-<p>*应用崩溃时绝大多数应用使用者抱怨的问题。</p>
-</blockquote>
-<p>此外</p>
-<p>&gt;</p>
-<ul>
-<li>如果应用程序联系崩溃三次，大约一半的用户将会卸载这款应用。</li>
-</ul>
-<p>崩溃跟踪系统，帮助开发者能够直接的葱用户的设备收集每一个崩溃原因，是不是发现这个功能很特殊。目前最受欢迎的崩溃跟踪系统是 <a href="http://fabric.io/" target="_blank" rel="external">Crashlytics</a>和<a href="http://blog.parse.com/2014/12/09/introducing-parse-crash-reporting-2/" target="_blank" rel="external">Parse Crash Reporting</a>，这两个系统都是完全免费的。开发者可以免费的集成他们在自己的应用中。不论什么时候app崩溃了，整个bug信息将会发送到后台，允许开发人员用最简单的方式去解决这些bug。通过这个方法，你可以在短时间内迭代一款不会影响正常使用的应用。</p>
-<p>然而，提供崩溃信息收集的厂商收集这些崩溃信息同时也收集了用户信息，这可能让引起大公司担心用户隐私。</p>
-<p>所以，这儿有没有崩溃信息跟踪系统可以让我们搭建在自己的服务器上？那么就不存在泄漏用户隐私的担忧了。当然有了，并且这个系统提供了非常简单的搭建方法。在这里我们来介绍下<a href="https://www.acra.gov.sg/home/" target="_blank" rel="external">Application Crash Reporting on Android (ACRA)</a>,一个库允许Android应用自动地发送崩溃信息到自己的服务器。</p>
-<p>下面将会介绍如何去搭建。</p>
-<h2 id="搭建一个服务器"><a href="#搭建一个服务器" class="headerlink" title="搭建一个服务器"></a>搭建一个服务器</h2><p>服务器端是一个先决条件，让我们先从搭建服务器端开始。</p>
-<p>由于ACRA设计的很好并且很受欢迎。它允许开发者开发自己的服务器系统，并且现在我们可以看到很多这样的系统。即便如此我觉得最好的是Acralyzer，这个也是由ACRA团队研发。Acralyzer工作在Apache CouchDB，所以<br>这里没有必要安装除了CouchDB以外的软件。</p>
-<p>Acralyzer是一个功能相当齐全的后端崩溃跟踪系统。来自不同原因的相同堆栈轨迹将会被分组成一个单一的问题。如果你解决了所有问题，你可以非常便捷的关闭Acralyzer服务，并且这种关闭服务的操作时实时的，我发现系统唯一的缺点是它的ui让人感到不舒服，但是谁会在乎这个？它是为开发者开发的。</p>
-<p>安装起来也很简单，下面将介绍如何在Ubuntu安装Acralyzer。</p>
-<p>打开命令窗口，开始安装couchdb<br>&gt;</p>
-<blockquote>
-<p>*apt-get install couchdb</p>
-</blockquote>
-<p>Test the installation with this command:</p>
-<p>测试是否安装成功。<br>&gt;</p>
-<blockquote>
-<p>*curl <a href="http://127.0.0.1:5984" target="_blank" rel="external">http://127.0.0.1:5984</a></p>
-</blockquote>
-<p>如果正确安装，会显示如下：<br>&gt;</p>
-<blockquote>
-<p>*{“couchdb”:”Welcome”,”version”:”1.2.0”}</p>
-</blockquote>
-<p>编辑etc/couchdb/local.ini允许我们通过外部IP(默认的访问会通过127.0.0.1)去访问CouchDB。仅仅改变两行实现这个功能：<br>&gt;</p>
-<blockquote>
-<p><em>;port = 5984
-</em>;bind_address = 127.0.0.1</p>
-</blockquote>
-<p>改变为<br>&gt;</p>
-<blockquote>
-<p><em>port = 5984
-</em>bind_address = 0.0.0.0</p>
-</blockquote>
-<p>在同一个文件夹下，你需要添加username/password作为管理员账户。找到这一行（应该会在文件末尾）<br>&gt;</p>
-<blockquote>
-<p>*[admins]</p>
-</blockquote>
-<p>下一行添加username/password 形式为username = password，比如：<br>&gt;</p>
-<blockquote>
-<p>*[nuuneoi = 12345]</p>
-</blockquote>
-<p>请不要对在这里书写明文密码感到担心，一旦CouchDB重启后，你的密码将会自动地散列，并且将会是不可读的，</p>
-<p>保存你刚刚编辑的文件同时通过命令行重启hashed：<br>&gt;</p>
-<blockquote>
-<p>*curl -X POST <a href="http://localhost:5984/_restart" target="_blank" rel="external">http://localhost:5984/_restart</a> -H”Content-Type: application/json”</p>
-</blockquote>
-<p>从现在起，你将可以通过浏览器访问CouchDB。这个web服务我们称之为Futon，一个CouchDB UI管理后台。在你的浏览器中打开这个地址。</p>
-<p>&gt;</p>
-<blockquote>
-<p>*http://<your_server_ip>:5984/_utils</your_server_ip></p>
-</blockquote>
-<p>让我们开始吧，Futon。<br><img src="http://inthecheesefactory.com/uploads/source/acra/futon.png" alt=""></p>
-<p>首先，通过你之前设置的管理员账号登陆这个系统。</p>
-<p>现在我们开始安装一个acro-storage (Acralyzer’s Storage Endpoing).在左边的菜单，点击Replicator，然后填写远程存储改为本地存储的表单。<br>&gt;</p>
-<blockquote>
-<p>*from Remote Database: <a href="http://get.acralyzer.com/distrib-acra-storage" target="_blank" rel="external">http://get.acralyzer.com/distrib-acra-storage</a> to Local Database: acra-myapp</p>
-</blockquote>
-<p>点击Replicate然后等待，知道这个过程结束。</p>
-<p>下一步安装Acralyzer通过同样的方法，但是参数是不同的。<br>&gt;</p>
-<blockquote>
-<p>*from Remote Database: <a href="http://get.acralyzer.com/distrib-acralyzer" target="_blank" rel="external">http://get.acralyzer.com/distrib-acralyzer</a> to Local Database: acralyzer</p>
-</blockquote>
-<p>点击Replicate安装。</p>
-<p>如果你操作正确，系统将会有两个数据库，acra-myapp 和 acralyzer。</p>
-<p><img src="http://inthecheesefactory.com/uploads/source/acra/acra3.png" alt=""></p>
-<p>我门就快大功告成了，下一步，我们需要为这个客户端创建一个用户，打开浏览器，然后打开这个网址：<br>&gt;</p>
-<blockquote>
-<p>*http://<your_server_ip>:5984/acralyzer/_design/acralyzer/index.html<br><img src="http://inthecheesefactory.com/uploads/source/acra/admincreateuser.png" alt=""></your_server_ip></p>
-</blockquote>
-<p>填写你想要的Username/Password，然后点击Create User，这些信息将会出现。<br><img src="http://inthecheesefactory.com/uploads/source/acra/users2.png" alt=""></p>
-<p>复制这些信息，然后粘贴到你的文本编辑器，我们可能会用这个在客户端设置。</p>
-<p>最后一件事是限制访问权限来保护在acra-myapp里面的数据，进入acra-myapp然后点击Securities，填写用户角色分配；<br>&gt;</p>
-<blockquote>
-<p>*[“reader”]<br><img src="http://inthecheesefactory.com/uploads/source/acra/reader.png" alt=""></p>
-</blockquote>
-<p>完工！<br>在这些结束后，你可以通过同一个网址访问这个控制台，去Admin选项卡，并选择Users。</p>
-<p>&gt;</p>
-<blockquote>
-<p>*[http://<your_server_ip>:5984/acralyzer/_design/acralyzer/index.html</your_server_ip></p>
-</blockquote>
-<p>请注意acro-myapp只能够为一款应用服务。以防你想为另外一款应用创建一个后台，请通过同样的过程复制另外一个acro-storage，但是改变本地数据库名为acra-<your_app_name>。请注意，有必要去通过acra- 去开启服务，或者它不能够在仪表盘中罗列为选择项供我们去选择。</your_app_name></p>
-<p>如果在系统中有不止一款应用，在Acralyzer的仪表盘中将会有一个下拉列表，让我们去选择看哪一个的问题。你可以试一试。</p>
-<p>在客户端设置ACRA。</p>
-<p>在客户端中设置ACRA很简单，首先，在你的 build.gradle里添加ACRA的依赖配置信息。<br>&gt;</p>
-<blockquote>
-<p>*compile ‘ch.acra:acra:4.6.1’</p>
-</blockquote>
-<p>同步你的gradle文件，然后创建一个自定义Application类，但是不要忘记在AndroidManifest.xml中定义这个Application类。（我假设每一个Android开发者不会忘记这么做）。</p>
-<p>在你创建的自定义的Application类中添加 @ReportCrashes注解。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> android.app.Application;</div><div class="line"><span class="keyword">import</span> org.acra.ACRA;</div><div class="line"><span class="keyword">import</span> org.acra.annotation.ReportsCrashes;</div><div class="line"><span class="keyword">import</span> org.acra.sender.HttpSender;</div><div class="line"> </div><div class="line"><span class="comment">/**</span></div><div class="line"> * Created by nuuneoi on 2/19/2015.</div><div class="line"> */</div><div class="line"> </div><div class="line"><span class="meta">@ReportsCrashes</span>(</div><div class="line">)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainApplication</span> <span class="keyword">extends</span> <span class="title">Application</span> </span>&#123;</div><div class="line"> </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate();</div><div class="line"> </div><div class="line">        ACRA.init(<span class="keyword">this</span>);</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>现在我们复制服务器端生成的信息，并且像下面那样粘贴到@ReportsCrashes中。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">	<span class="meta">@ReportsCrashes</span>(</div><div class="line">    httpMethod = HttpSender.Method.PUT,</div><div class="line">    reportType = HttpSender.Type.JSON,</div><div class="line">    formUri = <span class="string">"http://YOUR_SERVER_IP:5984/acra-myapp/_design/acra-storage/_update/report"</span>,</div><div class="line">    formUriBasicAuthLogin = <span class="string">"tester"</span>,</div><div class="line">    formUriBasicAuthPassword = <span class="string">"12345"</span></div><div class="line">)</div></pre></td></tr></table></figure>
-<p>最后一步，不要忘记添加在AndroidManifest.xml网络访问权限，否则ACRA可能无法发送这些日志信息到你的服务器上。<br>&gt;</p>
-<blockquote>
-<p>*<uses-permission android:name="android.permission.INTERNET"></uses-permission></p>
-</blockquote>
-<p>恭喜，现在所有的配置都已经完成，ACRA可以正常的工作，帮助你收集崩溃日志信息，从而你可以快速解决应用出现的问题。</p>
-<p>##测试##</p>
-<p>现在我们通过在Activity中强制一些崩溃来做一些测试，例子如下： </p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">extView tvHello;</div><div class="line"> </div><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">    setContentView(R.layout.activity_main);</div><div class="line"> </div><div class="line">    tvHello.setText(<span class="string">"Test Crash"</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>运行你的应用，然后改变崩溃的原因，再运行一次。查看你的仪表盘，你将会看到这些发送到后台的bug。</p>
-<p><img src="http://inthecheesefactory.com/uploads/source/acra/acra.png" alt=""></p>
-<p>每一个bug来自不同用户不同时间，并且这些报告被分组了。<br><img src="http://inthecheesefactory.com/uploads/source/acra/reportslist.png" alt=""></p>
-<p>仔细看看这些报告信息，你将会发现他们都是完整的崩溃信息。<br><img src="http://inthecheesefactory.com/uploads/source/acra/stacktrace.png" alt=""></p>
-<p>并且非常多的信息，足足有7页。</p>
-<p>如果你修复这些bug后，你可以关闭这个问题，通过简单的点击在页面中高亮显示的”bug”图标，<br><img src="http://inthecheesefactory.com/uploads/source/acra/closeissue.png" alt=""></p>
-<p>希望这篇文章对你们有用，特别是对于一些需要应用崩溃信息收集但是却担心隐私信息的大公司可以来使用这个系统。</p>
-<p>事实上ACRA还有许多其他特性，比如：当一个月崩溃时显示Toast 或者 popup 来报告这些信息。你可以在ACRA网站上发现这些选项。</p>
-<p>Acralytics也一样，这里有许多其他特性可以使用，比如，你可以设置一个服务器来发送邮件给我们。</p>
-<p>下一篇博客再见。</p>
-<p>​    </p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2017/04/27/如何在本地搭建一个Android应用crashing跟踪系统－ACRA/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/如何在本地搭建一个Android应用crashing跟踪系统－ACRA/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -2034,6 +2116,94 @@ tab"></p>
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2017/04/27/手动实现布局Transitions动画-第二部分/" title="手动实现布局Transitions动画-第二部分" itemprop="url">手动实现布局Transitions动画-第二部分</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ul>
+<li>原文链接 : <a href="https://blog.stylingandroid.com/manual-layout-transitions-part-2/" target="_blank" rel="external">Manual Layout Transitions – Part 2</a></li>
+<li><a href="http://www.devtf.cn" target="_blank" rel="external">译文出自 :  开发技术前线 www.devtf.cn</a></li>
+<li>译者 : <a href="https://github.com/bboyfeiyu" target="_blank" rel="external">Mr.Simple</a></li>
+</ul>
+<p>布局切换动画在Material design中是一个重要的方面,因为它们能够指明应用的工作流程，并且能够将UI上的可视化元素绑定在一起作为用户的导航。两个重要的工具可以实现这种效果，分别为Activity转场动画和布局动画（Layout Transitions）。然后布局动画需要在API 19及其之后才支持。在这一系列文章中，我们会学习到即使在无法调用transitions APIs时如何实现很好的转场动画。</p>
+<p>布局切换框架引入了代表特定布局状态的Scenes概念，也就是场景。我们会定义两个分离的布局来模仿这些，其中一个代表默认的视图，另一个代表我们进入输入模式的视图。我们先来创建两个布局，它们都是基于Dirty Phrasebook布局，当然我们会做一些小修改以便大家能够更容易理解。</p>
+<p>首先是默认布局。</p>
+<p>res/layout/activity_part2.xml</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div></pre></td><td class="code"><pre><div class="line"><span class="php"><span class="meta">&lt;?</span>xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span><span class="meta">?&gt;</span></span></div><div class="line"><span class="tag">&lt;<span class="name">LinearLayout</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">  <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">  <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">  <span class="attr">android:orientation</span>=<span class="string">"vertical"</span></div><div class="line">  <span class="attr">android:clipChildren</span>=<span class="string">"false"</span>&gt;</div><div class="line"> </div><div class="line">  <span class="tag">&lt;<span class="name">RelativeLayout</span></span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"0dp"</span></div><div class="line">    <span class="attr">android:layout_weight</span>=<span class="string">"1"</span>&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">View</span></span></div><div class="line">      <span class="attr">android:id</span>=<span class="string">"@+id/toolbar"</span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"?attr/actionBarSize"</span></div><div class="line">      <span class="attr">android:background</span>=<span class="string">"?attr/colorPrimary"</span> /&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">View</span></span></div><div class="line">      <span class="attr">android:id</span>=<span class="string">"@+id/focus_holder"</span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"0dp"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"0dp"</span></div><div class="line">      <span class="attr">android:focusableInTouchMode</span>=<span class="string">"true"</span>&gt;</div><div class="line"> </div><div class="line">      <span class="tag">&lt;<span class="name">requestFocus</span> /&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">View</span>&gt;</span></div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">android.support.v7.widget.CardView</span></span></div><div class="line">      <span class="attr">android:id</span>=<span class="string">"@+id/input_view"</span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_alignParentBottom</span>=<span class="string">"true"</span></div><div class="line">      <span class="attr">android:layout_below</span>=<span class="string">"@id/toolbar"</span>&gt;</div><div class="line"> </div><div class="line">      <span class="tag">&lt;<span class="name">EditText</span></span></div><div class="line">        <span class="attr">android:id</span>=<span class="string">"@+id/input"</span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">        <span class="attr">android:inputType</span>=<span class="string">"textMultiLine"</span> /&gt;</div><div class="line"> </div><div class="line">      <span class="tag">&lt;<span class="name">ImageView</span></span></div><div class="line">        <span class="attr">android:id</span>=<span class="string">"@+id/input_done"</span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"32dip"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"32dip"</span></div><div class="line">        <span class="attr">android:layout_alignBottom</span>=<span class="string">"@id/input"</span></div><div class="line">        <span class="attr">android:layout_alignEnd</span>=<span class="string">"@id/input"</span></div><div class="line">        <span class="attr">android:layout_alignRight</span>=<span class="string">"@id/input"</span></div><div class="line">        <span class="attr">android:layout_gravity</span>=<span class="string">"bottom|end"</span></div><div class="line">        <span class="attr">android:layout_margin</span>=<span class="string">"8dp"</span></div><div class="line">        <span class="attr">android:background</span>=<span class="string">"@drawable/done_background"</span></div><div class="line">        <span class="attr">android:contentDescription</span>=<span class="string">"@string/done"</span></div><div class="line">        <span class="attr">android:padding</span>=<span class="string">"2dp"</span></div><div class="line">        <span class="attr">android:src</span>=<span class="string">"@drawable/ic_arrow_forward"</span></div><div class="line">        <span class="attr">android:visibility</span>=<span class="string">"invisible"</span> /&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;/<span class="name">android.support.v7.widget.CardView</span>&gt;</span></div><div class="line"> </div><div class="line">  <span class="tag">&lt;/<span class="name">RelativeLayout</span>&gt;</span></div><div class="line"> </div><div class="line">  <span class="tag">&lt;<span class="name">FrameLayout</span></span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"0dp"</span></div><div class="line">    <span class="attr">android:layout_weight</span>=<span class="string">"1"</span>&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">android.support.v7.widget.CardView</span></span></div><div class="line">      <span class="attr">android:id</span>=<span class="string">"@+id/translation"</span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">      <span class="attr">android:layout_margin</span>=<span class="string">"8dp"</span>&gt;</div><div class="line"> </div><div class="line">      <span class="tag">&lt;<span class="name">View</span></span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"100dp"</span></div><div class="line">        <span class="attr">android:background</span>=<span class="string">"?attr/colorPrimary"</span> /&gt;</div><div class="line">    <span class="tag">&lt;/<span class="name">android.support.v7.widget.CardView</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">FrameLayout</span>&gt;</span></div><div class="line"> </div><div class="line"><span class="tag">&lt;/<span class="name">LinearLayout</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>这个布局与我们上一篇使用的布局基本一致，但是稍微有一点小修改。现在我们感兴趣只有id为toolbar, focus_holder, input, input_view, input_done和 translation的视图控件。</p>
+<p>它看起来是这样的:</p>
+<p><img src="https://blog.stylingandroid.com/wp-content/uploads/2015/05/Screenshot_2015-05-17-22-17-21-169x300.png" alt=""></p>
+<p>The layout for when we’re in input mode is:</p>
+<p>下面是进入输入模式的布局 : </p>
+<p>res/layout/activity_part2_input.xml</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div></pre></td><td class="code"><pre><div class="line"><span class="php"><span class="meta">&lt;?</span>xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span><span class="meta">?&gt;</span></span></div><div class="line"><span class="tag">&lt;<span class="name">LinearLayout</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">  <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">  <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">  <span class="attr">android:orientation</span>=<span class="string">"vertical"</span></div><div class="line">  <span class="attr">android:clipChildren</span>=<span class="string">"false"</span>&gt;</div><div class="line"> </div><div class="line">  <span class="tag">&lt;<span class="name">RelativeLayout</span></span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"0dp"</span></div><div class="line">    <span class="attr">android:layout_weight</span>=<span class="string">"1"</span>&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">View</span></span></div><div class="line">      <span class="attr">android:id</span>=<span class="string">"@+id/toolbar"</span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"?attr/actionBarSize"</span></div><div class="line">      <span class="attr">android:background</span>=<span class="string">"?attr/colorPrimary"</span> /&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">View</span></span></div><div class="line">      <span class="attr">android:id</span>=<span class="string">"@+id/focus_holder"</span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"0dp"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"0dp"</span></div><div class="line">      <span class="attr">android:focusableInTouchMode</span>=<span class="string">"true"</span> /&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">android.support.v7.widget.CardView</span></span></div><div class="line">      <span class="attr">android:id</span>=<span class="string">"@+id/input_view"</span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_alignParentBottom</span>=<span class="string">"true"</span></div><div class="line">      <span class="attr">android:layout_alignParentTop</span>=<span class="string">"true"</span></div><div class="line">      <span class="attr">android:layout_marginBottom</span>=<span class="string">"?attr/actionBarSize"</span>&gt;</div><div class="line"> </div><div class="line">      <span class="tag">&lt;<span class="name">EditText</span></span></div><div class="line">        <span class="attr">android:id</span>=<span class="string">"@+id/input"</span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">        <span class="attr">android:inputType</span>=<span class="string">"textMultiLine"</span>&gt;</div><div class="line"> </div><div class="line">        <span class="tag">&lt;<span class="name">requestFocus</span> /&gt;</span></div><div class="line">      <span class="tag">&lt;/<span class="name">EditText</span>&gt;</span></div><div class="line"> </div><div class="line">      <span class="tag">&lt;<span class="name">ImageView</span></span></div><div class="line">        <span class="attr">android:id</span>=<span class="string">"@+id/input_done"</span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"32dip"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"32dip"</span></div><div class="line">        <span class="attr">android:layout_alignBottom</span>=<span class="string">"@id/input"</span></div><div class="line">        <span class="attr">android:layout_alignEnd</span>=<span class="string">"@id/input"</span></div><div class="line">        <span class="attr">android:layout_alignRight</span>=<span class="string">"@id/input"</span></div><div class="line">        <span class="attr">android:layout_gravity</span>=<span class="string">"bottom|end"</span></div><div class="line">        <span class="attr">android:layout_margin</span>=<span class="string">"8dp"</span></div><div class="line">        <span class="attr">android:background</span>=<span class="string">"@drawable/done_background"</span></div><div class="line">        <span class="attr">android:contentDescription</span>=<span class="string">"@string/done"</span></div><div class="line">        <span class="attr">android:padding</span>=<span class="string">"2dp"</span></div><div class="line">        <span class="attr">android:src</span>=<span class="string">"@drawable/ic_arrow_forward"</span></div><div class="line">        <span class="attr">android:visibility</span>=<span class="string">"visible"</span> /&gt;</div><div class="line">    <span class="tag">&lt;/<span class="name">android.support.v7.widget.CardView</span>&gt;</span></div><div class="line"> </div><div class="line">  <span class="tag">&lt;/<span class="name">RelativeLayout</span>&gt;</span></div><div class="line"> </div><div class="line">  <span class="tag">&lt;<span class="name">FrameLayout</span></span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"0dp"</span></div><div class="line">    <span class="attr">android:layout_weight</span>=<span class="string">"1"</span>&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">android.support.v7.widget.CardView</span></span></div><div class="line">      <span class="attr">android:id</span>=<span class="string">"@+id/translation"</span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">      <span class="attr">android:layout_margin</span>=<span class="string">"8dp"</span></div><div class="line">      <span class="attr">android:visibility</span>=<span class="string">"invisible"</span>&gt;</div><div class="line"> </div><div class="line">      <span class="tag">&lt;<span class="name">View</span></span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"100dp"</span></div><div class="line">        <span class="attr">android:background</span>=<span class="string">"?attr/colorPrimary"</span> /&gt;</div><div class="line">    <span class="tag">&lt;/<span class="name">android.support.v7.widget.CardView</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">FrameLayout</span>&gt;</span></div><div class="line"> </div><div class="line"><span class="tag">&lt;/<span class="name">LinearLayout</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>该布局和上一布局也是基本相同，它们的区别在于 : </p>
+<ol>
+<li>id为input_view的视图现在依附在它的父视图的顶部，而不是在toolbar的下面，也就是说它现在覆盖住了toolbar;</li>
+<li>input_done视图现在已经变为可见状态，上一个布局中它是invisible状态;</li>
+<li>translation视图变为invisible，上一布局中它是visible状态。</li>
+</ol>
+<p>效果如下 : </p>
+<p><img src="https://blog.stylingandroid.com/wp-content/uploads/2015/05/Screenshot_2015-05-17-22-17-26-169x300.png" alt=""></p>
+<p>两个布局代表UI的两个状态，如果我们使用Transitions API那么它们就是我们所谓的场景。</p>
+<p>我们现在要做的就是在这两个布局之间进行状态切换，也就是进入、退出输入模式。首先我们需要检测MainActivity中的焦点 : </p>
+<p>part2/mainActivity.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</div><div class="line"> </div><div class="line">    <span class="keyword">private</span> View input;</div><div class="line">    <span class="keyword">private</span> TransitionController focusChangeListener;</div><div class="line">    <span class="keyword">private</span> View.OnClickListener onClickListener;</div><div class="line">    <span class="keyword">private</span> View focusHolder;</div><div class="line"> </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        focusChangeListener = Part2TransitionController.newInstance(<span class="keyword">this</span>);</div><div class="line">        onClickListener = <span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(@NonNull View v)</span> </span>&#123;</div><div class="line">                focusHolder.requestFocus();</div><div class="line">            &#125;</div><div class="line">        &#125;;</div><div class="line"> </div><div class="line">        setContentView(R.layout.activity_part2);</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setContentView</span><span class="params">(<span class="keyword">int</span> layoutResID)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (input != <span class="keyword">null</span>) &#123;</div><div class="line">            input.setOnFocusChangeListener(<span class="keyword">null</span>);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">super</span>.setContentView(layoutResID);</div><div class="line">        input = findViewById(R.id.input);</div><div class="line">        View inputDone = findViewById(R.id.input_done);</div><div class="line">        focusHolder = findViewById(R.id.focus_holder);</div><div class="line">        input.setOnFocusChangeListener(focusChangeListener);</div><div class="line">        inputDone.setOnClickListener(onClickListener);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>因为我们检测到焦点变化，因此我们还需要添加一些逻辑到setContentView函数中。这样一来我们在调用setContentView时就可以切换这两个布局，此时View的层级关系也会随着改变。因此我们每次都需要找到布局中的子视图，焦点listener我们也需要移除并且重新设置一个到input视图中。</p>
+<p>和原来一样，我们需要一个TransitionController来处理焦点变化: </p>
+<p>.part2.Part2TransitionController.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Part2TransitionController</span> <span class="keyword">extends</span> <span class="title">TransitionController</span> </span>&#123;</div><div class="line"> </div><div class="line">    Part2TransitionController(WeakReference&lt;Activity&gt; activityWeakReference, AnimatorBuilder animatorBuilder) &#123;</div><div class="line">        <span class="keyword">super</span>(activityWeakReference, animatorBuilder);</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> TransitionController <span class="title">newInstance</span><span class="params">(Activity activity)</span> </span>&#123;</div><div class="line">        WeakReference&lt;Activity&gt; activityWeakReference = <span class="keyword">new</span> WeakReference&lt;&gt;(activity);</div><div class="line">        AnimatorBuilder animatorBuilder = AnimatorBuilder.newInstance(activity);</div><div class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Part2TransitionController(activityWeakReference, animatorBuilder);</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">enterInputMode</span><span class="params">(Activity activity)</span> </span>&#123;</div><div class="line">        activity.setContentView(R.layout.activity_part2_input);</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">exitInputMode</span><span class="params">(Activity activity)</span> </span>&#123;</div><div class="line">        activity.setContentView(R.layout.activity_part2);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在我们需要做的只是调用Activity的setContentView函数来切换两个布局。</p>
+<p>如果我们现在运行上面的代码，我们可以看到两个布局毫无过度的切换，这必然不是我们想要的。在下一篇文章中，我们将讲解如何在布局切换时添加动画。</p>
+<p>本文的源代码在<a href="https://github.com/StylingAndroid/ManualLayoutTransitions/tree/Part2" target="_blank" rel="external">这里</a>。</p>
+<p class="cc-block"><a rel="external" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank"><img alt="CC BY-NC-SA 4.0" class="cc-button" src="https://blog.stylingandroid.com/wp-content/plugins/creative-commons-configurator-1/media/cc/by-nc-sa/4.0/88x31.png" scale="0"></a><br><br><br><a href="http://blog.stylingandroid.com/manual-layout-transitions-part-1/" title="Permalink to Manual Layout Transitions – Part 1" target="_blank" rel="external"><span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">Manual Layout Transitions – Part 1</span></a> by <a xmlns:cc="http://creativecommons.org/ns#" href="http://blog.stylingandroid.com/author/admin/" property="cc:attributionName" rel="external" target="_blank">Styling Android</a> is licensed under a <a rel="external" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.<br>Permissions beyond the scope of this license may be available at <a xmlns:cc="http://creativecommons.org/ns#" href="http://blog.stylingandroid.com/license-information" rel="external" target="_blank">http://blog.stylingandroid.com/license-information</a>.</p>
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/手动实现布局Transitions动画-第二部分/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/手动实现布局Transitions动画-第二部分/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2017/04/27/拖拽RecyclerView/" title="拖拽RecyclerView" itemprop="url">拖拽RecyclerView</a>
   </h1>
   <p class="article-author">By
@@ -2148,7 +2318,7 @@ tab"></p>
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/04/27/手动实现布局Transitions动画-第二部分/" title="手动实现布局Transitions动画-第二部分" itemprop="url">手动实现布局Transitions动画-第二部分</a>
+      <a href="/2017/04/27/gradle技巧之语法浅谈/" title="gradle技巧之语法浅谈" itemprop="url">gradle技巧之语法浅谈</a>
   </h1>
   <p class="article-author">By
        
@@ -2162,258 +2332,49 @@ tab"></p>
     <div class="article-content">
         
         <ul>
-<li>原文链接 : <a href="https://blog.stylingandroid.com/manual-layout-transitions-part-2/" target="_blank" rel="external">Manual Layout Transitions – Part 2</a></li>
-<li><a href="http://www.devtf.cn" target="_blank" rel="external">译文出自 :  开发技术前线 www.devtf.cn</a></li>
-<li>译者 : <a href="https://github.com/bboyfeiyu" target="_blank" rel="external">Mr.Simple</a></li>
+<li>原文链接 : <a href="http://trickyandroid.com/gradle-tip-2-understanding-syntax/" target="_blank" rel="external">Gradle tip #2: understanding syntax</a></li>
 </ul>
-<p>布局切换动画在Material design中是一个重要的方面,因为它们能够指明应用的工作流程，并且能够将UI上的可视化元素绑定在一起作为用户的导航。两个重要的工具可以实现这种效果，分别为Activity转场动画和布局动画（Layout Transitions）。然后布局动画需要在API 19及其之后才支持。在这一系列文章中，我们会学习到即使在无法调用transitions APIs时如何实现很好的转场动画。</p>
-<p>布局切换框架引入了代表特定布局状态的Scenes概念，也就是场景。我们会定义两个分离的布局来模仿这些，其中一个代表默认的视图，另一个代表我们进入输入模式的视图。我们先来创建两个布局，它们都是基于Dirty Phrasebook布局，当然我们会做一些小修改以便大家能够更容易理解。</p>
-<p>首先是默认布局。</p>
-<p>res/layout/activity_part2.xml</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div></pre></td><td class="code"><pre><div class="line"><span class="php"><span class="meta">&lt;?</span>xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span><span class="meta">?&gt;</span></span></div><div class="line"><span class="tag">&lt;<span class="name">LinearLayout</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">  <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">  <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">  <span class="attr">android:orientation</span>=<span class="string">"vertical"</span></div><div class="line">  <span class="attr">android:clipChildren</span>=<span class="string">"false"</span>&gt;</div><div class="line"> </div><div class="line">  <span class="tag">&lt;<span class="name">RelativeLayout</span></span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"0dp"</span></div><div class="line">    <span class="attr">android:layout_weight</span>=<span class="string">"1"</span>&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">View</span></span></div><div class="line">      <span class="attr">android:id</span>=<span class="string">"@+id/toolbar"</span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"?attr/actionBarSize"</span></div><div class="line">      <span class="attr">android:background</span>=<span class="string">"?attr/colorPrimary"</span> /&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">View</span></span></div><div class="line">      <span class="attr">android:id</span>=<span class="string">"@+id/focus_holder"</span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"0dp"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"0dp"</span></div><div class="line">      <span class="attr">android:focusableInTouchMode</span>=<span class="string">"true"</span>&gt;</div><div class="line"> </div><div class="line">      <span class="tag">&lt;<span class="name">requestFocus</span> /&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">View</span>&gt;</span></div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">android.support.v7.widget.CardView</span></span></div><div class="line">      <span class="attr">android:id</span>=<span class="string">"@+id/input_view"</span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_alignParentBottom</span>=<span class="string">"true"</span></div><div class="line">      <span class="attr">android:layout_below</span>=<span class="string">"@id/toolbar"</span>&gt;</div><div class="line"> </div><div class="line">      <span class="tag">&lt;<span class="name">EditText</span></span></div><div class="line">        <span class="attr">android:id</span>=<span class="string">"@+id/input"</span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">        <span class="attr">android:inputType</span>=<span class="string">"textMultiLine"</span> /&gt;</div><div class="line"> </div><div class="line">      <span class="tag">&lt;<span class="name">ImageView</span></span></div><div class="line">        <span class="attr">android:id</span>=<span class="string">"@+id/input_done"</span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"32dip"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"32dip"</span></div><div class="line">        <span class="attr">android:layout_alignBottom</span>=<span class="string">"@id/input"</span></div><div class="line">        <span class="attr">android:layout_alignEnd</span>=<span class="string">"@id/input"</span></div><div class="line">        <span class="attr">android:layout_alignRight</span>=<span class="string">"@id/input"</span></div><div class="line">        <span class="attr">android:layout_gravity</span>=<span class="string">"bottom|end"</span></div><div class="line">        <span class="attr">android:layout_margin</span>=<span class="string">"8dp"</span></div><div class="line">        <span class="attr">android:background</span>=<span class="string">"@drawable/done_background"</span></div><div class="line">        <span class="attr">android:contentDescription</span>=<span class="string">"@string/done"</span></div><div class="line">        <span class="attr">android:padding</span>=<span class="string">"2dp"</span></div><div class="line">        <span class="attr">android:src</span>=<span class="string">"@drawable/ic_arrow_forward"</span></div><div class="line">        <span class="attr">android:visibility</span>=<span class="string">"invisible"</span> /&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;/<span class="name">android.support.v7.widget.CardView</span>&gt;</span></div><div class="line"> </div><div class="line">  <span class="tag">&lt;/<span class="name">RelativeLayout</span>&gt;</span></div><div class="line"> </div><div class="line">  <span class="tag">&lt;<span class="name">FrameLayout</span></span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"0dp"</span></div><div class="line">    <span class="attr">android:layout_weight</span>=<span class="string">"1"</span>&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">android.support.v7.widget.CardView</span></span></div><div class="line">      <span class="attr">android:id</span>=<span class="string">"@+id/translation"</span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">      <span class="attr">android:layout_margin</span>=<span class="string">"8dp"</span>&gt;</div><div class="line"> </div><div class="line">      <span class="tag">&lt;<span class="name">View</span></span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"100dp"</span></div><div class="line">        <span class="attr">android:background</span>=<span class="string">"?attr/colorPrimary"</span> /&gt;</div><div class="line">    <span class="tag">&lt;/<span class="name">android.support.v7.widget.CardView</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">FrameLayout</span>&gt;</span></div><div class="line"> </div><div class="line"><span class="tag">&lt;/<span class="name">LinearLayout</span>&gt;</span></div></pre></td></tr></table></figure>
-<p>这个布局与我们上一篇使用的布局基本一致，但是稍微有一点小修改。现在我们感兴趣只有id为toolbar, focus_holder, input, input_view, input_done和 translation的视图控件。</p>
-<p>它看起来是这样的:</p>
-<p><img src="https://blog.stylingandroid.com/wp-content/uploads/2015/05/Screenshot_2015-05-17-22-17-21-169x300.png" alt=""></p>
-<p>The layout for when we’re in input mode is:</p>
-<p>下面是进入输入模式的布局 : </p>
-<p>res/layout/activity_part2_input.xml</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div></pre></td><td class="code"><pre><div class="line"><span class="php"><span class="meta">&lt;?</span>xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span><span class="meta">?&gt;</span></span></div><div class="line"><span class="tag">&lt;<span class="name">LinearLayout</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></div><div class="line">  <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">  <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">  <span class="attr">android:orientation</span>=<span class="string">"vertical"</span></div><div class="line">  <span class="attr">android:clipChildren</span>=<span class="string">"false"</span>&gt;</div><div class="line"> </div><div class="line">  <span class="tag">&lt;<span class="name">RelativeLayout</span></span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"0dp"</span></div><div class="line">    <span class="attr">android:layout_weight</span>=<span class="string">"1"</span>&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">View</span></span></div><div class="line">      <span class="attr">android:id</span>=<span class="string">"@+id/toolbar"</span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"?attr/actionBarSize"</span></div><div class="line">      <span class="attr">android:background</span>=<span class="string">"?attr/colorPrimary"</span> /&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">View</span></span></div><div class="line">      <span class="attr">android:id</span>=<span class="string">"@+id/focus_holder"</span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"0dp"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"0dp"</span></div><div class="line">      <span class="attr">android:focusableInTouchMode</span>=<span class="string">"true"</span> /&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">android.support.v7.widget.CardView</span></span></div><div class="line">      <span class="attr">android:id</span>=<span class="string">"@+id/input_view"</span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_alignParentBottom</span>=<span class="string">"true"</span></div><div class="line">      <span class="attr">android:layout_alignParentTop</span>=<span class="string">"true"</span></div><div class="line">      <span class="attr">android:layout_marginBottom</span>=<span class="string">"?attr/actionBarSize"</span>&gt;</div><div class="line"> </div><div class="line">      <span class="tag">&lt;<span class="name">EditText</span></span></div><div class="line">        <span class="attr">android:id</span>=<span class="string">"@+id/input"</span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></div><div class="line">        <span class="attr">android:inputType</span>=<span class="string">"textMultiLine"</span>&gt;</div><div class="line"> </div><div class="line">        <span class="tag">&lt;<span class="name">requestFocus</span> /&gt;</span></div><div class="line">      <span class="tag">&lt;/<span class="name">EditText</span>&gt;</span></div><div class="line"> </div><div class="line">      <span class="tag">&lt;<span class="name">ImageView</span></span></div><div class="line">        <span class="attr">android:id</span>=<span class="string">"@+id/input_done"</span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"32dip"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"32dip"</span></div><div class="line">        <span class="attr">android:layout_alignBottom</span>=<span class="string">"@id/input"</span></div><div class="line">        <span class="attr">android:layout_alignEnd</span>=<span class="string">"@id/input"</span></div><div class="line">        <span class="attr">android:layout_alignRight</span>=<span class="string">"@id/input"</span></div><div class="line">        <span class="attr">android:layout_gravity</span>=<span class="string">"bottom|end"</span></div><div class="line">        <span class="attr">android:layout_margin</span>=<span class="string">"8dp"</span></div><div class="line">        <span class="attr">android:background</span>=<span class="string">"@drawable/done_background"</span></div><div class="line">        <span class="attr">android:contentDescription</span>=<span class="string">"@string/done"</span></div><div class="line">        <span class="attr">android:padding</span>=<span class="string">"2dp"</span></div><div class="line">        <span class="attr">android:src</span>=<span class="string">"@drawable/ic_arrow_forward"</span></div><div class="line">        <span class="attr">android:visibility</span>=<span class="string">"visible"</span> /&gt;</div><div class="line">    <span class="tag">&lt;/<span class="name">android.support.v7.widget.CardView</span>&gt;</span></div><div class="line"> </div><div class="line">  <span class="tag">&lt;/<span class="name">RelativeLayout</span>&gt;</span></div><div class="line"> </div><div class="line">  <span class="tag">&lt;<span class="name">FrameLayout</span></span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">    <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">    <span class="attr">android:layout_height</span>=<span class="string">"0dp"</span></div><div class="line">    <span class="attr">android:layout_weight</span>=<span class="string">"1"</span>&gt;</div><div class="line"> </div><div class="line">    <span class="tag">&lt;<span class="name">android.support.v7.widget.CardView</span></span></div><div class="line">      <span class="attr">android:id</span>=<span class="string">"@+id/translation"</span></div><div class="line">      <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">      <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></div><div class="line">      <span class="attr">android:layout_margin</span>=<span class="string">"8dp"</span></div><div class="line">      <span class="attr">android:visibility</span>=<span class="string">"invisible"</span>&gt;</div><div class="line"> </div><div class="line">      <span class="tag">&lt;<span class="name">View</span></span></div><div class="line">        <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></div><div class="line">        <span class="attr">android:layout_height</span>=<span class="string">"100dp"</span></div><div class="line">        <span class="attr">android:background</span>=<span class="string">"?attr/colorPrimary"</span> /&gt;</div><div class="line">    <span class="tag">&lt;/<span class="name">android.support.v7.widget.CardView</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">FrameLayout</span>&gt;</span></div><div class="line"> </div><div class="line"><span class="tag">&lt;/<span class="name">LinearLayout</span>&gt;</span></div></pre></td></tr></table></figure>
-<p>该布局和上一布局也是基本相同，它们的区别在于 : </p>
-<ol>
-<li>id为input_view的视图现在依附在它的父视图的顶部，而不是在toolbar的下面，也就是说它现在覆盖住了toolbar;</li>
-<li>input_done视图现在已经变为可见状态，上一个布局中它是invisible状态;</li>
-<li>translation视图变为invisible，上一布局中它是visible状态。</li>
-</ol>
-<p>效果如下 : </p>
-<p><img src="https://blog.stylingandroid.com/wp-content/uploads/2015/05/Screenshot_2015-05-17-22-17-26-169x300.png" alt=""></p>
-<p>两个布局代表UI的两个状态，如果我们使用Transitions API那么它们就是我们所谓的场景。</p>
-<p>我们现在要做的就是在这两个布局之间进行状态切换，也就是进入、退出输入模式。首先我们需要检测MainActivity中的焦点 : </p>
-<p>part2/mainActivity.java</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</div><div class="line"> </div><div class="line">    <span class="keyword">private</span> View input;</div><div class="line">    <span class="keyword">private</span> TransitionController focusChangeListener;</div><div class="line">    <span class="keyword">private</span> View.OnClickListener onClickListener;</div><div class="line">    <span class="keyword">private</span> View focusHolder;</div><div class="line"> </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        focusChangeListener = Part2TransitionController.newInstance(<span class="keyword">this</span>);</div><div class="line">        onClickListener = <span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(@NonNull View v)</span> </span>&#123;</div><div class="line">                focusHolder.requestFocus();</div><div class="line">            &#125;</div><div class="line">        &#125;;</div><div class="line"> </div><div class="line">        setContentView(R.layout.activity_part2);</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setContentView</span><span class="params">(<span class="keyword">int</span> layoutResID)</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (input != <span class="keyword">null</span>) &#123;</div><div class="line">            input.setOnFocusChangeListener(<span class="keyword">null</span>);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">super</span>.setContentView(layoutResID);</div><div class="line">        input = findViewById(R.id.input);</div><div class="line">        View inputDone = findViewById(R.id.input_done);</div><div class="line">        focusHolder = findViewById(R.id.focus_holder);</div><div class="line">        input.setOnFocusChangeListener(focusChangeListener);</div><div class="line">        inputDone.setOnClickListener(onClickListener);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>因为我们检测到焦点变化，因此我们还需要添加一些逻辑到setContentView函数中。这样一来我们在调用setContentView时就可以切换这两个布局，此时View的层级关系也会随着改变。因此我们每次都需要找到布局中的子视图，焦点listener我们也需要移除并且重新设置一个到input视图中。</p>
-<p>和原来一样，我们需要一个TransitionController来处理焦点变化: </p>
-<p>.part2.Part2TransitionController.java</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Part2TransitionController</span> <span class="keyword">extends</span> <span class="title">TransitionController</span> </span>&#123;</div><div class="line"> </div><div class="line">    Part2TransitionController(WeakReference&lt;Activity&gt; activityWeakReference, AnimatorBuilder animatorBuilder) &#123;</div><div class="line">        <span class="keyword">super</span>(activityWeakReference, animatorBuilder);</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> TransitionController <span class="title">newInstance</span><span class="params">(Activity activity)</span> </span>&#123;</div><div class="line">        WeakReference&lt;Activity&gt; activityWeakReference = <span class="keyword">new</span> WeakReference&lt;&gt;(activity);</div><div class="line">        AnimatorBuilder animatorBuilder = AnimatorBuilder.newInstance(activity);</div><div class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Part2TransitionController(activityWeakReference, animatorBuilder);</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">enterInputMode</span><span class="params">(Activity activity)</span> </span>&#123;</div><div class="line">        activity.setContentView(R.layout.activity_part2_input);</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">exitInputMode</span><span class="params">(Activity activity)</span> </span>&#123;</div><div class="line">        activity.setContentView(R.layout.activity_part2);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>现在我们需要做的只是调用Activity的setContentView函数来切换两个布局。</p>
-<p>如果我们现在运行上面的代码，我们可以看到两个布局毫无过度的切换，这必然不是我们想要的。在下一篇文章中，我们将讲解如何在布局切换时添加动画。</p>
-<p>本文的源代码在<a href="https://github.com/StylingAndroid/ManualLayoutTransitions/tree/Part2" target="_blank" rel="external">这里</a>。</p>
-<p class="cc-block"><a rel="external" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank"><img alt="CC BY-NC-SA 4.0" class="cc-button" src="https://blog.stylingandroid.com/wp-content/plugins/creative-commons-configurator-1/media/cc/by-nc-sa/4.0/88x31.png" scale="0"></a><br><br><br><a href="http://blog.stylingandroid.com/manual-layout-transitions-part-1/" title="Permalink to Manual Layout Transitions – Part 1" target="_blank" rel="external"><span xmlns:dct="http://purl.org/dc/terms/" href="http://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">Manual Layout Transitions – Part 1</span></a> by <a xmlns:cc="http://creativecommons.org/ns#" href="http://blog.stylingandroid.com/author/admin/" property="cc:attributionName" rel="external" target="_blank">Styling Android</a> is licensed under a <a rel="external" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.<br>Permissions beyond the scope of this license may be available at <a xmlns:cc="http://creativecommons.org/ns#" href="http://blog.stylingandroid.com/license-information" rel="external" target="_blank">http://blog.stylingandroid.com/license-information</a>.</p>
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2017/04/27/手动实现布局Transitions动画-第二部分/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/手动实现布局Transitions动画-第二部分/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/27/适用于Android的Flux架构/" title="适用于Android的Flux架构" itemprop="url">适用于Android的Flux架构</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p>Flux Architecture on Android</p>
-<p>适用于Android的Flux架构</p>
-<p>Finding a good architecture for Android applications is not easy. Google<br>seems to not care much about it, so there is no official recommendation<br>on patterns beyond Activities lifecycle management.</p>
-<p>找到一个好的应用架构对于Android来说并非易事，Goodle似乎并不那么关心这方面，因为他们并没有推荐一个合适的应用架构。</p>
-<p>But defining an architecture for your application is important. Like it<br>or not, <strong>every application is going to have an architecture</strong>. So you’d<br>better be the one defining it than let it just emerge.</p>
-<p>但是对于应用来说一个良好的架构是非常重要的。不管你是否同意，每个应用都应该有一个架构。因此，你最好为你的应用设计一个架构，而不是任由它发展。</p>
-<h2 id="Today-Clean-Architecture"><a href="#Today-Clean-Architecture" class="headerlink" title="Today: Clean Architecture"></a>Today: Clean Architecture</h2><h2 id="清晰的软件架构"><a href="#清晰的软件架构" class="headerlink" title="清晰的软件架构"></a>清晰的软件架构</h2><p>Current trend is to adapt <a href="https://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html" target="_blank" rel="external">Clean<br>Architecture</a>,<br>a 2012 Uncle Bob proposal for web applications.</p>
-<p>现在比较流行的架构是Bob大叔在2012年发表的、针对于Web应用的<a href="https://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html" target="_blank" rel="external">清晰的软件架构</a>。</p>
-<p>I find Clean Architecture a little bit <strong>over-engineered</strong> for most of<br>the Android apps out there.</p>
-<p>但是我发现这个清晰的软件架构对于Android应用来说太过重量级了。</p>
-<p>Typically <strong>mobile apps live shorter than web apps</strong>. Mobile technology<br>is evolving so fast that any app released today is going to be<br>completely deprecated in twelve months.</p>
-<p>通常来说，移动应用都比web应用要简单。移动技术变化得很快，以至于今天发布的应用可能在一年之后就过时了。</p>
-<p>Mobile apps usually <strong>do very little</strong>. A very high percent of use cases<br>are just for data consuming. Get data from API, show data to user. Lot<br>of reads, very little writes.</p>
-<p>移动应用通常比较简单，比较多的使用场景只是对数据的处理。从API获取数据、向用户展示数据。更多的是阅读，很少有写内容的需求。</p>
-<p>As a result its <strong>business logic is not complex</strong>. At least not as<br>complex as backend apps. Well you have to deal with platform issues:<br>memory, storage, pause, resume, network, location, etc. But that is not<br>your app business logic. You have all of that in every app.</p>
-<p>这也使得移动应用的<code>业务逻辑不会太过于复杂</code>，至少不会比后端的应用复杂。当然，你也需要处理一些移动平台的问题:内存，存储，暂停，重新运行，网络，地理位置等等。但是这些并不是你的业务逻辑。 </p>
-<p>So it seems that most of the apps out there will not benefit from things<br>like complex layer divisions or job priority execution queues.</p>
-<p>因此，对于大多数应用来说并不会从复杂的分层架构或者具有优先级的任务队列中获得太多益处。</p>
-<p>They may just need a <strong>simple way to organise code, work together<br>efficiently and find bugs easily</strong>.</p>
-<p>它们可能只是需要简单的方式来组织代码，使得各部分组件之间高效的一起工作，并且容易查找bug。</p>
-<h2 id="Introducing-Flux-Architecture"><a href="#Introducing-Flux-Architecture" class="headerlink" title="Introducing Flux Architecture"></a>Introducing Flux Architecture</h2><h2 id="Flux-应用架构简介"><a href="#Flux-应用架构简介" class="headerlink" title="Flux 应用架构简介"></a>Flux 应用架构简介</h2><p><a href="https://facebook.github.io/flux/docs/overview.html" target="_blank" rel="external">Flux Architecture</a> is used by Facebook to build their client- side web applications. Like<br><em>Clean Architecture</em> it is not intended for mobile apps, but its<br>features and simplicity will allow us to adapt it very well to Android<br>projects.</p>
-<p><strong><a href="https://facebook.github.io/flux/docs/overview.html" target="_blank" rel="external">Flux应用架构</a></strong>被facebook用于架构客户端Web应用，与<em>Clean Architecture</em>类似它也不是针对于移动应用的，它更简洁性能够让我们很方面的适用于Android应用。</p>
-<p><img src="http://img.blog.csdn.net/20150810172158465" alt="flux-graph-simple"></p>
-<p>There are two <strong>key features</strong> to understand Flux:</p>
-<p>有两个关键特性能够帮助我们理解Flux : </p>
-<ul>
-<li><p>The data flow is always <strong>unidirectional</strong>.</p>
-<p>An <a href="https://www.youtube.com/watch?v=i__969noyAM" target="_blank" rel="external">unidirectional data<br>flow</a> is the <strong>core</strong><br>of the Flux architecture and is what makes it so easy to learn. It<br>also provides great advantages when testing the application as<br>discussed below.</p>
-</li>
-<li><p>数据流总是单向的</p>
-<pre><code>一个 [单向数据流](https://www.youtube.com/watch?v=i__969noyAM)是Flux 应用架构的核心，这也使得它很容易学习。当你需要测试应用时它也提供了很便利的条件。
-</code></pre></li>
-<li><p>The application is divided into <strong>three main parts</strong>:</p>
-<ul>
-<li><strong>View</strong>: Application interface. It create actions in response<br>to user interactions.</li>
-<li><strong>Dispatcher</strong>: Central hub through which pass all actions and<pre><code>whose responsibility is to make them arrive to every Store.
-</code></pre></li>
-<li><strong>Store</strong>: Maintain the state for a particular application<pre><code>domain. They respond to actions according to current state,
-execute business logic and emit a *change* event when they are
-done. This event is used by the view to update its interface.
-</code></pre></li>
-</ul>
-</li>
-<li>应用分为三部分 : <ul>
-<li><strong>View</strong> : 应用接口,它用于将用户的交互转换为Action。</li>
-<li><strong>Dispatcher</strong> : 中央分发器,将所有action分发到处理它们每个Store;</li>
-<li><strong>Store</strong> : 维护特定应用领域的状态。它们根据当前的状态对action做出处理,执行业务逻辑,并且在处理完成时发出<em>change</em>事件。这个事件用于通知View更新UI。</li>
-</ul>
-</li>
-</ul>
-<p>This three parts communicate through <strong>Actions</strong>: Simple plain objects,<br>identified by a type, containing the data related to that action.</p>
-<p>这三部分通过<strong>Action</strong>交互,Action是通过type标识的简单对象,它包含了一些与action相关的数据。</p>
-<h2 id="Flux-Android-Architecture"><a href="#Flux-Android-Architecture" class="headerlink" title="Flux Android Architecture"></a>Flux Android Architecture</h2><h2 id="适用于Android的Flux架构"><a href="#适用于Android的Flux架构" class="headerlink" title="适用于Android的Flux架构"></a>适用于Android的Flux架构</h2><p>The main target of using Flux principles on Android development is to<br>build an architecture with a good balance between simplicity and ease of<br>scale and test.<br>在Android开发中使用Flux原则的主要目标就是创建一个简单、可伸缩、易于测试的应用架构。</p>
-<p>First step is to <strong>map Flux elements with Android app components</strong>.</p>
-<p>第一步需要做的就是<strong>在Android组件之间建立Flux元素的关系映射</strong>。</p>
-<p>Two of this elements are very easy to figure out and implement.</p>
-<p>这两类元素非常容易实现 : </p>
-<ul>
-<li><strong>View</strong>: Activity or Fragment</li>
-<li><p><strong>Dispatcher</strong>: An event bus. I will use Otto in my examples but any</p>
-<pre><code>other implementation should be fine.
-</code></pre></li>
-<li><p><strong>View</strong>: Activity 或 Fragment;</p>
-</li>
-<li><strong>Dispatcher</strong>: 一个事件总线,我在示例中使用了Otto，但是其他实现也是可以考虑的，例如<a href="https://github.com/bboyfeiyu/AndroidEventBus" target="_blank" rel="external">AndroidEventBus</a>。</li>
-</ul>
-<h3 id="Actions"><a href="#Actions" class="headerlink" title="Actions"></a>Actions</h3><p>Actions are not complex either. They will be implemented as simple POJOs<br>with two main attributes:</p>
-<p>Action也不复杂,它们通常是一些含有如下两个主要属性的简单的对象: </p>
-<ul>
-<li>Type: a <code>String</code> identifying the type of event.</li>
-<li><p>Data: a <code>Map</code> with the payload for this action.</p>
-</li>
-<li><p>Type : 标识事件类型的一个String字段;</p>
-</li>
-<li>Data : 一个含有该Action信息的map字段。</li>
-</ul>
-<p>For example, a typical action to show some User details will look like<br>this:</p>
-<p>例如,一个显示一些用户详细的action大致如下所示 : </p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Bundle data = <span class="keyword">new</span> Bundle();</div><div class="line">data.put(<span class="string">"USER_ID"</span>, id);</div><div class="line">Action action = <span class="keyword">new</span> ViewAction(<span class="string">"SHOW_USER"</span>, data);</div></pre></td></tr></table></figure>
-<h3 id="Stores"><a href="#Stores" class="headerlink" title="Stores"></a>Stores</h3><p>This is perhaps the <strong>most difficult</strong> to get Flux concept.</p>
-<p>Stores应该是Flux概念里最难理解的了。</p>
-<p>Also if you have worked with Clean Architecture before it also will be<br>uncomfortable to accept, because Stores will assume responsibilities<br>that were previously separated into different layers.</p>
-<p>如果你以前使用过Clean Architecture,你会感觉它也不是那么容易理解，因为Stores会假设职责已经被分割到不同的层。</p>
-<p>Stores contain the <strong>status of the application and its business logic</strong>.<br>They are similar to <em>rich data models</em> but they can manage the status of<br><strong>various objects</strong>, not just one.</p>
-<p>Stores包含了<strong>应用的状态以及业务逻辑</strong>，它们很像<strong>功能完备的数据模型</strong>,但它们能够管理各种对象的状态,而不仅仅是其中一个。</p>
-<p>Stores <strong>react to Actions emitted by the Dispatcher</strong>, execute business<br>logic and emit a change event as result.</p>
-<p>Stores对Dispatcher发出的Action做出响应,执行业务逻辑,处理完成之后发出一个change事件。</p>
-<p>Stores only output is this single event: <em>change</em>. Any other component<br>interested in a Store internal status must listen to this event and use<br>it to get the data it needs.</p>
-<p>Stores只会输出一个<strong>change</strong>事件,任何对一个Store的内部状态感兴趣的组件都需要监听该事件,并且使用它来获取数据。</p>
-<p>No other component of the system should need to know anything about the<br>status of the application.</p>
-<p>系统中的其他部分并不需要了解应用的状态。</p>
-<p>Finally, stores must <strong>expose an interface</strong> to obtain application<br>Status. This way, view elements can query the Stores and update<br>application UI in response.</p>
-<p>最终,Store必须暴露一个接口来获取应用状态.这样一来，View元素就能够查询Store的状态以及更新UI。</p>
-<p><img src="http://img.blog.csdn.net/20150810172207045" alt="flux-graph-store"></p>
-<p>For example, in a Pub Discovery App a SearchStore will be used to keep<br>track of searched item, search results and the history of past searches.<br>In the same application a ReviewedStore will contain a list of reviewed<br>pubs and the necessary logic to, for example, sort by review.</p>
-<p>例如，在一个酒吧查找App中，SearchStore被用于追踪搜索到的酒吧、搜索结果和经过的酒吧历史数据。另一个ReviewedStore包含查看过的酒吧列表以及必须的逻辑，例如排序。</p>
-<p>However there is one important concept to keep in mind: <strong>Stores are not<br>Repositories</strong>. Their responsibility is <em>not</em> to get data from an<br>external source (API or DB) but only keep track of data provided by<br>actions.</p>
-<p>然后，有有一个重要的概念你必须要记住 : <strong>Store不是Repositories</strong>。它们的职责不是从外部资源（API或者数据库）中获取数据，只是追中action提供的数据。</p>
-<p>So how Flux application obtain data?</p>
-<p>那么Flux如何获取数据呢 ？</p>
-<h2 id="Network-requests-and-asynchronous-calls"><a href="#Network-requests-and-asynchronous-calls" class="headerlink" title="Network requests and asynchronous calls"></a>Network requests and asynchronous calls</h2><h2 id="网络请求与异步调用"><a href="#网络请求与异步调用" class="headerlink" title="网络请求与异步调用"></a>网络请求与异步调用</h2><p>In the initial Flux graph I intentionally skipped one part: <strong>network<br>calls</strong>. Next graph completes first one adding more details:</p>
-<p>在前面的Flux图表中我特意省略了一部分: <strong>网络调用</strong>。下一个图表将会完善这部分细节。</p>
-<p><img src="http://img.blog.csdn.net/20150810172211077" alt="flux-graph-complete"></p>
-<p>Asynchronous network calls are triggered from an <strong>Actions Creator</strong>. A<br>Network Adapter makes the asynchronous call to the corresponding API and<br>returns the result to the Actions Creator.</p>
-<p>异步网络调用会从<strong>Actions Creator</strong>触发，一个网络适配器会触发一个异步的网络调用并且将结果返回到<strong>Actions Creator</strong>中。</p>
-<p>Finally the Actions Creator dispatch the corresponding typed Action with<br>returned data.</p>
-<p>最终<strong>Actions Creator</strong>将含有相应type与数据的Action分发出去。</p>
-<p>Having all the network and asynchronous work out of the Stores has has<br><strong>two main advantages</strong>:</p>
-<p>所有的网络请求和异步操作从Store中隔离出来有两个优点 : </p>
-<ul>
-<li><p><strong>Your Stores are completely synchronous</strong>: This makes the logic<br>inside a Store very easy to follow. Bugs will be much easier to<br>trace. And since <strong>all state changes will be synchronous</strong> testing a<br>Store becomes an easy job: launch actions and assert expected final<br>state.</p>
-</li>
-<li><p><strong>Store中的操作都是是完全同步的</strong> : 这使得Store中的业务逻辑非常简单，bug也易于发现。并且，自从”所有的状态变化都必须是同步的”的运用到实际中，测试Store变得非常容易，只需要加载action，然后对最终的状态做一个断言判断;</p>
-</li>
-<li><p><strong>All actions are triggered from an Action Creator</strong>: Having a</p>
-<pre><code>single point at which you create and launch all user actions greatly
-simplifies finding errors. Forget about digging into classes to find
-out where an action is originated. **Everything starts here**. And
-because asynchronous calls occur *before*, everything that comes out
-of ActionCreator is synchronous. This is a huge win that
-significantly improves traceability and testability of the code.
-</code></pre></li>
-<li><p><strong>所有Action都是从Action Creator被触发</strong> : 从一个统一的点创建和启动所有用户的action使得查找错误变得很简单。省去了在各种Class之间查找该action的发出点,<strong>所有的action都出自Action Creator</strong>。因为异步调用在action发出之前已经调用，因此其他ActionCreator的函数都是同步的，这很大程度上提升了代码的可追踪性和可测试性。</p>
-</li>
-</ul>
-<h2 id="Show-me-the-code-To-Do-App"><a href="#Show-me-the-code-To-Do-App" class="headerlink" title="Show me the code: To-Do App"></a>Show me the code: To-Do App</h2><p><a href="https://github.com/lgvalle/android-flux-todo-app" target="_blank" rel="external">In this example</a> you<br>will find a classical <strong>To-Do App</strong> implemented on Android using a Flux<br>Architecture.</p>
-<p><a href="https://github.com/lgvalle/android-flux-todo-app" target="_blank" rel="external">这个例子</a>是按照Flux架构实现的To-Do Android应用。</p>
-<p>I tried to keep the project as simple as possible just to show how this<br>architecture can produce <strong>very well organised apps</strong>.</p>
-<p>我尝试着尽量简单的演示如何使用Flux架构来构建一个组织良好的应用。</p>
-<p>Some comments about implementation:</p>
-<p>关于这个实现的一些解释 : </p>
-<ul>
-<li><p>The <code>Dispatcher</code> is implemented using Otto Bus. Any bus<br>implementation will mostly work. There is a <strong>Flux restriction</strong> on<br>events I’m not applying here. On original Flux definition<br>dispatching an event before previous one has finish is forbidden and<br>will throw an exception. To keep the project simple I’m not<br>implementing that here.</p>
-</li>
-<li><p>Dispatcher是使用了Otto事件总线实现。任何的事件总线也都可以的啦。在原来的Flux定义中,在上一个事件结束前就分发一个新的事件是不允许的,此时会抛出异常。为了代码比较简单，我在这个项目中并没有实现这个功能;</p>
-</li>
-<li><p>There is an <code>ActionsCreator</code> class to help creating <code>Actions</code> and</p>
-<pre><code>posting them into the `Dispatcher`. It is a pretty common pattern in
-Flux which keeps things organised.
-</code></pre></li>
-<li><p>ActionsCreator类用于创建Action和将它们投递到<code>Dispatcher</code>。在Flux中这是一种比较常见的模式。</p>
-</li>
-<li><p><code>Actions</code> types are just <code>String</code> constants. It is probably not the</p>
-<pre><code>best implementation but is quick and helps keeping things simple.
-</code></pre></li>
-<li>Action类型只有字符串常量。这也许不是最好的实现,但是是最快、最能保持简洁性的。</li>
-</ul>
-<p>Same thing with <code>Actions</code> data: they are just a <code>HashMap</code> with a<br><code>String</code> key and <code>Object</code> as a value. This forces ugly castings on<br>Stores to extract actual data. Of course, this is not type safe but<br>again, keeps the example easy to understand.</p>
-<p>Action中的数据也只是使用key为String、value为Object类型的<code>HashMap</code>来存储。因此这需要你在Store中进行强制类型转换，一般得到具体的Action数据。当然，这并不是类型安全的,还是那句话 : 为了保持简单性。</p>
-<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>There is <strong>no such thing as the Best Architecture for an Android app</strong>.<br>There <em>is</em> the Best Architecture for your current app. And it is the one<br>that let you collaborate with your teammates easily, finish the project<br>on time, with quality and as less bugs as possible.</p>
-<p>没有什么最好的Android应用架构，只有最适合你应用的架构。这个架构能够使你你和你的队友很方便地一起协作,在规定的时间内高质量的完成你的应用。</p>
-<p>I believe Flux is very good for all of that.</p>
-<p>我相信Flux架构在这些方面还是比较靠谱的，不信就自己动手试试吧！</p>
-<h2 id="示例代码"><a href="#示例代码" class="headerlink" title="示例代码"></a>示例代码</h2><p><a href="https://github.com/lgvalle/android-flux-todo-app" target="_blank" rel="external">代码在这里</a></p>
-<h2 id="深度阅读"><a href="#深度阅读" class="headerlink" title="深度阅读"></a>深度阅读</h2><ul>
-<li><a href="https://facebook.github.io/flux/docs/overview.html" target="_blank" rel="external">Facebook Flux<br>Overview</a></li>
-<li>[Testing Flux<pre><code>Applications](https://facebook.github.io/flux/docs/testing-flux-applications.html#content)
-</code></pre></li>
-<li>[Flux architecture Step by<pre><code>Step](http://blogs.atlassian.com/2014/08/flux-architecture-step-by-step/)
-</code></pre></li>
-<li>[Async Requests and<pre><code>Flux](http://www.code-experience.com/async-requests-with-react-js-and-flux-revisited/)
-</code></pre></li>
-<li>[Flux and<pre><code>Android](http://armueller.github.io/android/2015/03/29/flux-and-android.html)
-</code></pre></li>
-</ul>
+<h1 id="回顾"><a href="#回顾" class="headerlink" title="回顾"></a>回顾</h1><p>在上一篇的博文(Gradle tip #2 : Tasks)中,我们讨论了gradle构建的基本单位Task. 并且介绍了构建过程的各个阶段及其生命周期.而本文会重点介绍gradle的语法.只有具备了gradle<br>的相关语法知识,才会大幅度的提高对于阅读、学习或者编写gradle脚本的效率,正所谓”磨刀不误砍柴工”是也.</p>
+<h1 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h1><p>gradle 是groovy语言实现的构建工具. groovy是运行在jvm平台的一门敏捷开发语言.其语法和java有诸多类似之处,然而其具备一些java没有的概念需要读者细细体会.下面会详细的介绍<br>groovy的基本语法,当然如果您已经对groovy的语法有了一定的了解.可以直接跳过这一小节.</p>
+<h2 id="1、闭包的基本语法"><a href="#1、闭包的基本语法" class="headerlink" title="1、闭包的基本语法"></a>1、闭包的基本语法</h2><p>闭包是groovy中最重要的概念之一. 简单地说闭包(Closures)是一段代码块. 这个代码块可以接受参数并具有返回值. 有一点要非常注意的是, 闭包往往不是在需要使用的时候才写出来<br>这么一段代码(就像Java的匿名类那样), 通过def 关键字可以声明一个变量代表一个闭包,然后在需要的时候直接使用该变量即可,多说无益,请看如下的例子:</p>
+<h4 id="一个简单的hello-world闭包"><a href="#一个简单的hello-world闭包" class="headerlink" title="一个简单的hello world闭包:"></a>一个简单的hello world闭包:</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">def myClosure = &#123; println &apos;Hello world!&apos; &#125;</div><div class="line"></div><div class="line">//execute our closure</div><div class="line">myClosure()</div></pre></td></tr></table></figure>
+<p>output: Hello world!</p>
+<h4 id="如下是一个接受参数的闭包的例子"><a href="#如下是一个接受参数的闭包的例子" class="headerlink" title="如下是一个接受参数的闭包的例子:"></a>如下是一个接受参数的闭包的例子:</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">def myClosure = &#123;String str -&gt; println str &#125;</div><div class="line"></div><div class="line">//execute our closure</div><div class="line">myClosure(&apos;Hello world!&apos;)</div></pre></td></tr></table></figure>
+<p>output: Hello world!</p>
+<h4 id="如果闭包只接受一个参数-这个参数在代码块中可以用it代替"><a href="#如果闭包只接受一个参数-这个参数在代码块中可以用it代替" class="headerlink" title="如果闭包只接受一个参数,这个参数在代码块中可以用it代替:"></a>如果闭包只接受一个参数,这个参数在代码块中可以用it代替:</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">def myClosure = &#123;println it &#125;</div><div class="line"></div><div class="line">//execute our closure</div><div class="line">myClosure(&apos;Hello world!&apos;)</div></pre></td></tr></table></figure>
+<p>output: Hello world!</p>
+<h4 id="如下是接受多个参数的闭包的例子"><a href="#如下是接受多个参数的闭包的例子" class="headerlink" title="如下是接受多个参数的闭包的例子:"></a>如下是接受多个参数的闭包的例子:</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">def myClosure = &#123;String str, int num -&gt; println &quot;$str : $num&quot; &#125;</div><div class="line"></div><div class="line">//execute our closure</div><div class="line">myClosure(&apos;my string&apos;, 21)</div></pre></td></tr></table></figure>
+<p>output: my string : 21</p>
+<h4 id="闭包里面的参数类型可以省略不写-例子如下"><a href="#闭包里面的参数类型可以省略不写-例子如下" class="headerlink" title="闭包里面的参数类型可以省略不写,例子如下:"></a>闭包里面的参数类型可以省略不写,例子如下:</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">def myClosure = &#123;str, num -&gt; println &quot;$str : $num&quot; &#125;</div><div class="line"></div><div class="line">//execute our closure</div><div class="line">myClosure(&apos;my string&apos;, 21)</div></pre></td></tr></table></figure>
+<p>output: my string : 21</p>
+<h4 id="闭包还有一个比较酷的写法就是-可以直接调用context里面的变量-默认的context就是创建这个闭包的类-class-例子如下"><a href="#闭包还有一个比较酷的写法就是-可以直接调用context里面的变量-默认的context就是创建这个闭包的类-class-例子如下" class="headerlink" title="闭包还有一个比较酷的写法就是,可以直接调用context里面的变量,默认的context就是创建这个闭包的类(class) 例子如下:"></a>闭包还有一个比较酷的写法就是,可以直接调用context里面的变量,默认的context就是创建这个闭包的类(class) 例子如下:</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">def myVar = &apos;Hello World!&apos;</div><div class="line">def myClosure = &#123;println myVar&#125;</div><div class="line">myClosure()</div></pre></td></tr></table></figure>
+<p>output: Hello world!</p>
+<h4 id="上面提到了闭包可以直接调用context的变量-这个context可以通过setDelegate-方法来改变-极大的增加了闭包的灵活性！"><a href="#上面提到了闭包可以直接调用context的变量-这个context可以通过setDelegate-方法来改变-极大的增加了闭包的灵活性！" class="headerlink" title="上面提到了闭包可以直接调用context的变量,这个context可以通过setDelegate()方法来改变,极大的增加了闭包的灵活性！"></a>上面提到了闭包可以直接调用context的变量,这个context可以通过setDelegate()方法来改变,极大的增加了闭包的灵活性！</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">def myClosure = &#123;println myVar&#125; //I&apos;m referencing myVar from MyClass class</div><div class="line">MyClass m = new MyClass()</div><div class="line">myClosure.setDelegate(m)</div><div class="line">myClosure()</div><div class="line"></div><div class="line">class MyClass &#123;</div><div class="line">    def myVar = &apos;Hello from MyClass!&apos;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>output: Hello from MyClass!</p>
+<h2 id="2、闭包可以作为参数进行传递"><a href="#2、闭包可以作为参数进行传递" class="headerlink" title="2、闭包可以作为参数进行传递"></a>2、闭包可以作为参数进行传递</h2><p>在groovy中,将闭包作为参数传递进函数,是将逻辑进行分离解耦的重要手段.在上述的例子中,我们已经尝试了如何将闭包作为参数进行传递.下面我们总结一下传递闭包的方法:</p>
+<h4 id="1-接受一个参数的函数"><a href="#1-接受一个参数的函数" class="headerlink" title="1 接受一个参数的函数"></a>1 接受一个参数的函数</h4><p>myMethod(myClosure)</p>
+<h4 id="2-如果函数只接受一个参数-括号可以忽略"><a href="#2-如果函数只接受一个参数-括号可以忽略" class="headerlink" title="2 如果函数只接受一个参数,括号可以忽略"></a>2 如果函数只接受一个参数,括号可以忽略</h4><p>myMethod myClosure</p>
+<h4 id="3-可以将闭包以插入语的形式创建"><a href="#3-可以将闭包以插入语的形式创建" class="headerlink" title="3 可以将闭包以插入语的形式创建"></a>3 可以将闭包以插入语的形式创建</h4><p>myMethod {println ‘Hello World’}</p>
+<h4 id="4-函数接受两个参数"><a href="#4-函数接受两个参数" class="headerlink" title="4 函数接受两个参数"></a>4 函数接受两个参数</h4><p>myMethod(arg1, myClosure)</p>
+<h4 id="5-接受两个参数-同样可以用插入语创建闭包"><a href="#5-接受两个参数-同样可以用插入语创建闭包" class="headerlink" title="5 接受两个参数,同样可以用插入语创建闭包"></a>5 接受两个参数,同样可以用插入语创建闭包</h4><p>myMethod(arg1, { println ‘Hello World’ })</p>
+<h4 id="6-如果存在多个参数-且最后一个参数是闭包-闭包可以不写在括号内"><a href="#6-如果存在多个参数-且最后一个参数是闭包-闭包可以不写在括号内" class="headerlink" title="6 如果存在多个参数,且最后一个参数是闭包,闭包可以不写在括号内"></a>6 如果存在多个参数,且最后一个参数是闭包,闭包可以不写在括号内</h4><p>myMethod(arg1) { println ‘Hello World’ }</p>
+<p>细心的朋友们是不是觉得上述的六种用法中,第三条和第六条很眼熟？很像gradle中的scripts了？</p>
+<h1 id="Gradle"><a href="#Gradle" class="headerlink" title="Gradle"></a>Gradle</h1><p>在知道了groovy的基本语法(尤其是闭包)之后,下面我们就以一个简单的gradle 脚本作为例子具体感受一下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">buildscript &#123;</div><div class="line">    repositories &#123;</div><div class="line">        jcenter()</div><div class="line">    &#125;</div><div class="line">    dependencies &#123;</div><div class="line">        classpath &apos;com.android.tools.build:gradle:1.2.3&apos;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">allprojects &#123;</div><div class="line">    repositories &#123;</div><div class="line">        jcenter()</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>结合前文的例子,我们可以很容易的理解到,buildscript是一个接受闭包作为参数的函数,这个函数会在编译的时候被gradle调用.这个函数的定义就类似于:def buildscript(Closure closure).  而allprojects 同理也是一个接受闭包作为参数的函数.</p>
+<p>那么问题来了,这些函数具体会在什么时候被gradle调用呢?要回答这个问题就需要介绍另一个知识点：Project</p>
+<h1 id="Project"><a href="#Project" class="headerlink" title="Project"></a>Project</h1><p>在这里,我觉得逐句翻译作者查阅文档的步骤没有太大的意义，我自己总结了一下作者的概念如下：</p>
+<p>理解gradle配置文件中的script如何调用的关键就是理解project的相关概念.在gradle执行某个”任务”的时候,会按照各个task的依赖关系来依次执行. 而执行这些task的对象就是Project.说的在通俗一些,project就是你希望gradle为你做的事情,而要完成这些事情,需要将事情分成步骤一步一步的做,这些步骤就是task.</p>
+<h1 id="Script-blocks"><a href="#Script-blocks" class="headerlink" title="Script blocks"></a>Script blocks</h1><p>通过前文的学习,我们已经很清楚的了解到scipt block就是一段接受闭包的函数,这些函数会被Project调用,默认的情况下,gradle 已经准备<br>好了很多script用于我们对项目进行配置,例如buildScript{} … … 当然你也可以自己写出符合规范的task来在编译的过程中被调用.</p>
+<p>下面我们先看一下Android Studio中默认的script:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">apply plugin: &apos;com.android.application&apos;</div><div class="line"></div><div class="line">android &#123;</div><div class="line">    compileSdkVersion 22</div><div class="line">    buildToolsVersion &quot;22.0.1&quot;</div><div class="line"></div><div class="line">    defaultConfig &#123;</div><div class="line">        applicationId &quot;com.trickyandroid.testapp&quot;</div><div class="line">        minSdkVersion 16</div><div class="line">        targetSdkVersion 22</div><div class="line">        versionCode 1</div><div class="line">        versionName &quot;1.0&quot;</div><div class="line">    &#125;</div><div class="line">    buildTypes &#123;</div><div class="line">        release &#123;</div><div class="line">            minifyEnabled false</div><div class="line">            proguardFiles getDefaultProguardFile(&apos;proguard-android.txt&apos;), &apos;proguard-rules.pro&apos;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>按照我们已经有的知识,上面的脚本说明有一个名称为android的函数,该函数接收闭包作为参数,然而其实在Gradle的文档中是不存在这个函数<br>的. 那么android脚本怎么会出现在这里呢? 答案就是最上面的apply plugin:<br>‘com.android.application’.这个插件提供了android构建所需要的各种script.</p>
+<p>既然gradle官方的文档中没有android相关的script信息,那我们该怎么查阅呢? 您可以去官方的android网站上查阅,如果懒得找的话请点击这个链接:<a href="https://developer.android.com/shareables/sdk-tools/android-gradle-plugin-dsl.zip" target="_blank" rel="external">https://developer.android.com/shareables/sdk-tools/android-gradle-plugin-dsl.zip</a></p>
+<p>您下载了前文连接的文档后，可以发现有一个html格式的文档的名字是AppExtension, 这个文档主要就是介绍了Android configuration blocks. 即在gradle官方文档中没有的关于Android 配置的各种gradle script都可以在这里进行查阅(几个例子):<br>1、 compileSdkVersion 在文档中的描述是Required. Compile SDK version. 即这个脚本是gradle进行Android构建之必需,并且这个脚本是<br>是用来描述编译的时候使用的sdk版本.<br>2、buildToolsVersion在文档中的描述是Required. Version of the build tools to use. 即该脚本是构建之必需,其用于告诉gradle使用<br>哪个版本的build tools<br>3 … … (详细情况请参阅文档吧:))</p>
+<h1 id="Exercise"><a href="#Exercise" class="headerlink" title="Exercise"></a>Exercise</h1><p>有了前文的学习作为基础,我们已经了解了gradle语法以及android 插件的脚本查阅方法. 那么接下来我们实际运用这些知识,自定义的对我们<br>的Android项目进行一些配置. 在上述的AppExtension文档中,我查阅到了一个脚本的名字是testOptions. 这段脚本代表的是TestOption class<br>调用,TestOption class里有三个属性:reportDir、resultsDir 和unitTests. 而reportDir就是测试报告最后保存的位置,我们现在就来改一下<br>这个地方.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">android &#123;</div><div class="line">......</div><div class="line">    testOptions &#123;</div><div class="line">        reportDir &quot;$rootDir/test_reports&quot;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在这里,我使用了”$rootDir/test_reports”作为测试结果的储存位置, $root 指向的就是项目的根目录.现在如果我通过命令行执行<br>./gradlew connectedCheck. gradle就会进行一系列的测试程序并且将测试报告保存在项目根目录下的test_reports文件中.</p>
+<p>注意一点的是,这个关于测试的小例子,别用在你真是的生产环境中,尽量保持你项目结构的”清洁”</p>
 
         
         
@@ -2433,7 +2394,7 @@ Flux which keeps things organised.
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2017/04/27/适用于Android的Flux架构/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/适用于Android的Flux架构/" data-count-type="comments">&nbsp;</a>
+		<a href="/2017/04/27/gradle技巧之语法浅谈/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/gradle技巧之语法浅谈/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 

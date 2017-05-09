@@ -78,7 +78,7 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/04/27/FaceBook推出的Android图片加载库-Fresco/" title="FaceBook推出的Android图片加载库-Fresco" itemprop="url">FaceBook推出的Android图片加载库-Fresco</a>
+      <a href="/2017/04/27/还在用Toast？你Out啦，试试Snackbar吧！/" title="还在用Toast？你Out啦，试试Snackbar吧！" itemprop="url">还在用Toast？你Out啦，试试Snackbar吧！</a>
   </h1>
   <p class="article-author">By
        
@@ -92,50 +92,56 @@
     <div class="article-content">
         
         <ul>
-<li>原文链接:<a href="https://code.facebook.com/posts/366199913563917/introducing-fresco-a-new-image-library-for-android/" target="_blank" rel="external">Introducing Fresco: A new image library for Android</a></li>
+<li>原文链接 : <a href="http://www.technotalkative.com/part-2-welcome-snackbar-goodbye-toast/" target="_blank" rel="external">Welcome Snackbar, Goodbye Toast!</a></li>
 </ul>
-<p>在Android设备上面，快速高效的显示图片是极为重要的。过去的几年里，我们在如何高效的存储图像这方面遇到了很多问题。图片太大，但是手机的内存却很小。每一个像素的R、G、B和alpha通道总共要占用4byte的空间。如果手机的屏幕是480*800,那么一张屏幕大小的图片就要占用1.5M的内存。手机的内存通常很小，特别是Android设备还要给各个应用分配内存。在某些设备上，分给Facebook App的内存仅仅有16MB。一张图片就要占据其内存的十分之一。</p>
-<p>当你的App内存溢出会发生什么呢？它当然会崩溃！我们开发了一个库来解决这个问题，我们叫它Fresco。它可以管理使用到的图片和内存，从此App不再崩溃。</p>
-<p>##内存区<br>为了理解Facebook到底做了什么工作，在此之前我们需要了解在Android可以使用的堆内存之间的区别。Android中每个App的Java堆内存大小都是被严格的限制的。每个对象都是使用Java的new在堆内存实例化，这是内存中相对安全的一块区域。内存有垃圾回收机制，所以当App不在使用内存的时候，系统就会自动把这块内存回收。</p>
-<p>不幸的是，内存进行垃圾回收的过程正是问题所在。当内存进行垃圾回收时，内存不仅仅进行了垃圾回收，还把 Android 应用完全终止了。这也是用户在使用 App 时最常见的卡顿或短暂假死的原因之一。这会让正在使用 App 的用户非常郁闷，然后他们可能会焦躁地滑动屏幕或者点击按钮，但 App 唯一的响应就是：在 App 恢复正常之前，请求用户耐心等待</p>
-<p>相比之下，Native堆是由C++程序的new进行分配的。在Native堆里面有更多可用内存，App只被设备的物理可用内存限制，而且没有垃圾回收机制或其他东西拖后腿。但是c++程序员必须自己回收所分配的每一块内存，否则就会造成内存泄露，最终导致程序崩溃。</p>
-<p>Android有另外一种内存区域，叫做Ashmem。它操作起来更像Native堆，但是也有额外的系统调用。Android 在操作 Ashmem 堆时，会把该堆中存有数据的内存区域从 Ashmem 堆中抽取出来，而不是把它释放掉，这是一种弱内存释放模式；被抽取出来的这部分内存只有当系统真正需要更多的内存时（系统内存不够用）才会被释放。当 Android 把被抽取出来的这部分内存放回 Ashmem 堆，只要被抽取的内存空间没有被释放，之前的数据就会恢复到相应的位置。</p>
-<p>##可消除的Bitmap<br>Ashmem不能被Java应用直接处理，但是也有一些例外，图片就是其中之一。当你创建一张没有经过压缩的Bitmap的时候，Android的API允许你指定是否是可清除的。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">BitmapFactory.Options = new BitmapFactory.Options();</div><div class="line">options.inPurgeable = true;</div><div class="line">Bitmap bitmap = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.length, options);</div></pre></td></tr></table></figure>
-<p>经过上面的代码处理后，可清除的Bitmap会驻留在 Ashmem 堆中。不管发生什么，垃圾回收器都不会自动回收这些 Bitmap。当 Android 绘制系统在渲染这些图片，Android 的系统库就会把这些 Bitmap 从 Ashmem 堆中抽取出来，而当渲染结束后，这些 Bitmap 又会被放回到原来的位置。如果一个被抽取的图片需要再绘制一次，系统仅仅需要把它再解码一次，这个操作非常迅速。</p>
-<p>这听起来像一个完美的解决方案，但是问题是Bitmap解码的操作是运行在UI线程的。Bitmap解码是非常消耗CPU资源的，当消耗过大时会引起UI阻塞。因为这个原因，所以Google不推荐使用这个<a href="http://developer.android.com/intl/zh-cn/reference/android/graphics/BitmapFactory.Options.html#inPurgeable" target="_blank" rel="external">特性</a>。现在它们推荐使用另外一个特性——inBitmap。但是这个特性直到Android3.0之后才被支持。即使是这样，这个特性也不是非常有用，除非 App 里的所有图片大小都相同，这对Fackbook来说显然是不适用的。一直到4.4版本，这个限制才被移除了。但我们需要的是能够运行在 Android 2.3 - 最新版本中的通用解决方案。</p>
-<p>##自力更生<br>对于上面提到的“解码操作致使 UI 假死”的问题，我们找到了一种同时使 UI 显示和内存管理都表现良好的解决方法。如果我们在 UI 线程进行渲染之前把被抽取的内存区域放回到原来的位置，并确保它再也不会被抽取，那我们就可以把这些图片放在 Ashmem 里，同时不会出现 UI 假死的问题。幸运的是，Android 的 NDK 中有一个函数可以完美地实现这个需求，名字叫做 AndroidBitmap_lockPixels。这个函数最初的目的就是：在调用 unlockPixels 再次抽取内存区域后被执行。</p>
-<p>当我们意识到我们没有必要这样做的时候，我们取得了突破。如果我们只调用lockPixels而不调用对应的unlockPixels，那么我们就可以在Java的堆内存里面创建一个内存安全的图像，并且不会导致UI线程加载缓慢。只需要几行c++代码，我们就完美的解决了这个问题。</p>
-<p>##用C++的思想写Java代码<br>就像《蜘蛛侠》里面说的：“能力越强，责任越大。”可清除的 Bitmap 既不会被垃圾回收器回收，也不会被 Ashmem 内置的清除机制处理，这使得使用它们可能会造成内存泄露。所以我们只能靠自己啦。</p>
-<p>在c++中,通常的解决方案是建立智能指针类,实现引用计数。这些需要利用到c++的语言特性——拷贝构造函数、赋值操作符和确定的析构函数。这种语法在Java之中不存在，因为垃圾回收器能够处理这一切。所以我们必须以某种方式在Java中实现C++的这些保证机制。</p>
-<p>我们创建了两个类去完成这件事。其中一个叫做“SharedReference”，它有addReference和deleteReference两个方法，调用者调用时必须采取基类对象或让它在范围之外。一旦引用计数器归零，资源处理(Bitmap.recycle)就会发生。</p>
-<p>然而，很显然，让Java开发者去调用这些方法是很容易出错的。Java语言就是为了避免做这样的事情的！所以SharedReference之上,我们构建了CloseableReference类。它不仅实现了Java的Closeable接口,而且也实现了Cloneable接口。它的构造器和clone()方法会调用addReference()，而close()方法会调用deleteReference()。所以Java开发者需要遵守下面两条简单的的规则：</p>
-<ol>
-<li>在分配CloseableReference新对象的时候,调用.clone()。</li>
-<li>在超出作用域范围的时候，调用.close()，这通常是在finally代码块中。</li>
-</ol>
-<p>这些规则可以有效地防止内存泄漏,并让我们在像Fackbook的Android客户端这种大型的Java程序中享受Native内存管理和通信。</p>
-<p>##不仅仅是加载程序，它是一个管道<br>在移动设备上显示图片需要很多的步骤：<br><img src="http://i2.tietuku.com/4480c88a0d8004bf.png" alt=""><br>几个优秀的开源库都是按照这个顺序执行的，比如 Picasso,Universal Image Loader,Glide和 Volley等等。上面这些开源库为Android的发展做出了非常重要的贡献。我们相信Fresco在几个重要方面会表现的更好。</p>
-<p>我们的不同之处在于把上面的这些步骤看作是管道，而不仅仅是加载器。每一个步骤和其他方面应该是尽可能独立的，把数据和参数传递进去，然后产生一个输出，就这么简单。它应该可以做一些操作，不管是并行还是串行。一些操作只能在特性条件下才能执行。一些有特殊要求的在线程上执行。除此之外，当我们考虑改进图像的时候，所有的图片就会变得非常复杂。很多人在低网速情况下使用Facebook，我们想要这些人能够尽快的看到图片，甚至经常是在图片没有完全下载完之前。</p>
-<p>##不要烦恼，拥抱stream<br>在Java中，异步代码历来都是通过Future机制来执行的。在另外的线程里面代码被提交执行，然后一个类似Future的对象可以检查执行的结果是不是已经完成了。但是，这只在假设只有一种结果的情况下行得通。在处理渐进的图像的时候，我们希望可以完整而且连续的显示结果。</p>
-<p>我们的解决方式是定义一个更广义的Future版本，叫做DataSource。它提供了一个订阅方法，调用者必须传入一个DataSubscriber和Executor。DataSubscriber可以从DataSource获取到处理中和处理完毕的结果，并且提供了很简单的方法来区分。因为我们需要非常频繁的处理这些对象，所以必须有一个明确的close调用，幸运的是，DataSource本身就是Closeable。</p>
-<p>在后台，每一个箱子上面都实现了一个叫做“生产者/消费者”的新框架。在这个问题是，我们是从<a href="http://reactivex.io/" target="_blank" rel="external">ReactiveX</a>获取的灵感。我们的系统拥有和<a href="https://github.com/ReactiveX/RxJava" target="_blank" rel="external">RxJava</a>相似的接口，但是更加适合移动设备，并且有内置的对Closeables的支持。</p>
-<p>保持简单的接口。Producer只有一个叫做produceResults的方法，这个方法需要一个Consumer对象。反过来，Consumer有一个onNewResult方法。</p>
-<p>我们使用像这样的系统把Producer联系起来。假设我们有一个producer的工作是把类型I转化为类型O，那么它看起来应该是这个样子：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">public class OutputProducer&lt;I, O&gt; implements Producer&lt;O&gt; &#123;</div><div class="line"></div><div class="line">  private final Producer&lt;I&gt; mInputProducer;</div><div class="line"></div><div class="line">  public OutputProducer(Producer&lt;I&gt; inputProducer) &#123;</div><div class="line">    this.mInputProducer = inputProducer;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  public void produceResults(Consumer&lt;O&gt; outputConsumer, ProducerContext context) &#123;</div><div class="line">    Consumer&lt;I&gt; inputConsumer = new InputConsumer(outputConsumer);</div><div class="line">    mInputProducer.produceResults(inputConsumer, context);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  private static class InputConsumer implements Consumer&lt;I&gt; &#123;</div><div class="line">    private final Consumer&lt;O&gt; mOutputConsumer;</div><div class="line"></div><div class="line">    public InputConsumer(Consumer&lt;O&gt; outputConsumer) &#123;</div><div class="line">      mOutputConsumer = outputConsumer;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    public void onNewResult(I newResult, boolean isLast) &#123;</div><div class="line">      O output = doActualWork(newResult);</div><div class="line">      mOutputConsumer.onNewResult(output, isLast);      </div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这可以使我们把非常复杂的步骤串起来，同时也可以保持他们逻辑的独立性。</p>
-<p>##动画全覆盖<br>使用Facebook的人都非常喜欢Stickers，因为它可以以动画形式存储GIF和Web格式。如果支持这些格式，就需要面临新的挑战。因为每一个动画都是由不止一张图片组成的，你需要解码每一张图片，存储在内存里，然后显示出来。对于大一点的动画，把每一帧图片放在内存是不可行的。</p>
-<p>我们建立了AnimatedDrawable,一个强大的可以呈现动画的Drawable,同时支持GIF和WebP格式。AnimatedDrawable实现标准的Android Animatable接口,所以调用者可以随意的启动或者停止动画。为了优化内存使用，如果图片足够小的时候，我们就在内存里面缓存这些图片，但是如果太大，我们可以迅速的解码这些图片。这些行为调用者是完全可控的。</p>
-<p>所有的后台都用c++代码实现。我们保持一份解码数据和元数据解析,如宽度和高度。我们引用技术数据，它允许多个Java端的Drawables同时访问一个WebP图像。</p>
-<p>##如何去爱你？我来告诉你…<br>当一张图片从网络上下载下来之后，我们想显示一张占位图。如果下载失败了，我们就会显示一个错误标志。当图片加载完之后，我们有一个渐变动画。通过使用硬件加速，我们可以按比例放缩，或者是矩阵变换成我们想要的大小然后渲染。我们不总是按照图片的中心进行放缩，那么我们可以自己定义放缩的聚焦点。有些时候，我们想显示圆角甚至是圆形的图片。所有的这些操作都应该是迅速而平滑的。</p>
-<p>我们之前的实现是使用Android的View对象——时机到了，可以使用ImageView替换出占位的View。这个操作是非常慢的。改变View会让Android强制刷新整个布局，当用户滑动的时候，这绝对不是你想看到的效果。比较明智的做法是使用Android的Drawables,它可以迅速的被替换。</p>
-<p>所以我们创建了Drawee。这是一个像MVC架构的图片显示框架。该模型被称为DraweeHierarchy。它被实现为Drawables的一个层，对于底层的图像而言，每一个曾都有特定的功能——成像、层叠、渐变或者是放缩。</p>
-<p>DraweeControllers通过管道的方式连接到图像上——或者是其他的图片加载库——并且处理后台的图片操作。他们从管道接收事件并决定如何处理他们。他们控制DraweeHierarchy实际上的操作——无论是占位图片,错误条件或是完成的图片。</p>
-<p>DraweeViews 的功能不多,但都是至关重要的。他们监听Android的View不再显示在屏幕上的系统事件。当图片离开屏幕的时候,DraweeView可以告诉DraweeController关闭使用的图像资源。这可以避免内存泄露。此外,如果它已经不在屏幕范围内的话，控制器会告诉图片管道取消网络请求。因此，像Fackbook那样滚动一长串的图片的时候，不会频繁的网络请求。</p>
-<p>通过这些努力，显示图片的辛苦操作一去不复返了。调用代码只需要实例化一个DraweeView,然后指定一个URI和其他可选的参数就可以了。剩下的一切都会自动完成。开发人员不需要担心管理图像内存，或更新图像流。Fresco为他们把一切都做了。</p>
-<p>##Fresco<br>完成这个图像显示和操作复杂的工具库之后,我们想要把它分享到Android开发者社区。我们很高兴的宣布，从今天起，这个项目已经作为<a href="http://github.com/facebook/fresco" target="_blank" rel="external">开源代码</a>了！</p>
-<p>壁画是绘画技术,几个世纪以来一直受到世界各地人们的欢迎。我们许多伟大的艺术家使用这种名字,从意大利文艺复兴时期的大师拉斐尔到壁画艺术家斯里兰卡。我们并不是假装达到这个伟大的水平，我们真的希望Android开发者能像我们当初享受创建这个开源库的过程一样，非常享受的使用它。</p>
-<p>##更多<br><a href="http://fresco-cn.org/" target="_blank" rel="external">Fresco中文文档</a></p>
+<p>欢迎来到Android design support library系列教程第二部分，第一部分我们讨论了<a href="http://www.technotalkative.com/part-1-floating-action-button/" target="_blank" rel="external">Floating action button</a>的一些attributes 和 常见issues。</p>
+<p>今天我们讨论一下另一个组件”Snackbar”.</p>
+<p>Welcome Snackbar, Goodbye Toast!</p>
+<blockquote>
+<p>“Providing lightweight, quick feedback about an operation is a perfect opportunity to use a snackbar.”</p>
+</blockquote>
+<p>Snackbar是design support library中另一个组件，使用Snackbar我们可以在屏幕底部(大多时候)快速弹出消息，它和Toast非常相似，但是它更灵活一些。</p>
+<ul>
+<li>当它显示一段时间后或用户与屏幕交互时它会自动消失。</li>
+<li>可以自定义action-可选操作。</li>
+<li>swiping it off the screen可以让FAB消失</li>
+<li>它是context sensitive message(自己理解吧),所以这些消息是UI screen的一部分并且它是显示在所有屏幕其它元素之上(屏幕最顶层)，并不是像Toast一样覆盖在屏幕上。</li>
+<li>同一时间只能显示一个snackbar。</li>
+</ul>
+<p>Snackbar基本上继承了和Toast一样的方法和属性，例如LENGTH_LONG 和 LENGTH_SHORT用于设置显示时长。</p>
+<p>##如何使用</p>
+<p>我们看一下如何使用:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Snackbar.make(view, message, duration)</div><div class="line">       .setAction(action message, click listener)</div><div class="line">       .show();</div></pre></td></tr></table></figure>
+<p>###方法:</p>
+<ul>
+<li><em><font color="red">make()</font></em>  – 生成Snackbar消息</li>
+<li><em><font color="red">setAction()</font></em>  – 设置action</li>
+<li><em><font color="red">make()</font></em>  – 显示Snackbar消息</li>
+</ul>
+<p>###属性:</p>
+<ul>
+<li>make()方法的第一个参数是一个view, snackbar会试着寻找一个父view来hold这个view. Snackbar将遍历整个view tree 来寻找一个合适的父view，它可能是一个coordinatorLayout也可能是window decor’s content view,随便哪一个都行。</li>
+<li>正如上面所提到，duration参数和Toast中的duration参数类似，只能是LENGTH_SHORT 或 LENGTH_LONG，不能是其它任何随机数。</li>
+</ul>
+<p>###示例:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Snackbar.make(rootlayout, <span class="string">"Hello SnackBar!"</span>, Snackbar.LENGTH_SHORT)</div><div class="line">       .setAction(<span class="string">"Undo"</span>, <span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line">           <span class="meta">@Override</span></div><div class="line">           <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">               <span class="comment">// Perform anything for the action selected</span></div><div class="line">           &#125;</div><div class="line">       &#125;)</div><div class="line">       .show();</div></pre></td></tr></table></figure>
+<p>部局文件中rootlayout是framelayout并且添加了FAB(Floating action button)，看一下FAB示例：</p>
+<p>点击FAB查看结果：</p>
+<p><img src="http://www.technotalkative.com/wp-content/uploads/2015/06/Snackbar-framelayout1.gif" alt=""></p>
+<p>程序没问题，但是对于用户体验来说并不太好，它应该向上移一些，如下图所示：</p>
+<blockquote>
+<p>Having a CoordinatorLayout in your view hierarchy allows Snackbar to enable certain features, such as swipe-to-dismiss and automatically moving of widgets like FloatingActionButton.</p>
+</blockquote>
+<p>我们在该系列文章的下一部分讨论CoordinatorLayout。</p>
+<p><img src="http://www.technotalkative.com/wp-content/uploads/2015/06/Snackbar-with-CoordinatorLayout1.gif" alt=""></p>
+<p>###配置Snackbar可选操作</p>
+<p>我们可以使用额外的可选操作来配置snackbar，比如<em><font color="red">setActionTextColor</font></em> 和 <em><font color="red">setDuration</font></em>:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Snackbar.make(rootlayout, <span class="string">"Hello SnackBar!"</span>, Snackbar.LENGTH_SHORT)</div><div class="line">       .setAction(<span class="string">"Undo"</span>, <span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line">           <span class="meta">@Override</span></div><div class="line">           <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">               <span class="comment">// Perform anything for the action selected</span></div><div class="line">           &#125;</div><div class="line">       &#125;)</div><div class="line">       .setActionTextColor(R.color.material_blue)</div><div class="line">       .setDuration(<span class="number">4000</span>).show();</div></pre></td></tr></table></figure>
+<p>下载示例代码：<a href="https://github.com/PareshMayani/DesignSupportLibraryExamples" target="_blank" rel="external">https://github.com/PareshMayani/DesignSupportLibraryExamples</a></p>
+<p>参考文档：<br><a href="https://developer.android.com/reference/android/support/design/widget/Snackbar.html" target="_blank" rel="external">https://developer.android.com/reference/android/support/design/widget/Snackbar.html</a></p>
+<p>###总结</p>
+<p>在这部分文章中，我们讨论了Snackbar，它和TOAST很相似，但是它更灵活一些。Snackbar中可以定义action，当用户与屏幕交互时或者显示一段时间后会自动消失。</p>
+<p>通过 CoordinatorLayout我们可以看到更多的effects 和 behaviours，在该系列文章中后续会讨论它。</p>
 
         
         
@@ -155,7 +161,7 @@
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2017/04/27/FaceBook推出的Android图片加载库-Fresco/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/FaceBook推出的Android图片加载库-Fresco/" data-count-type="comments">&nbsp;</a>
+		<a href="/2017/04/27/还在用Toast？你Out啦，试试Snackbar吧！/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/还在用Toast？你Out啦，试试Snackbar吧！/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -724,6 +730,205 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2017/04/27/2015-Google-IO带来的新Android开发工具 /" title="2015 Google IO带来的新 Android 开发工具" itemprop="url">2015 Google IO带来的新 Android 开发工具</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ul>
+<li>原文链接 : <a href="http://robovm.com/google-io-summary-whats-new-in-android-development-tools/" target="_blank" rel="external">Google I/O Summary: What’s new in Android Development Tools</a></li>
+<li>原文作者 : <a href="http://robovm.com/author/mario/" target="_blank" rel="external">Mario Zechner</a></li>
+<li><a href="http://www.devtf.cn" target="_blank" rel="external">译文出自 :  开发技术前线 www.devtf.cn</a></li>
+<li>译者 : <a href="http://reondz.github.io/" target="_blank" rel="external">ReonDz</a> </li>
+</ul>
+<p>每年我们都非常期待 Youtube 中Google IO上那些关于 Android 的精彩讲解。然而，观看这些视频太耗费时间了。因此我们做了撰写了总结性的文字，来介绍这次的 Google IO 带来了哪些新的 Android 开发工具。（<a href="https://www.youtube.com/watch?v=f7ihSQ44WO0" target="_blank" rel="external">对应的讲演视频</a>）</p>
+<h2 id="便于设计"><a href="#便于设计" class="headerlink" title="便于设计"></a>便于设计</h2><p><img src="http://7xiegl.com1.z0.glb.clouddn.com/Screen Shot 2015-05-30 at 10.18.10-OI2RFWPbn6.png" alt="image">  </p>
+<p>Android Design Support Library 帮助我们遵循最新的最杰出的 material design 特性。这个库还附带了好几个 material design 组件诸如 navigation drawer, <a href="http://arjunu.com/2015/05/floating-labels-for-edittext/" target="_blank" rel="external">floating labels for editing text</a>(这个简单来说就是edittext 在获得焦点后，hint 会有个上升动画变成一个放置在 edittext上方的 textview 作为 label)，floating action buttons(Android L时代推出的产物，总算有了官方的低版本兼容支持)以及 支持Android 2.1及其以上版本的snackbar。   </p>
+<p><img src="http://7xiegl.com1.z0.glb.clouddn.com/Screen Shot 2015-05-30 at 10.24.57-nwuvL0kS8W.png" alt="image"> </p>
+<p>Android L 介绍了对 vector drawables 的支持。而通过 Android Studio 1.3+给 Android Gradle plugin 带来的新功能，我们可以让编译打包系统通过 开发者提供的SVG图 或者 vector drawables 生成不同 dpi 的光栅图。<br>最后，整个开发团队开始重写了所有的可视化设计编辑器。从而支持开发者所见即所得的编辑与设计而不是被 XML 文件搞的无比心烦。下面会有更详细的内容。   </p>
+<h2 id="提升-Gradle-插件以及编译打包系统"><a href="#提升-Gradle-插件以及编译打包系统" class="headerlink" title="提升 Gradle 插件以及编译打包系统"></a>提升 Gradle 插件以及编译打包系统</h2><p><img src="http://7xiegl.com1.z0.glb.clouddn.com/Screen Shot 2015-05-30 at 10.30.01-Grz81dvubp.png" alt="image"></p>
+<p>Android Gradle plugin  有的时候给人一种靠不住的感觉，特别是它的依赖管理。处理测试依赖时一些极端情况带来的问题现在已经被修复。同样，可选依赖 Gradle 还没有做到真正的支持。然而在 Android Gradle plugin 上已经解决了这一问题。      </p>
+<p>开发者对 Android Gradle plugin 抱怨最多的就是它居高不下的打包消耗时间了。开发团队从多个层级入手追踪这个问题。       </p>
+<p><a href="http://tools.android.com/tech-docs/jackandjill" target="_blank" rel="external">Jack</a> , Java Android Compiler Kit 的缩写，可以将 Java 源码直接编译并转换为 Dex 文件。Jack 基于 Eclipse Java 编译器。缩减了打 Dex 之前把 Java 源码编译成 JVM 字节码的步骤。 额外的，Jack 还支持增量编译打包。     </p>
+<p>缩减 PNG 图片是另外一个考虑来缩减打包时间的步骤。开发团队提高了它的性能，将500张 PNG 图片和.9 图的缩减时间从 4秒 降低到了 400ms。     </p>
+<p>aapt, 打包应用的dex 和 资源文件的工具同样得到了提升。     </p>
+<p>另外一个影响打包时间的因素是 Gradle 本身的巨大开销。当 Gradle 开始它的打包任务时，它必须先创建描述模型比如 variant (flavor + build type)，解决所有 variants 的依赖关系（即使你只有一个）以及执行开发者自定义的逻辑。开发团队和 Gradle Ware 紧密合作工作从而提高这些步骤的性能。以下是最后的结果：   </p>
+<p><img src="http://7xiegl.com1.z0.glb.clouddn.com/Screen Shot 2015-05-30 at 10.42.57-cl8MWwzzYC.png" alt="image"></p>
+<p>这还没完。目前开发者团队正在为了一个新的  Android Gradle plugin 而工作, 它基于 Gradle Ware 正在研发的新API  。而这些新的 API 允许这些模型被 Gradle 直接管理，从而可以做诸如缓存，并发以及增量构建这些事。下面是尚未完成的新 Android Gradle plugin 的结果数据：</p>
+<p><img src="http://7xiegl.com1.z0.glb.clouddn.com/Screen Shot 2015-05-30 at 10.46.01-KoHuJyeq0F.png" alt="image"></p>
+<p>以上的数据并没有算上用上缓存的带来的提升，目前缓存的特性还没有提供出来。新插件有一个小瑕疵，因为它使用了全新的 DSL 所以无法做到完全的向后兼容。新插件的预览版会在几周内开放，最后的正式版会在今年晚一点的时候开放。   </p>
+<p>开发者团队还介绍了一个新的东西，叫做 <a href="https://developer.android.com/tools/data-binding/guide.html" target="_blank" rel="external">Data Binding Library</a>。这个库需要编译构建系统的支持，因为它会通过XML中特殊声明的一些代码去生成对应的 Java 代码。老版本和新版本的 Android Gradle plugin 都能支持它。下面会有更详细的内容。   </p>
+<p>最后，我们实现了对 NDK C以及C++完整的支持。这是基于Gradle native 代码的支持，所以只会在新版本中提供，它重写了Android Gradle plugin。NDK支持也带入到了Android Studio中，同时还打包了<a href="https://www.jetbrains.com/clion/" target="_blank" rel="external">CLion</a>（JetBrain旗下的C,C++ IDE）, 并免费提供。下面会有更详细的内容。   </p>
+<h2 id="测试有关"><a href="#测试有关" class="headerlink" title="测试有关"></a>测试有关</h2><p><img src="http://7xiegl.com1.z0.glb.clouddn.com/testing_device.jpeg" alt="image">  </p>
+<p>今年Android 测试最大的亮点便是最近公布的 <a href="https://developers.google.com/cloud-test-lab/" target="_blank" rel="external">Cloud Test Lab</a> 。它可以帮助开发者使用 Google 测试云平台上的虚拟设备以及真机设备测试他们开发的应用。无论是虚拟设备还是真机设备，测试实验室(test lab)都支持机器爬虫遍历应用而不需要手动的去写测试用例。就当作是有一只猴子在各种设备上玩你的应用吧=w=。当然，你还是可以自己写测试用例的。     </p>
+<p>到目前为止，单元测试主要还是用于跑在 JVM 上老的Junit 测试。虽然那样可以提高测试的迭代速度，但是它并不能测试到 Android 中一些特定的代码，若没有类似的Android 库的支持的话（Roboelectric就是为此而生的）。      </p>
+<p>为了支持在虚拟机或者设备上的集成测试，开发团队增加了对外部测试工程的支持。他们就在你的应用程序工程边上，引用它以及它的依赖然后进行集成测试。   </p>
+<h2 id="模拟器"><a href="#模拟器" class="headerlink" title="模拟器"></a>模拟器</h2><p><img src="http://7xiegl.com1.z0.glb.clouddn.com/Screen Shot 2015-05-30 at 11.03.20-c1DKPt2w8Y.png" alt="image"></p>
+<p>并没有大的进展。开发团队主要工作集中在稳定性，正确性以及配置上。 Android Studio 会下载安装 <a href="https://01.org/zh/android-ia/q-and-a/what-haxm" target="_blank" rel="external">HAXM</a>（Intel 为 Android x86平台提供的硬件加速执行管理器） 并且为你配置好它。同时，还有大量的用于OpenGL ES 模拟器的提升，相信它会给开发者带来更好的更接近于真机的模拟器表现。<a href="http://www.droid-life.com/2015/05/28/google-announces-native-fingerprint-support-in-android-m/" target="_blank" rel="external">指纹识别支持</a>以及一个特殊的 <a href="http://www.android.com/auto/" target="_blank" rel="external">Android Auto</a> 模拟器也已有提供。  </p>
+<p>##Android Studio对C以及C++的支持</p>
+<p><img src="http://7xiegl.com1.z0.glb.clouddn.com/Screen Shot 2015-05-30 at 11.13.41-NPAwYYVN8B.png" alt="image"></p>
+<p>除了在打包系统中集成了 NDK 的支持，开发团队还与 <a href="http://robovm.com/google-io-summary-whats-new-in-android-development-tools/jetbrains.comhttp://robovm.com/google-io-summary-whats-new-in-android-development-tools/jetbrains.com" target="_blank" rel="external">JetBrains</a> 合作，将他们新的C/C++ IDE <a href="https://www.jetbrains.com/clion/" target="_blank" rel="external">CLion</a> 直接集成在了Android Studio 。并且这一切都是免费的。     </p>
+<p>这次结合满足了你对一个 JetBrains的产品抱有的所有期待: 强大的重构能力，代码分析工具，代码导航，语义查询代码用例遗迹更多的特性。除此以外，还有两个能改变游戏规则的重量级功能来给native 层的开发带来便捷。     </p>
+<p>Android Studio 现在支持使用 <a href="http://www.gnu.org/software/gdb/" target="_blank" rel="external">GDB</a> 或者 <a href="http://lldb.llvm.org/" target="_blank" rel="external">LLDB</a> 来debug代码。Debug native 的代码在以前是一件非常麻烦的事情，而现在，耳目一新的感觉吧？      </p>
+<p>更为称道的消息是 C/C++代码 和 Java/JNI 代码的紧密融合。为了让 C/C++ 代码可以与 Java 代码相互调用。你需要为它们创建连接的桥梁。这便要通过 Java Native Interface（即JNI来实现），本质上就是一个可以让我们从Java 代码调用 C/C++代码的 C/C++ API，反之亦然。你可以在声明 Java 方法时，带上 native 的 修饰词，这样就意味着该方法是在C/C++ 层面去实现的。而对应的方法则需要按照严格的规范命名，并规定管理好传参的规则。    </p>
+<p>而现在， Android Studio 帮助你用简单的方式完成以上所有工作。你可以在 Java 层声明好方法，然后 Android Studio 就会自动的帮你生成 JNI 代码。还包括了一些预定义类型的处理，比如 string，arrays。更令人印象深刻的是， 重构以及查找用例都如你所想要的可以使用。在某个文件上做重构，另外一侧的文件也会被修改到。    </p>
+<p>JNI 层的开发依然十分烦杂，但这些改变可以让它变得好受一点。   </p>
+<h2 id="新支持的Annotations"><a href="#新支持的Annotations" class="headerlink" title="新支持的Annotations"></a>新支持的Annotations</h2><p><img src="http://7xiegl.com1.z0.glb.clouddn.com/Screen Shot 2015-05-30 at 11.15.21-WL33x5ckez.png" alt="image"> </p>
+<p>Java annotations（注解，即使@后面的那个）可以让开发者在编译期以及运行时做一些神奇的事情。开发者团队新增了13个 annotations 来帮助开发者避免一些特定类型的 bug 。    </p>
+<p>举个例子，@WorkerThread 这个 annotation, 带有该 annotation 的方法会自动检查该方法中是否有代码职能在UI线程上执行的。Android Studio 会高亮出类似错误，比如设置一个按钮的文字，在一个worker 线程执行了。 开发团队已经将很多 Android 运行库中的方法标记了该 annotation 所以开发者并不需要自己去动手添加。   </p>
+<p>另外一个例子就是@RequiresPermission。和@WorkerThread 一样，大多数的Android 运行库方法已经被注解过了。这是防止开发者使用了一个需要特定权限的API，但是却没有在 manifest 文件中声明权限，Android Studio 会弹框告诉你问题并为你提供插入对应权限的选项。在 Android M 中，权限管理有一定的修改，用户可以在应用运行时决定给予或禁止一些权限。这就意味着，你的应用需要处理无权限的情况。对于这种情况，Android Studio 也会自动的插入处理代码的框架。        </p>
+<p>还有一些 annotations 是用于 debug 中将标志值对应标志名的问题，或者识别 编码过的颜色，资源或者view id的问题。   </p>
+<p>这个讲解新 annotations 的文档目前还没有完全完工，你应该可以很快在<a href="https://developer.android.com/reference/android/support/annotation/package-summary.html" target="_blank" rel="external">这里</a>看到它们。</p>
+<h2 id="数据绑定"><a href="#数据绑定" class="headerlink" title="数据绑定"></a>数据绑定</h2><p><img src="http://7xiegl.com1.z0.glb.clouddn.com/Screen Shot 2015-05-30 at 11.25.52-zEtMZXmuok.png" alt="image"></p>
+<p>当开发UI界面时，通常会将布局和视图从代码中分离到 xml 文件中然后写一些简单Java 对象(POJOs) 以及 一些 Java 代码。例如使用 findViewById() 在布局被加载后去获取对应的UI 视图的对象。   </p>
+<p>Data Binding 库可以帮助开发者更简单的完成工作。不需要手动的去处理数据和视图的合作，而是声明一些简单的对象，通过一系列简单对象引用一些值并且在 布局 XML 文件中去监听这些值。这个很像 .NET里<a href="https://msdn.microsoft.com/en-us/library/ms752059%28v=vs.110%29.aspx" target="_blank" rel="external">XAML</a>的做法。    </p>
+<p>为了调解 Java 类和布局 xml 文件，编译打包系统会编译期生成一个捆绑 Java 类。这个可以帮助开发者debug 调试问题。   </p>
+<p>你还可以将这变成一个双向的过程，通过让你的简单 Java 对象实现 android.databings.Observable 接口，改变简单对象的值会 影响 UI展现，反之亦然。（setText 后，bind的值也会变化的意思）   </p>
+<p>data binding 库目前还处于 beta 阶段，需要 Android Studio 1.3.0-beta1 以及最新的Android Gradle plugin.<br>点击<a href="https://developer.android.com/tools/data-binding/guide.html" target="_blank" rel="external">这里</a>查看更多信息。   </p>
+<h2 id="分析工具"><a href="#分析工具" class="headerlink" title="分析工具"></a>分析工具</h2><p><img src="http://7xiegl.com1.z0.glb.clouddn.com/Screen Shot 2015-05-30 at 11.34.27-cSn9mmzu7x.png" alt="image">   </p>
+<p>内存和性能分析工具得到了全面的改变。现在你可以在Android Studio中通过简单的图形界面操作直接获取并保存堆栈以及方法调用情况(method traces)的快照并且找出问题原因了。新的分析工具还具备了可视化视图查询的功能。你再也不需要手动的去转换 <a href="http://docs.oracle.com/javase/7/docs/technotes/samples/hprof.html" target="_blank" rel="external">HPROF</a> 文件了。   </p>
+<p><img src="http://7xiegl.com1.z0.glb.clouddn.com/Screen Shot 2015-05-30 at 11.37.27-Mz8F5wmRnK.png" alt="image"></p>
+<p>新的内存快照具备简洁明了的向下钻能力（drill down我理解是一层一层的点下去。。）。它提供了对象调试视图，从而让你可以查看到还在堆内存中的对象们。它还允许你顺着引用链一直找到最近的GC 节点从而轻松的找到是什么被持有住了。   </p>
+<h2 id="开发者服务"><a href="#开发者服务" class="headerlink" title="开发者服务"></a>开发者服务</h2><p><img src="http://7xiegl.com1.z0.glb.clouddn.com/Screen Shot 2015-05-30 at 11.39.04-fWLlwnIlHC.png" alt="image"></p>
+<p>Google 提供了广告，数据分析等服务。而如今 Android Studio 1.3 可以帮助你通过一系列定制 UI 更容易的使用这些服务，比如API Keys等。这个新功能同样会帮助添加所需要的依赖，权限以及模版类从而可以花最少的时间使用这些服务。   </p>
+<h2 id="即将发布的新功能"><a href="#即将发布的新功能" class="headerlink" title="即将发布的新功能"></a>即将发布的新功能</h2><p><img src="http://7xiegl.com1.z0.glb.clouddn.com/Screen Shot 2015-05-30 at 11.41.57-iWXIUx6z6S.png" alt="image"> </p>
+<p>新的可视化设计视图暂时还没有被集入到Android Studio 1.3中。尽管如此，它们还是非常令人兴奋的，因为可以为开发者减轻创建UI界面的负担。<br>上面的截图展示了新的主题编辑器。它让你可以可视化的检查以及修改主题文件。它还可以展示使用该主题的控件的预览。   </p>
+<p><img src="http://7xiegl.com1.z0.glb.clouddn.com/Screen Shot 2015-05-30 at 11.46.16-xrH2DGgL94.png" alt="image"></p>
+<p>而布局编辑器则被完全的重写，多了很多新功能。上述截图展示了蓝图模式，这可以让你专注于你的布局，字体风格等。它还与设计库集成，从而可以通过拖拉直接添加设计元素到布局中。   </p>
+<p><img src="http://7xiegl.com1.z0.glb.clouddn.com/Screen Shot 2015-05-30 at 11.48.28-98HlY6FuwA.png" alt="image"></p>
+<p>而 XML 文件预览模式现在有能力展示系统Preference了(以前是无法预览Preference的)。更重要的一个功能是完全的对布局文件预览窗口直接操作的所见即所得编辑，包括一些控件的拖动。   </p>
+<h2 id="Q-amp-A"><a href="#Q-amp-A" class="headerlink" title="Q&amp;A"></a>Q&amp;A</h2><p>很不幸，Q&amp;A环节十分的短暂。而在其中最有意思的问题是 Android 什么时候支持 Java 8。而回答则是，“这是一个平台性问题”(“that’s a platform issue”)。   </p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/2015-Google-IO带来的新Android开发工具 /#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/2015-Google-IO带来的新Android开发工具 /" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/Gradle提示和使用技巧/" title="Gradle提示和使用技巧" itemprop="url">Gradle提示和使用技巧</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ul>
+<li>原文链接 : <a href="https://medium.com/@cesarmcferreira/gradle-tips-tricks-to-survive-the-zombie-apocalypse-3dd996604341#.k8a9o93ww" target="_blank" rel="external">Gradle tips &amp; tricks to survive the zombie apocalypse</a></li>
+</ul>
+<p>#Gradle提示和使用技巧<br>Rick Grimes不能帮助你，所以让我们一起获得它！</p>
+<p><a href="http://www.gradle.org/" target="_blank" rel="external">Gradle</a> 虽然之前一直存在于<a href="https://developer.android.com/sdk/installing/studio.html" target="_blank" rel="external">Android Studio</a>中，但是它变成热门的转折点是Android Studio成为官方开发IDE。但是，我们充分利用这个伟大的构建自动化系统了吗？</p>
+<h2 id="工程和构建专门的全局变量"><a href="#工程和构建专门的全局变量" class="headerlink" title="工程和构建专门的全局变量"></a>工程和构建专门的全局变量</h2><p>使用gradle，会自动生成一个<strong>BuildConfig</strong>类文件并且我们有能力在它里面生成额外的字段。这对于像配置服务器URL和切换开关这类功能都是非常有用的。</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">defaultConfig &#123;</div><div class="line">    buildConfigField <span class="string">"String"</span>, <span class="string">"TWITTER_TOKEN"</span>, <span class="string">'"SDASJHDKAJSK"'</span></div><div class="line">&#125;</div><div class="line">buildTypes &#123;</div><div class="line">    debug &#123;</div><div class="line">      buildConfigField <span class="string">"String"</span>, <span class="string">"API_URL"</span>, <span class="string">'"http://api.dev.com/"'</span></div><div class="line">      buildConfigField <span class="string">"boolean"</span>, <span class="string">"REPORT_CRASHES"</span>, <span class="string">"true"</span></div><div class="line">    &#125;</div><div class="line">    release &#123;</div><div class="line">      buildConfigField <span class="string">"String"</span>, <span class="string">"API_URL"</span>, <span class="string">'"http://api.prod.com/"'</span></div><div class="line">      buildConfigField <span class="string">"boolean"</span>, <span class="string">"REPORT_CRASHES"</span>, <span class="string">"false"</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>BuildConfig.TWITTER_TOKEN</strong>, <strong>BuildConfig.REPORT_CRASHES</strong> 和 <strong>BuildConfig.API_URL</strong> 都是能够通过<strong>BuildConfig</strong>这个final class访问的。（后面两个变量的值根据构建类型而不同）</p>
+<h2 id="每个构建类型不同的名称，版本名和APP-ID"><a href="#每个构建类型不同的名称，版本名和APP-ID" class="headerlink" title="每个构建类型不同的名称，版本名和APP ID"></a>每个构建类型不同的名称，版本名和APP ID</h2><p>这个可以让你有release和debug两个版本的应用在同一时间被安装（记住android不让你安装相同的包名的不同的应用）！</p>
+<p>你可以在你的崩溃报告工具中通过不同的版本名来过滤问题/崩溃。</p>
+<p>通过查看应用名称很容易发现你当前运行的是哪一个！</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">android &#123;</div><div class="line">    buildTypes &#123;</div><div class="line">        debug &#123;</div><div class="line">            applicationIdSuffix &quot;.debug&quot;</div><div class="line">            versionNameSuffix &quot;-debug&quot;</div><div class="line">            resValue &quot;string&quot;, &quot;app_name&quot;, &quot;CoolApp (debug)&quot;</div><div class="line">            signingConfig signingConfigs.debug</div><div class="line">        &#125;</div><div class="line">        release &#123;</div><div class="line">            resValue &quot;string&quot;, &quot;app_name&quot;, &quot;CoolApp&quot;</div><div class="line">            signingConfig signingConfigs.release</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<h2 id="私有信息"><a href="#私有信息" class="headerlink" title="私有信息"></a>私有信息</h2><p>Android要求所有的应用被安装之前用一个证书进行数字签名。Android使用这个证书识别应用的作者，尽管这是一些不应该让其它人看见的敏感信息。</p>
+<p>你永远不应该提交这种信息到版本控制工具上。</p>
+<p>一些人认为你应该有一个本地配置文件或者甚至是一个全局~/.gradle/build.gradle使用这些值，但如果你正在做连续的集成/部署并且你没有自己专门的CI服务器，在你的版本控制器上不应该有任何带着证书用纯文本的方式展示的这种文件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">signingConfigs &#123;</div><div class="line">    release &#123;</div><div class="line">        storeFile     &quot;$&#123;System.env.COOL_APP_PRIVATE_KEY&#125;&quot;</div><div class="line">        keyAlias      &quot;$&#123;System.env.COOL_APP_ALIAS&#125;&quot;</div><div class="line">        storePassword &quot;$&#123;System.env.COOL_APP_STORE_PW&#125;&quot;</div><div class="line">        keyPassword   &quot;$&#123;System.env.COOL_APP_PW&#125;&quot;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>通过这种方式我可以将敏感信息提交到我自己的CI服务器而不用担心提交到公司的CVS上。</p>
+<h2 id="自动生成-versionName-和-versionCode"><a href="#自动生成-versionName-和-versionCode" class="headerlink" title="自动生成 versionName 和 versionCode"></a>自动生成 versionName 和 versionCode</h2><p>把你的版本信息从逻辑组件分离出来并且分别管理它们。不用再烦恼如何放置正确的版本号与版本名称。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">def versionMajor = 1</div><div class="line">def versionMinor = 0</div><div class="line">def versionPatch = 0</div><div class="line">android &#123;</div><div class="line">    defaultConfig &#123;</div><div class="line">        versionCode versionMajor * 10000 + versionMinor * 100 + versionPatch</div><div class="line">        versionName &quot;$&#123;versionMajor&#125;.$&#123;versionMinor&#125;.$&#123;versionPatch&#125;&quot;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="添加git-hash和构建时间到你的BuildConfig"><a href="#添加git-hash和构建时间到你的BuildConfig" class="headerlink" title="添加git hash和构建时间到你的BuildConfig"></a>添加git hash和构建时间到你的BuildConfig</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">def gitSha = &apos;git rev-parse --short HEAD&apos;.execute([], project.rootDir).text.trim()</div><div class="line">def buildTime = new Date().format(&quot;yyyy-MM-dd&apos;T&apos;HH:mm:ss&apos;Z&apos;&quot;, TimeZone.getTimeZone(&quot;UTC&quot;))</div><div class="line">android &#123;</div><div class="line">    defaultConfig &#123;</div><div class="line">        buildConfigField &quot;String&quot;, &quot;GIT_SHA&quot;, &quot;\&quot;$&#123;gitSha&#125;\&quot;&quot;</div><div class="line">        buildConfigField &quot;String&quot;, &quot;BUILD_TIME&quot;, &quot;\&quot;$&#123;buildTime&#125;\&quot;&quot;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在有两个变量可以用，BuildConfig.GIT_SHA 和BuildConfig.BUILD_TIME ，这在绑定提交/构建时间到log里面是非常方便的！</p>
+<h2 id="扣紧安全带"><a href="#扣紧安全带" class="headerlink" title="扣紧安全带"></a>扣紧安全带</h2><p>对于快速部署只需要创建一个叫做<strong>dev</strong>的flavour 并且设置minSdkVersion 为21.通过这么做需要注意的是你不会得到你真正的minSdk的linting检查提示，显而易见的是这仅仅会被用于日常工作而不是发布。这会允许Android gradle插件预编译（pre-dex） 每个module并且编译的APK可以在Android Lollipop（ 5.0）及以上进行测试而不需要花费dex 合并处理时间。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">android &#123;</div><div class="line">    productFlavors </div><div class="line">        dev &#123;</div><div class="line">            minSdkVersion 21</div><div class="line">        &#125;</div><div class="line">        prod &#123;</div><div class="line">            // The actual minSdkVersion for the application.</div><div class="line">            minSdkVersion 14</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<h2 id="单元测试直接输出到控制台"><a href="#单元测试直接输出到控制台" class="headerlink" title="单元测试直接输出到控制台"></a>单元测试直接输出到控制台</h2><p>一个小窍门因此我们可以看到android单元测试它们发生的日志结果。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">android &#123;</div><div class="line">  ...</div><div class="line"></div><div class="line">  testOptions.unitTests.all &#123;</div><div class="line">    testLogging &#123;</div><div class="line">      events &apos;passed&apos;, &apos;skipped&apos;, &apos;failed&apos;, &apos;standardOut&apos;, &apos;standardError&apos;</div><div class="line">      outputs.upToDateWhen &#123; false &#125;</div><div class="line">      showStandardStreams = true</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在运行你的测试它们将输出类似于这样的东西：</p>
+<p><img src="https://cdn-images-1.medium.com/max/1600/1*njDARwtg9P9NdL5GfhIjqA.png" alt="image"></p>
+<p>单元测试日志输出</p>
+<h2 id="Gradle-告诉我我很漂亮"><a href="#Gradle-告诉我我很漂亮" class="headerlink" title="Gradle,告诉我我很漂亮"></a>Gradle,告诉我我很漂亮</h2><p>一个有组织地方式使用它：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">android &#123;</div><div class="line">    ...</div><div class="line">    buildTypes &#123;</div><div class="line">        def BOOLEAN = &quot;boolean&quot;</div><div class="line">        def TRUE = &quot;true&quot;</div><div class="line">        def FALSE = &quot;false&quot;</div><div class="line">        def LOG_HTTP_REQUESTS = &quot;LOG_HTTP_REQUESTS&quot;</div><div class="line">        def REPORT_CRASHES = &quot;REPORT_CRASHES&quot;</div><div class="line">        def DEBUG_IMAGES = &quot;DEBUG_IMAGES&quot;</div><div class="line"> </div><div class="line">        debug &#123;</div><div class="line">            ...</div><div class="line">            buildConfigField BOOLEAN, LOG_HTTP_REQUESTS, TRUE</div><div class="line">            buildConfigField BOOLEAN, REPORT_CRASHES, FALSE</div><div class="line">            buildConfigField BOOLEAN, DEBUG_IMAGES, TRUE</div><div class="line">        &#125;</div><div class="line"> </div><div class="line">        release &#123;</div><div class="line">            ...</div><div class="line">            buildConfigField BOOLEAN, LOG_HTTP_REQUESTS, FALSE</div><div class="line">            buildConfigField BOOLEAN, REPORT_CRASHES, TRUE</div><div class="line">            buildConfigField BOOLEAN, DEBUG_IMAGES, FALSE</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果你有任何问题在 <a href="https://twitter.com/cesarmcferreira" target="_blank" rel="external">@cesarmcferreira</a>和我联系</p>
+<p>感谢<a href="https://medium.com/@jacoelho" target="_blank" rel="external">José Coelho</a>.</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/Gradle提示和使用技巧/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/Gradle提示和使用技巧/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2017/04/27/自动化截图－应用分发时的自动截图方案/" title="自动化截图－应用分发时的自动截图方案" itemprop="url">自动化截图－应用分发时的自动截图方案</a>
   </h1>
   <p class="article-author">By
@@ -935,256 +1140,6 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/04/27/结合RxJava更简单地使用SQLite/" title="结合RxJava更简单地使用SQLite" itemprop="url">结合RxJava更简单地使用SQLite</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <ul>
-<li>原文链接 : <a href="http://beust.com/weblog/2015/06/01/easy-sqlite-on-android-with-rxjava/" target="_blank" rel="external">Easy SQLite on Android with RxJava</a></li>
-<li>原文作者 : <a href="http://beust.com/weblog/about-2/" target="_blank" rel="external">Cédric Beust</a></li>
-<li><a href="http://www.devtf.cn" target="_blank" rel="external">译文出自 :  开发技术前线 www.devtf.cn</a></li>
-<li>译者 : <a href="https://github.com/tiiime" target="_blank" rel="external">tiiime</a> </li>
-<li>校对者:  <a href="https://github.com/bboyfeiyu" target="_blank" rel="external">Mr.Simple</a> </li>
-<li>状态 :   完成</li>
-</ul>
-<p>我经常想在项目中使用 ORM 来简化操作，但是最终都将这个念头打消。主要有以下几点原因：</p>
-<ul>
-<li>我的数据模型远远没有复杂到需要 ORM 帮助</li>
-<li>出于 Android 性能上的考虑，自动生成的SQL语句可能没有被优化</li>
-</ul>
-<p>不过最近，我开始使用一个简单的设计模式，使用 RxJava 来提供一个简单的数据库访问管理。<br>我称它为 “Async Rx Read” 设计模式，很渣的一个名字哈，不过是我能想到最好的了，命名总是程序员的难题嘛。</p>
-<p>#Easy Read<br>Android 开发中有一条很重要的设计原则，永远不要在主线程执行 I/O 操作，显然这条规则对数据库访问也适用。<br>RxJava 很适用于解决这个问题。<br>在以前，我通常为每个 table 创建一个 Java 类，然后通过我的 <a href="http://developer.android.com/reference/android/database/sqlite/SQLiteOpenHelper.html" target="_blank" rel="external">SQLiteOpenHelper</a> 来管理这些 table。<br>现在使用这个新的方法后，我将这个工具类扩展成所有事物读写 SQL table 的唯一入口。<br>我们来想个简单的例子：一个由 UserTable 类管理的 USERS 表：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// UserTable.java</span></div><div class="line"><span class="function">List&lt;User&gt; <span class="title">getUsers</span><span class="params">(SQLiteDatabase db, String userId)</span> </span>&#123;</div><div class="line">  <span class="comment">// select * from users where _id = &#123;userId&#125;</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>上面的方法有一个缺点，就是你一不小心可能会在主线程调用它，这里面是由调用者确保它是在后台线程中被执行的<br>(如果需要更新 UI 的话，再将结果返回给主线程)。而不是依赖一个线程池管理，或者更糟点，使用 <code>AsyncTask</code> 管理，<br>我们将使用 RxJava 替我们管理线程模型。</p>
-<p>让我们重写这个方法返回一个 callback ：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// UserTable.java</span></div><div class="line">Callable&lt;List&lt;User&gt;&gt; getUsers(SQLiteDatabase db, String userId) &#123;</div><div class="line">  <span class="keyword">return</span> <span class="keyword">new</span> Callable&lt;List&lt;User&gt;&gt;() &#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> List&lt;User&gt; <span class="title">call</span><span class="params">()</span> </span>&#123;</div><div class="line">      <span class="comment">// select * from users where _id is userId</span></div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>实际上，我们只是重构了一下这个方法返回一个 lazy result ，使得 database helper 可以将这个<br>result 转变成一个 <code>Observable</code>：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// MySqliteOpenHelper.java</span></div><div class="line">Observable&lt;List&lt;User&gt;&gt; getUsers(String userId) &#123;</div><div class="line">  <span class="keyword">return</span> makeObservable(mUserTable.getUsers(getReadableDatabase(), userId))</div><div class="line">    .subscribeOn(Schedulers.computation()) <span class="comment">// note: do not use Schedulers.io()</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>注意到将 lazy result 转换成一个 <code>Observable</code> 时，helper 强制 subscription 运行在后台线程<br>(这里使用的是 computation scheduler;不要使用 <code>Schedulers.io()</code> 因为它是由 unbounded executor 支持的)。<br>这样调用者就不必担心这个方法会阻塞主线程了。</p>
-<p>最后，<code>makeObservable()</code> 方法的实现很简单(而且是完全通用的)：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// MySqliteOpenHelper.java</span></div><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">Observable&lt;T&gt; <span class="title">makeObservable</span><span class="params">(<span class="keyword">final</span> Callable&lt;T&gt; func)</span> </span>&#123;</div><div class="line">  <span class="keyword">return</span> Observable.create(</div><div class="line">      <span class="keyword">new</span> Observable.OnSubscribe&lt;T&gt;() &#123;</div><div class="line">          <span class="meta">@Override</span></div><div class="line">          <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">call</span><span class="params">(Subscriber&lt;? <span class="keyword">super</span> T&gt; subscriber)</span> </span>&#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">              subscriber.onNext(func.call());</div><div class="line">            &#125; <span class="keyword">catch</span>(Exception ex) &#123;</div><div class="line">              Log.e(TAG, <span class="string">"Error reading from the database"</span>, ex);</div><div class="line">            &#125;</div><div class="line">          &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>现在，我们的 database 读取已经变成了 <code>observables</code>，保证查询是执行在后台线程的。<br>访问数据库操作也是很标准的 Rx code：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// DisplayUsersFragment.java</span></div><div class="line"><span class="meta">@Inject</span></div><div class="line">MySqliteOpenHelper mDbHelper;</div><div class="line"></div><div class="line"><span class="comment">// ...</span></div><div class="line"></div><div class="line">mDbHelper.getUsers(userId)</div><div class="line">  .observeOn(AndroidSchedulers.mainThread())</div><div class="line">  .subscribe(<span class="keyword">new</span> Action1&lt;List&lt;User&gt;&gt;()) &#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(List&lt;User&gt; users)</span> </span>&#123;</div><div class="line">      <span class="comment">// Update our UI with the users</span></div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>如果你不需要返回结果更新你的 UI，那么你只需要 observe 一个后台线程。<br>然后你的 database 层会返回 observables，当获得结果时很容易将它组合变换。<br>例如，假定 <code>ContactTable</code> 是一个底层类， model (User class) 对它是不可见的，<br>它应该返回底层 object (可能是 <code>Cursor</code> 或者 <code>ContentValues</code>)。然后你可以用<br>Rx 去 <code>map</code> 这些底层值，把它们转换成你的 model 类，实现更加清晰的分离层。</p>
-<p>两个提示：</p>
-<ul>
-<li><p>你的 Table 类不应该包含 public 方法：只能有 package 的 protected 方法(仅允许相同 package 内的 Helper 访问 ) 和 private 方法，<br>其他类不能直接访问 Table 类。</p>
-</li>
-<li><p>这个方法对依赖注入兼容性很好：很轻松就可以同时实现 database helper 和注入单个 Table<br>(意外收获：使用 Dagger 2，你的 table 可以拥有自己的组件，因为 database helper<br>是实例化它们所需的唯一参考资料 )。</p>
-</li>
-</ul>
-<p>这是一个很简单的设计模式，它显著提升了 RxJava 在项目中发挥的效果。<br>我正在扩展这层结构，让它可以为 list view adapter update 提供更灵活的通知机制<br>(和 SQLBrite 提供的不同)，会在以后的文章中介绍。</p>
-<p>这项工作还在进行中，欢迎反馈。</p>
-<hr>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2017/04/27/结合RxJava更简单地使用SQLite/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/结合RxJava更简单地使用SQLite/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/27/Gradle提示和使用技巧/" title="Gradle提示和使用技巧" itemprop="url">Gradle提示和使用技巧</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <ul>
-<li>原文链接 : <a href="https://medium.com/@cesarmcferreira/gradle-tips-tricks-to-survive-the-zombie-apocalypse-3dd996604341#.k8a9o93ww" target="_blank" rel="external">Gradle tips &amp; tricks to survive the zombie apocalypse</a></li>
-</ul>
-<p>#Gradle提示和使用技巧<br>Rick Grimes不能帮助你，所以让我们一起获得它！</p>
-<p><a href="http://www.gradle.org/" target="_blank" rel="external">Gradle</a> 虽然之前一直存在于<a href="https://developer.android.com/sdk/installing/studio.html" target="_blank" rel="external">Android Studio</a>中，但是它变成热门的转折点是Android Studio成为官方开发IDE。但是，我们充分利用这个伟大的构建自动化系统了吗？</p>
-<h2 id="工程和构建专门的全局变量"><a href="#工程和构建专门的全局变量" class="headerlink" title="工程和构建专门的全局变量"></a>工程和构建专门的全局变量</h2><p>使用gradle，会自动生成一个<strong>BuildConfig</strong>类文件并且我们有能力在它里面生成额外的字段。这对于像配置服务器URL和切换开关这类功能都是非常有用的。</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">defaultConfig &#123;</div><div class="line">    buildConfigField <span class="string">"String"</span>, <span class="string">"TWITTER_TOKEN"</span>, <span class="string">'"SDASJHDKAJSK"'</span></div><div class="line">&#125;</div><div class="line">buildTypes &#123;</div><div class="line">    debug &#123;</div><div class="line">      buildConfigField <span class="string">"String"</span>, <span class="string">"API_URL"</span>, <span class="string">'"http://api.dev.com/"'</span></div><div class="line">      buildConfigField <span class="string">"boolean"</span>, <span class="string">"REPORT_CRASHES"</span>, <span class="string">"true"</span></div><div class="line">    &#125;</div><div class="line">    release &#123;</div><div class="line">      buildConfigField <span class="string">"String"</span>, <span class="string">"API_URL"</span>, <span class="string">'"http://api.prod.com/"'</span></div><div class="line">      buildConfigField <span class="string">"boolean"</span>, <span class="string">"REPORT_CRASHES"</span>, <span class="string">"false"</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p><strong>BuildConfig.TWITTER_TOKEN</strong>, <strong>BuildConfig.REPORT_CRASHES</strong> 和 <strong>BuildConfig.API_URL</strong> 都是能够通过<strong>BuildConfig</strong>这个final class访问的。（后面两个变量的值根据构建类型而不同）</p>
-<h2 id="每个构建类型不同的名称，版本名和APP-ID"><a href="#每个构建类型不同的名称，版本名和APP-ID" class="headerlink" title="每个构建类型不同的名称，版本名和APP ID"></a>每个构建类型不同的名称，版本名和APP ID</h2><p>这个可以让你有release和debug两个版本的应用在同一时间被安装（记住android不让你安装相同的包名的不同的应用）！</p>
-<p>你可以在你的崩溃报告工具中通过不同的版本名来过滤问题/崩溃。</p>
-<p>通过查看应用名称很容易发现你当前运行的是哪一个！</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">android &#123;</div><div class="line">    buildTypes &#123;</div><div class="line">        debug &#123;</div><div class="line">            applicationIdSuffix &quot;.debug&quot;</div><div class="line">            versionNameSuffix &quot;-debug&quot;</div><div class="line">            resValue &quot;string&quot;, &quot;app_name&quot;, &quot;CoolApp (debug)&quot;</div><div class="line">            signingConfig signingConfigs.debug</div><div class="line">        &#125;</div><div class="line">        release &#123;</div><div class="line">            resValue &quot;string&quot;, &quot;app_name&quot;, &quot;CoolApp&quot;</div><div class="line">            signingConfig signingConfigs.release</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
-<h2 id="私有信息"><a href="#私有信息" class="headerlink" title="私有信息"></a>私有信息</h2><p>Android要求所有的应用被安装之前用一个证书进行数字签名。Android使用这个证书识别应用的作者，尽管这是一些不应该让其它人看见的敏感信息。</p>
-<p>你永远不应该提交这种信息到版本控制工具上。</p>
-<p>一些人认为你应该有一个本地配置文件或者甚至是一个全局~/.gradle/build.gradle使用这些值，但如果你正在做连续的集成/部署并且你没有自己专门的CI服务器，在你的版本控制器上不应该有任何带着证书用纯文本的方式展示的这种文件。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">signingConfigs &#123;</div><div class="line">    release &#123;</div><div class="line">        storeFile     &quot;$&#123;System.env.COOL_APP_PRIVATE_KEY&#125;&quot;</div><div class="line">        keyAlias      &quot;$&#123;System.env.COOL_APP_ALIAS&#125;&quot;</div><div class="line">        storePassword &quot;$&#123;System.env.COOL_APP_STORE_PW&#125;&quot;</div><div class="line">        keyPassword   &quot;$&#123;System.env.COOL_APP_PW&#125;&quot;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>通过这种方式我可以将敏感信息提交到我自己的CI服务器而不用担心提交到公司的CVS上。</p>
-<h2 id="自动生成-versionName-和-versionCode"><a href="#自动生成-versionName-和-versionCode" class="headerlink" title="自动生成 versionName 和 versionCode"></a>自动生成 versionName 和 versionCode</h2><p>把你的版本信息从逻辑组件分离出来并且分别管理它们。不用再烦恼如何放置正确的版本号与版本名称。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">def versionMajor = 1</div><div class="line">def versionMinor = 0</div><div class="line">def versionPatch = 0</div><div class="line">android &#123;</div><div class="line">    defaultConfig &#123;</div><div class="line">        versionCode versionMajor * 10000 + versionMinor * 100 + versionPatch</div><div class="line">        versionName &quot;$&#123;versionMajor&#125;.$&#123;versionMinor&#125;.$&#123;versionPatch&#125;&quot;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h2 id="添加git-hash和构建时间到你的BuildConfig"><a href="#添加git-hash和构建时间到你的BuildConfig" class="headerlink" title="添加git hash和构建时间到你的BuildConfig"></a>添加git hash和构建时间到你的BuildConfig</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">def gitSha = &apos;git rev-parse --short HEAD&apos;.execute([], project.rootDir).text.trim()</div><div class="line">def buildTime = new Date().format(&quot;yyyy-MM-dd&apos;T&apos;HH:mm:ss&apos;Z&apos;&quot;, TimeZone.getTimeZone(&quot;UTC&quot;))</div><div class="line">android &#123;</div><div class="line">    defaultConfig &#123;</div><div class="line">        buildConfigField &quot;String&quot;, &quot;GIT_SHA&quot;, &quot;\&quot;$&#123;gitSha&#125;\&quot;&quot;</div><div class="line">        buildConfigField &quot;String&quot;, &quot;BUILD_TIME&quot;, &quot;\&quot;$&#123;buildTime&#125;\&quot;&quot;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>现在有两个变量可以用，BuildConfig.GIT_SHA 和BuildConfig.BUILD_TIME ，这在绑定提交/构建时间到log里面是非常方便的！</p>
-<h2 id="扣紧安全带"><a href="#扣紧安全带" class="headerlink" title="扣紧安全带"></a>扣紧安全带</h2><p>对于快速部署只需要创建一个叫做<strong>dev</strong>的flavour 并且设置minSdkVersion 为21.通过这么做需要注意的是你不会得到你真正的minSdk的linting检查提示，显而易见的是这仅仅会被用于日常工作而不是发布。这会允许Android gradle插件预编译（pre-dex） 每个module并且编译的APK可以在Android Lollipop（ 5.0）及以上进行测试而不需要花费dex 合并处理时间。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">android &#123;</div><div class="line">    productFlavors </div><div class="line">        dev &#123;</div><div class="line">            minSdkVersion 21</div><div class="line">        &#125;</div><div class="line">        prod &#123;</div><div class="line">            // The actual minSdkVersion for the application.</div><div class="line">            minSdkVersion 14</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
-<h2 id="单元测试直接输出到控制台"><a href="#单元测试直接输出到控制台" class="headerlink" title="单元测试直接输出到控制台"></a>单元测试直接输出到控制台</h2><p>一个小窍门因此我们可以看到android单元测试它们发生的日志结果。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">android &#123;</div><div class="line">  ...</div><div class="line"></div><div class="line">  testOptions.unitTests.all &#123;</div><div class="line">    testLogging &#123;</div><div class="line">      events &apos;passed&apos;, &apos;skipped&apos;, &apos;failed&apos;, &apos;standardOut&apos;, &apos;standardError&apos;</div><div class="line">      outputs.upToDateWhen &#123; false &#125;</div><div class="line">      showStandardStreams = true</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>现在运行你的测试它们将输出类似于这样的东西：</p>
-<p><img src="https://cdn-images-1.medium.com/max/1600/1*njDARwtg9P9NdL5GfhIjqA.png" alt="image"></p>
-<p>单元测试日志输出</p>
-<h2 id="Gradle-告诉我我很漂亮"><a href="#Gradle-告诉我我很漂亮" class="headerlink" title="Gradle,告诉我我很漂亮"></a>Gradle,告诉我我很漂亮</h2><p>一个有组织地方式使用它：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">android &#123;</div><div class="line">    ...</div><div class="line">    buildTypes &#123;</div><div class="line">        def BOOLEAN = &quot;boolean&quot;</div><div class="line">        def TRUE = &quot;true&quot;</div><div class="line">        def FALSE = &quot;false&quot;</div><div class="line">        def LOG_HTTP_REQUESTS = &quot;LOG_HTTP_REQUESTS&quot;</div><div class="line">        def REPORT_CRASHES = &quot;REPORT_CRASHES&quot;</div><div class="line">        def DEBUG_IMAGES = &quot;DEBUG_IMAGES&quot;</div><div class="line"> </div><div class="line">        debug &#123;</div><div class="line">            ...</div><div class="line">            buildConfigField BOOLEAN, LOG_HTTP_REQUESTS, TRUE</div><div class="line">            buildConfigField BOOLEAN, REPORT_CRASHES, FALSE</div><div class="line">            buildConfigField BOOLEAN, DEBUG_IMAGES, TRUE</div><div class="line">        &#125;</div><div class="line"> </div><div class="line">        release &#123;</div><div class="line">            ...</div><div class="line">            buildConfigField BOOLEAN, LOG_HTTP_REQUESTS, FALSE</div><div class="line">            buildConfigField BOOLEAN, REPORT_CRASHES, TRUE</div><div class="line">            buildConfigField BOOLEAN, DEBUG_IMAGES, FALSE</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>如果你有任何问题在 <a href="https://twitter.com/cesarmcferreira" target="_blank" rel="external">@cesarmcferreira</a>和我联系</p>
-<p>感谢<a href="https://medium.com/@jacoelho" target="_blank" rel="external">José Coelho</a>.</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2017/04/27/Gradle提示和使用技巧/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/Gradle提示和使用技巧/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/27/Parcelable vs Serializable对比/" title="Parcelable vs Serializable" itemprop="url">Parcelable vs Serializable</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <p><a href="http://www.developerphil.com/parcelable-vs-serializable/" target="_blank" rel="external">原文链接</a></p>
-<p>当你开始写android时，我们所学到的是不能直接向Activities和Fragments传递对象，我们不得不借助Intent或者Bundle来传递它们。</p>
-<p>当我们看api文档的时候，我们认识到有两种选择，我们的对象要么是Parcelable或者Serializable型，作为一个java开发者，我们已经知道Serializable的机制，那为什么还要去研究Parcelable呢？</p>
-<p>为了回答这个问题，我们来看两个方法。</p>
-<p>####Serializable，简洁的鼻祖####</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// access modifiers, accessors and constructors omitted for brevity</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SerializableDeveloper</span> <span class="keyword">implements</span> <span class="title">Serializable</span></span></div><div class="line">    <span class="title">String</span> <span class="title">name</span>;</div><div class="line">    <span class="keyword">int</span> yearsOfExperience;</div><div class="line">    List&lt;Skill&gt; skillSet;</div><div class="line">    <span class="keyword">float</span> favoriteFloat;</div><div class="line"></div><div class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Skill</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</div><div class="line">        String name;</div><div class="line">        <span class="keyword">boolean</span> programmingRelated;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>仅仅需要在它和它的子类上实现Serializable接口就能完成一个漂亮的Serializable功能，他是一个标记接口，意味着不需要实现任何方法，java虚拟机将简单高效地完成序列化工作。</p>
-<p>这里面有个问题就是这种序列化是通过反射机制从而削弱了性能，这种机制也创建了大量的临时对象从而引起GC频繁回收调用资源。</p>
-<p>####Parcelable, 速度之王####<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// access modifiers, accessors and regular constructors ommited for brevity</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ParcelableDeveloper</span> <span class="keyword">implements</span> <span class="title">Parcelable</span> </span>&#123;</div><div class="line">    String name;</div><div class="line">    <span class="keyword">int</span> yearsOfExperience;</div><div class="line">    List&lt;Skill&gt; skillSet;</div><div class="line">    <span class="keyword">float</span> favoriteFloat;</div><div class="line"></div><div class="line">    ParcelableDeveloper(Parcel in) &#123;</div><div class="line">        <span class="keyword">this</span>.name = in.readString();</div><div class="line">        <span class="keyword">this</span>.yearsOfExperience = in.readInt();</div><div class="line">        <span class="keyword">this</span>.skillSet = <span class="keyword">new</span> ArrayList&lt;Skill&gt;();</div><div class="line">        in.readTypedList(skillSet, Skill.CREATOR);</div><div class="line">        <span class="keyword">this</span>.favoriteFloat = in.readFloat();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">writeToParcel</span><span class="params">(Parcel dest, <span class="keyword">int</span> flags)</span> </span>&#123;</div><div class="line">        dest.writeString(name);</div><div class="line">        dest.writeInt(yearsOfExperience);</div><div class="line">        dest.writeTypedList(skillSet);</div><div class="line">        dest.writeFloat(favoriteFloat);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">int</span> <span class="title">describeContents</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="keyword">static</span> <span class="keyword">final</span> Parcelable.Creator&lt;ParcelableDeveloper&gt; CREATOR</div><div class="line">            = <span class="keyword">new</span> Parcelable.Creator&lt;ParcelableDeveloper&gt;() &#123;</div><div class="line"></div><div class="line">        <span class="function">ParcelableDeveloper <span class="title">createFromParcel</span><span class="params">(Parcel in)</span> </span>&#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">new</span> ParcelableDeveloper(in);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        ParcelableDeveloper[] newArray(<span class="keyword">int</span> size) &#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">new</span> ParcelableDeveloper[size];</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Skill</span> <span class="keyword">implements</span> <span class="title">Parcelable</span> </span>&#123;</div><div class="line">        String name;</div><div class="line">        <span class="keyword">boolean</span> programmingRelated;</div><div class="line"></div><div class="line">        Skill(Parcel in) &#123;</div><div class="line">            <span class="keyword">this</span>.name = in.readString();</div><div class="line">            <span class="keyword">this</span>.programmingRelated = (in.readInt() == <span class="number">1</span>);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">void</span> <span class="title">writeToParcel</span><span class="params">(Parcel dest, <span class="keyword">int</span> flags)</span> </span>&#123;</div><div class="line">            dest.writeString(name);</div><div class="line">            dest.writeInt(programmingRelated ? <span class="number">1</span> : <span class="number">0</span>);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">static</span> <span class="keyword">final</span> Parcelable.Creator&lt;Skill&gt; CREATOR</div><div class="line">            = <span class="keyword">new</span> Parcelable.Creator&lt;Skill&gt;() &#123;</div><div class="line"></div><div class="line">            <span class="function">Skill <span class="title">createFromParcel</span><span class="params">(Parcel in)</span> </span>&#123;</div><div class="line">                <span class="keyword">return</span> <span class="keyword">new</span> Skill(in);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            Skill[] newArray(<span class="keyword">int</span> size) &#123;</div><div class="line">                <span class="keyword">return</span> <span class="keyword">new</span> Skill[size];</div><div class="line">            &#125;</div><div class="line">        &#125;;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">int</span> <span class="title">describeContents</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>按照google工程师的说话，这段代码将跑起来非常快，其中一个原因是运用真实的序列化处理代替反射，为了完成这个目的代码也做了大量的优化。</p>
-<p>然而，显而易见的是实现Parcelable接口并不是无成本的，创建了大量的引入代码从而导致整个类变得很重同时加大了维护成本。</p>
-<p>####Speed Tests####</p>
-<p>当然，我们想知道Parcelable到底有多快</p>
-<p>测试步骤<br>1：模拟这个操作通过Bundle的writeToParcel（Parcel, int）向Activity传递对象，然后观察它。<br>2：循环这个操作1000次。<br>3：大概模拟10次，观察内存回收情况，以及app的cpu使用率，等等。<br>4：这个被测试的对象分别是SerializableDeveloper和ParcelableDeveloper。<br>5：在多种机型和版本上做测试<br>LG Nexus 4 - Android 4.2.2<br>Samsung Nexus 10 - Android 4.2.2<br>HTC Desire Z - Android 2.3.3</p>
-<p>测试结果：<br><img src="http://img.blog.csdn.net/20160318115133497" alt="这里写图片描述"></p>
-<p>Nexus 10</p>
-<p>Serializable: 1.0004ms,  Parcelable: 0.0850ms - 10.16x improvement.</p>
-<p>Nexus 4</p>
-<p>Serializable: 1.8539ms - Parcelable: 0.1824ms - 11.80x improvement.</p>
-<p>Desire Z</p>
-<p>Serializable: 5.1224ms - Parcelable: 0.2938ms - 17.36x improvement.</p>
-<p>分析：<br>Parcelable比Serializable速度快10倍，在Nexus 10测试过程中得到了有趣的结果，仅仅通过1毫秒就完成了整个的序列化与反序列化过程。</p>
-<p>总结：<br>假如你想成为一个好的码农，找个时间替换成Parcelable吧，他将提高十倍的速度并且用更少的资源。</p>
-<p>然而，在大部分的案例里，这种缓慢的Serializable序列化过程并没有被注意到，有时候仅仅是为了成本比较低才会使用它但是要记住Serialization是要付出很大的代价的，所以还是尽量少使用这种方式。</p>
-<p>假如你想传递成百上千的序列化对象，整个序列化的过程可能会超过一秒，当你对手机屏幕进行横竖屏切换将感觉有点延迟。</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2017/04/27/Parcelable vs Serializable对比/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/Parcelable vs Serializable对比/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
       <a href="/2017/04/27/MVP框架Mosby架构详解/" title="Ted Mosby - 软件架构" itemprop="url">Ted Mosby - 软件架构</a>
   </h1>
   <p class="article-author">By
@@ -1361,6 +1316,83 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2017/04/27/Parcelable vs Serializable对比/" title="Parcelable vs Serializable" itemprop="url">Parcelable vs Serializable</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p><a href="http://www.developerphil.com/parcelable-vs-serializable/" target="_blank" rel="external">原文链接</a></p>
+<p>当你开始写android时，我们所学到的是不能直接向Activities和Fragments传递对象，我们不得不借助Intent或者Bundle来传递它们。</p>
+<p>当我们看api文档的时候，我们认识到有两种选择，我们的对象要么是Parcelable或者Serializable型，作为一个java开发者，我们已经知道Serializable的机制，那为什么还要去研究Parcelable呢？</p>
+<p>为了回答这个问题，我们来看两个方法。</p>
+<p>####Serializable，简洁的鼻祖####</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// access modifiers, accessors and constructors omitted for brevity</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SerializableDeveloper</span> <span class="keyword">implements</span> <span class="title">Serializable</span></span></div><div class="line">    <span class="title">String</span> <span class="title">name</span>;</div><div class="line">    <span class="keyword">int</span> yearsOfExperience;</div><div class="line">    List&lt;Skill&gt; skillSet;</div><div class="line">    <span class="keyword">float</span> favoriteFloat;</div><div class="line"></div><div class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Skill</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</div><div class="line">        String name;</div><div class="line">        <span class="keyword">boolean</span> programmingRelated;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>仅仅需要在它和它的子类上实现Serializable接口就能完成一个漂亮的Serializable功能，他是一个标记接口，意味着不需要实现任何方法，java虚拟机将简单高效地完成序列化工作。</p>
+<p>这里面有个问题就是这种序列化是通过反射机制从而削弱了性能，这种机制也创建了大量的临时对象从而引起GC频繁回收调用资源。</p>
+<p>####Parcelable, 速度之王####<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// access modifiers, accessors and regular constructors ommited for brevity</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ParcelableDeveloper</span> <span class="keyword">implements</span> <span class="title">Parcelable</span> </span>&#123;</div><div class="line">    String name;</div><div class="line">    <span class="keyword">int</span> yearsOfExperience;</div><div class="line">    List&lt;Skill&gt; skillSet;</div><div class="line">    <span class="keyword">float</span> favoriteFloat;</div><div class="line"></div><div class="line">    ParcelableDeveloper(Parcel in) &#123;</div><div class="line">        <span class="keyword">this</span>.name = in.readString();</div><div class="line">        <span class="keyword">this</span>.yearsOfExperience = in.readInt();</div><div class="line">        <span class="keyword">this</span>.skillSet = <span class="keyword">new</span> ArrayList&lt;Skill&gt;();</div><div class="line">        in.readTypedList(skillSet, Skill.CREATOR);</div><div class="line">        <span class="keyword">this</span>.favoriteFloat = in.readFloat();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">writeToParcel</span><span class="params">(Parcel dest, <span class="keyword">int</span> flags)</span> </span>&#123;</div><div class="line">        dest.writeString(name);</div><div class="line">        dest.writeInt(yearsOfExperience);</div><div class="line">        dest.writeTypedList(skillSet);</div><div class="line">        dest.writeFloat(favoriteFloat);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">int</span> <span class="title">describeContents</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="keyword">static</span> <span class="keyword">final</span> Parcelable.Creator&lt;ParcelableDeveloper&gt; CREATOR</div><div class="line">            = <span class="keyword">new</span> Parcelable.Creator&lt;ParcelableDeveloper&gt;() &#123;</div><div class="line"></div><div class="line">        <span class="function">ParcelableDeveloper <span class="title">createFromParcel</span><span class="params">(Parcel in)</span> </span>&#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">new</span> ParcelableDeveloper(in);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        ParcelableDeveloper[] newArray(<span class="keyword">int</span> size) &#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">new</span> ParcelableDeveloper[size];</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line"></div><div class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Skill</span> <span class="keyword">implements</span> <span class="title">Parcelable</span> </span>&#123;</div><div class="line">        String name;</div><div class="line">        <span class="keyword">boolean</span> programmingRelated;</div><div class="line"></div><div class="line">        Skill(Parcel in) &#123;</div><div class="line">            <span class="keyword">this</span>.name = in.readString();</div><div class="line">            <span class="keyword">this</span>.programmingRelated = (in.readInt() == <span class="number">1</span>);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">void</span> <span class="title">writeToParcel</span><span class="params">(Parcel dest, <span class="keyword">int</span> flags)</span> </span>&#123;</div><div class="line">            dest.writeString(name);</div><div class="line">            dest.writeInt(programmingRelated ? <span class="number">1</span> : <span class="number">0</span>);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">static</span> <span class="keyword">final</span> Parcelable.Creator&lt;Skill&gt; CREATOR</div><div class="line">            = <span class="keyword">new</span> Parcelable.Creator&lt;Skill&gt;() &#123;</div><div class="line"></div><div class="line">            <span class="function">Skill <span class="title">createFromParcel</span><span class="params">(Parcel in)</span> </span>&#123;</div><div class="line">                <span class="keyword">return</span> <span class="keyword">new</span> Skill(in);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            Skill[] newArray(<span class="keyword">int</span> size) &#123;</div><div class="line">                <span class="keyword">return</span> <span class="keyword">new</span> Skill[size];</div><div class="line">            &#125;</div><div class="line">        &#125;;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">int</span> <span class="title">describeContents</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>按照google工程师的说话，这段代码将跑起来非常快，其中一个原因是运用真实的序列化处理代替反射，为了完成这个目的代码也做了大量的优化。</p>
+<p>然而，显而易见的是实现Parcelable接口并不是无成本的，创建了大量的引入代码从而导致整个类变得很重同时加大了维护成本。</p>
+<p>####Speed Tests####</p>
+<p>当然，我们想知道Parcelable到底有多快</p>
+<p>测试步骤<br>1：模拟这个操作通过Bundle的writeToParcel（Parcel, int）向Activity传递对象，然后观察它。<br>2：循环这个操作1000次。<br>3：大概模拟10次，观察内存回收情况，以及app的cpu使用率，等等。<br>4：这个被测试的对象分别是SerializableDeveloper和ParcelableDeveloper。<br>5：在多种机型和版本上做测试<br>LG Nexus 4 - Android 4.2.2<br>Samsung Nexus 10 - Android 4.2.2<br>HTC Desire Z - Android 2.3.3</p>
+<p>测试结果：<br><img src="http://img.blog.csdn.net/20160318115133497" alt="这里写图片描述"></p>
+<p>Nexus 10</p>
+<p>Serializable: 1.0004ms,  Parcelable: 0.0850ms - 10.16x improvement.</p>
+<p>Nexus 4</p>
+<p>Serializable: 1.8539ms - Parcelable: 0.1824ms - 11.80x improvement.</p>
+<p>Desire Z</p>
+<p>Serializable: 5.1224ms - Parcelable: 0.2938ms - 17.36x improvement.</p>
+<p>分析：<br>Parcelable比Serializable速度快10倍，在Nexus 10测试过程中得到了有趣的结果，仅仅通过1毫秒就完成了整个的序列化与反序列化过程。</p>
+<p>总结：<br>假如你想成为一个好的码农，找个时间替换成Parcelable吧，他将提高十倍的速度并且用更少的资源。</p>
+<p>然而，在大部分的案例里，这种缓慢的Serializable序列化过程并没有被注意到，有时候仅仅是为了成本比较低才会使用它但是要记住Serialization是要付出很大的代价的，所以还是尽量少使用这种方式。</p>
+<p>假如你想传递成百上千的序列化对象，整个序列化的过程可能会超过一秒，当你对手机屏幕进行横竖屏切换将感觉有点延迟。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/Parcelable vs Serializable对比/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/Parcelable vs Serializable对比/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2017/04/27/RxJava-Observables单元测试/" title="RxJava Observables单元测试" itemprop="url">RxJava Observables单元测试</a>
   </h1>
   <p class="article-author">By
@@ -1417,6 +1449,196 @@
 	
 	  	<span></span>
 		<a href="/2017/04/27/RxJava-Observables单元测试/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/RxJava-Observables单元测试/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/Retrofit指南/" title="Retrofit指南" itemprop="url">Retrofit指南</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ul>
+<li>原文链接 : <a href="http://themakeinfo.com/2015/04/retrofit-android-tutorial/" target="_blank" rel="external">Retrofit Android Tutorial</a></li>
+</ul>
+<p>这是一篇关于如何使用Retrofit写一个Android的REST客户端的小教程。</p>
+<p><img src="http://img.my.csdn.net/uploads/201504/13/1428932650_8819.jpg" alt="Retrofit+Android"></p>
+<h2 id="我为什么选择Retrofit？"><a href="#我为什么选择Retrofit？" class="headerlink" title="我为什么选择Retrofit？"></a>我为什么选择Retrofit？</h2><p>在使用square的<a href="http://square.github.io/retrofit/" target="_blank" rel="external">Retrofit</a>之前，我尝试过Volley和AsyncTask。但在使用过Retrofit之后，我的工作变得更加简单了。在开始阅读教程之前，建议先阅读一下下面的几个话题。这是一个入门项目，可以让你了解如何使用Retrofit从API获取数据。</p>
+<p>这个项目也加到了<a href="https://github.com/basil2style/Retrofit-Android-Basic" target="_blank" rel="external">我的Github</a>中。</p>
+<p><a href="https://instructure.github.io/blog/2013/12/09/volley-vs-retrofit/" target="_blank" rel="external">AsyncHttp ,Volley和Retrofit的对比</a></p>
+<p><img src="http://img.my.csdn.net/uploads/201504/13/1428929622_5444.png" alt="volley-vs-retrofit"></p>
+<p>与Retrofit相比，Volley是一个小型的、缺乏正式文档说明库。Retrofit是<a href="https://github.com/square" target="_blank" rel="external">Square</a>开发的，后者还开发过okhttp，picasso…等一些著名的库(你可以在<a href="https://square.github.io/#android" target="_blank" rel="external">这里</a>找到其他的库)。如果你需要Volley的指引，你可以在<a href="https://developer.android.com/training/volley/index.html" target="_blank" rel="external">Google Training</a>或者<a href="https://github.com/DWorkS/VolleyPlus" target="_blank" rel="external">Volley Plus from DWork</a>找到相关文档。</p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p><a href="http://square.github.io/retrofit/" target="_blank" rel="external">Retrofit</a>是<a href="http://square.github.io/" target="_blank" rel="external">Square</a>开发的一个Android和Java的REST客户端库。这个库非常简单并且具有很多特性，相比其他的网络库，更容易让初学者快速掌握。它可以处理GET、POST、PUT、DELETE…等请求，还可以使用picasso加载图片。在使用Picasso或Volley之前，可以先来读读<a href="https://www.bignerdranch.com/blog/solving-the-android-image-loading-problem-volley-vs-picasso/" target="_blank" rel="external">这个</a>。</p>
+<p>别纠结简介了，开始编码吧!!!</p>
+<p>Demo里使用是Github的API : <a href="https://api.github.com/users/basil2style" target="_blank" rel="external">https://api.github.com/users/basil2style</a></p>
+<p>你可以使用这个Demo App来搜索github的用户详细信息</p>
+<p><a href="https://github.com/basil2style/Retrofit-Android-Basic" target="_blank" rel="external">GITHUB</a></p>
+<p><img src="http://img.my.csdn.net/uploads/201504/13/1428929608_5673.png" alt="Download-Code"></p>
+<p><a href="https://github.com/basil2style/Retrofit-Android-Basic/blob/master/APK/Retrofit%20Example.apk" target="_blank" rel="external">Download APK </a></p>
+<p><a href="https://github.com/basil2style/Retrofit-Android-Basic/blob/master/APK/Retrofit%20Example.apk" target="_blank" rel="external"><img class="" src="http://img.my.csdn.net/uploads/201504/13/1428929607_5991.png" alt="qr code" width="196" height="196"></a></p>
+<h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1) 概述"></a>1) 概述</h2><p><img src="http://img.my.csdn.net/uploads/201504/13/1428929609_1240.png" alt="Retrofit-3-classes"></p>
+<p>1) <strong>POJO或模型实体类</strong> : 从服务器获取的JSON数据将被填充到这种类的实例中。</p>
+<p>2) <strong>接口</strong> : 我们需要创建一个接口来管理像GET,POST…等请求的URL，这是一个服务类。</p>
+<p>3) <strong>RestAdapter类</strong> : 这是一个REST客户端(RestClient)类，retrofit中默认用的是Gson来解析JSON数据，你也可以设置自己的JSON解析器，比如jackson，我们将在下面的教程中详细解说明。</p>
+<h2 id="2-添加Retrofit库到项目中"><a href="#2-添加Retrofit库到项目中" class="headerlink" title="2) 添加Retrofit库到项目中"></a>2) 添加Retrofit库到项目中</h2><p><em><strong>Gradle</strong></em> :</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">compile <span class="string">'com.squareup.retrofit:retrofit:1.9.0'</span></div></pre></td></tr></table></figure>
+<p>目前，1.9.0是最新的版本. 你可以在<a href="https://github.com/square/retrofit" target="_blank" rel="external">这里</a>获取更新的版本。</p>
+<p><em><strong>JAR</strong></em> :</p>
+<p> <a href="https://search.maven.org/remote_content?g=com.squareup.retrofit&amp;a=retrofit&amp;v=LATEST" target="_blank" rel="external">下载Jar包</a></p>
+<h2 id="3-创建项目"><a href="#3-创建项目" class="headerlink" title="3) 创建项目"></a>3) 创建项目</h2><p>1) 在Android Studio中创建新项目: <strong>File  =&gt;  New Project</strong> ，填写描述信息并点击<strong>Next</strong>.</p>
+<p>2) 填写<strong>minimum SDK</strong>，我用的是<strong>4.0+</strong>(Retrofit支持Android <strong>2.3+</strong>或Java <strong>6</strong>以上)</p>
+<p>3) 选择<strong>Blank Activity</strong>然后填写<strong>Activity Name</strong>和<strong>Layout Name</strong>，最后点击 <strong>Finish</strong>.</p>
+<p>4) <strong>Gradle</strong> : 你可以在<strong>app =&gt;build.gradle</strong>中添加Retrofit的库文件。</p>
+<p><img src="http://img.my.csdn.net/uploads/201504/13/1428929609_9928.png" alt="gradle-dependencies"></p>
+<p>Jar包的添加方式 :  将jar包添加到libs文件夹下，右键点击Add as Library.</p>
+<p>5) 创建两个包：<strong>API</strong>和<strong>model</strong>。</p>
+<p>6) 在<strong>API</strong>包下右键点击<strong>New</strong> =&gt; <strong>Java Class</strong> , 填写<strong>Name</strong>为<font style="color: #ff0000;">gitapi</font>并设置为<font style="color: #ff0000;">Interface</font>。</p>
+<p>6) 在<strong>API</strong>包下创建名<font style="color: #ff0000;">gitapi</font>的<font style="color: #ff0000;">接口</font>。</p>
+<p>7) 在<strong>model</strong>包下右键点击<strong>New</strong> =&gt; <strong>Java Class</strong>, 填写<strong>Name</strong>为<font style="color: #ff0000;">gitmodel</font>并设置为<font style="color: #ff0000;">Class</font>。</p>
+<p><img src="http://img.my.csdn.net/uploads/201504/13/1428929622_5732.png" alt="proj-structure"></p>
+<h2 id="4-Android-Manifest"><a href="#4-Android-Manifest" class="headerlink" title="4) Android Manifest"></a>4) Android Manifest</h2><p>1) 添加<font style="color: #ff0000;">INTERNET PERMISSION</font>权限</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">uses-permission</span> <span class="attr">android:name</span>=<span class="string">"android.permission.INTERNET"</span>/&gt;</span></div></pre></td></tr></table></figure>
+<p>你的<code>Manifest</code>文件看起来应该是这样的 :</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8"?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">manifest</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span>  </span></div><div class="line">          <span class="attr">package</span>=<span class="string">"com.makeinfo.flowerpi"</span> &gt;</div><div class="line">   <span class="tag">&lt;<span class="name">uses-permission</span> <span class="attr">android:name</span>=<span class="string">"android.permission.INTERNET"</span>/&gt;</span></div><div class="line">   <span class="tag">&lt;<span class="name">application</span> <span class="attr">android:allowBackup</span>=<span class="string">"true"</span></span></div><div class="line">   	   <span class="attr">android:icon</span>=<span class="string">"@mipmap/ic_launcher"</span></div><div class="line">       <span class="attr">android:label</span>=<span class="string">"@string/app_name"</span></div><div class="line">       <span class="attr">android:theme</span>=<span class="string">"@style/AppTheme"</span> &gt;</div><div class="line">       <span class="tag">&lt;<span class="name">activity</span></span></div><div class="line">           <span class="attr">android:name</span>=<span class="string">".MainActivity"</span></div><div class="line">           <span class="attr">android:label</span>=<span class="string">"@string/app_name"</span> &gt;</div><div class="line">            <span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"android.intent.action.MAIN"</span> /&gt;</span></div><div class="line">                 <span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.LAUNCHER"</span> /&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">activity</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">application</span>&gt;</span></div><div class="line"> <span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></div></pre></td></tr></table></figure>
+<h2 id="5-模型类"><a href="#5-模型类" class="headerlink" title="5) 模型类"></a>5) 模型类</h2><p>首先，我们需要创建一个POJO或模型类。服务器返回的JSON数据不能在Java里直接使用，所以我们需要用模型类来做转换。</p>
+<p>URL的结构是这样的：<a href="https://api.github.com/users/" target="_blank" rel="external">https://api.github.com/users/</a> + “search term”</p>
+<p>举个栗子：<a href="https://api.github.com/users/basil2style" target="_blank" rel="external">https://api.github.com/users/basil2style</a></p>
+<p>我们的JSON返回数据是这样的：</p>
+<p><img src="http://img.my.csdn.net/uploads/201504/13/1428929583_4905.jpg" alt="json object response"></p>
+<p>这是一个<strong>JSON Object</strong>，如果你不了解<strong>JSON Array</strong>和<strong>JSON Object</strong>的区别，请看<a href="http://stackoverflow.com/questions/12289844/difference-between-jsonobject-and-jsonarray" target="_blank" rel="external">这里</a>。</p>
+<p>使用<a href="http://www.jsonschema2pojo.org/" target="_blank" rel="external">jsonschema2pojo</a>来创建POJO更加简单，不要每一个JSON数据的POJO转换都用它，有时候会报错。选择源代码类型为<strong>Json</strong>，注解类型是<strong>Gson</strong>,然后点击<strong>preview</strong>。</p>
+<p>点击<a href="http://pastebin.com/4xckerN1" target="_blank" rel="external">这里</a>(需翻墙)查看<code>gitmodel.java</code>源代码。</p>
+<h2 id="6-gitapi-java"><a href="#6-gitapi-java" class="headerlink" title="6) gitapi.java"></a>6) gitapi.java</h2><p>1) 现在我们需要使用接口调用URL.</p>
+<p><strong><code>@GET(&quot;/users/{user}&quot;)</code></strong>, 添加这个注解会调用服务器，参数url基于BASE URL，服务调用的参数以’/‘开头，其中<font style="color: #ff0000;">{user}</font>是从EditText获取的字符串。</p>
+<p><strong><code>@Path(&quot;user&quot;) String user</code></strong> 就是我们从EditText获取的字符串。</p>
+<p>服务器端响应的数据则会被存储到POJO实例中去。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">gitapi</span> </span>&#123;</div><div class="line">   </div><div class="line">    <span class="meta">@GET</span>(<span class="string">"/users/&#123;user&#125;"</span>)      <span class="comment">// here is the other url part.best way is to start using /</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getFeed</span><span class="params">(@Path(<span class="string">"user"</span>)</span> String user, Callback&lt;gitmodel&gt; response)</span>;</div><div class="line">     <span class="comment">// string user is for passing values from edittext for eg: user=basil2style,google</span></div><div class="line">   	 <span class="comment">// response is the response from the server which is now in the POJO</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="7-RestAdapter"><a href="#7-RestAdapter" class="headerlink" title="7) RestAdapter"></a>7) RestAdapter</h2><p>现在该主要部分了，你需要设置<code>Rest Adapter</code>和<code>service</code>类.</p>
+<p>1) <font style="color: #ff0000;">API</font>就是<code>Base URL</code>.</p>
+<p>2) 我们需要设置<strong><code>Endpoint(API)</code></strong>并调用<strong><code>buid()</code></strong>方法来创建一个<strong><code>RestAdapter</code></strong>对象。</p>
+<p>3) 使用我们的<strong><code>gitapi</code></strong>来创建一个服务适配器(service for adapter)。</p>
+<p>4) 调用函数并获得响应数据，回调接口是用来异步的获取模型实例的，我们的回调接口需要实现成功回调方法(success request)和错误处理方法(error handling)。</p>
+<p>5) 我们解析好的json数据的现在就存在于POJO实例中了，你可以每次调用一条。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">String API = <span class="string">"https://api.github.com"</span>;</div><div class="line"></div><div class="line">RestAdapter restAdapter = <span class="keyword">new</span> RestAdapter.Builder().setLogLevel(RestAdapter.LogLevel.FULL).setEndpoint(API).build(); </div><div class="line"></div><div class="line">gitapi git = restAdapter.create(gitapi.class);</div><div class="line"></div><div class="line">git.getFeed(user, <span class="keyword">new</span> Callback&lt;gitmodel&gt;() &#123;</div><div class="line">	<span class="meta">@Override</span></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">success</span><span class="params">(gitmodel gitmodel, Response response)</span> </span>&#123;</div><div class="line">		tv.setText(<span class="string">"Github Name :"</span> + gitmodel.getName() + </div><div class="line">		           <span class="string">"\nWebsite :"</span> + gitmodel.getBlog() + </div><div class="line">		           <span class="string">"\nCompany Name :"</span> + gitmodel.getCompany());</div><div class="line"></div><div class="line">		pbar.setVisibility(View.INVISIBLE); <span class="comment">// disable progressbar</span></div><div class="line"> 	&#125;</div><div class="line"></div><div class="line"> 	<span class="meta">@Override</span></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">failure</span><span class="params">(RetrofitError error)</span> </span>&#123;</div><div class="line"> 		tv.setText(error.getMessage());</div><div class="line"> 		pbar.setVisibility(View.INVISIBLE); <span class="comment">//disable progressbar</span></div><div class="line"> 	&#125;</div><div class="line"> &#125;);</div></pre></td></tr></table></figure>
+<p>完整的<code>MainActivty.java</code>代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> com.makeinfo.flowerpi;</div><div class="line"> </div><div class="line"><span class="keyword">import</span> android.support.v7.app.ActionBarActivity;</div><div class="line"><span class="keyword">import</span> android.os.Bundle;</div><div class="line"><span class="keyword">import</span> android.view.Menu;</div><div class="line"><span class="keyword">import</span> android.view.MenuItem;</div><div class="line"><span class="keyword">import</span> android.view.View;</div><div class="line"><span class="keyword">import</span> android.widget.Button;</div><div class="line"><span class="keyword">import</span> android.widget.EditText;</div><div class="line"><span class="keyword">import</span> android.widget.ProgressBar;</div><div class="line"><span class="keyword">import</span> android.widget.TextView;</div><div class="line"> </div><div class="line"><span class="keyword">import</span> com.makeinfo.flowerpi.API.gitapi;</div><div class="line"><span class="keyword">import</span> com.makeinfo.flowerpi.model.gitmodel;</div><div class="line"> </div><div class="line"><span class="keyword">import</span> retrofit.Callback;</div><div class="line"><span class="keyword">import</span> retrofit.RestAdapter;</div><div class="line"><span class="keyword">import</span> retrofit.RetrofitError;</div><div class="line"><span class="keyword">import</span> retrofit.client.Response;</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">ActionBarActivity</span> </span>&#123;</div><div class="line"> </div><div class="line">    Button click;</div><div class="line">    TextView tv;</div><div class="line">    EditText edit_user;</div><div class="line">    ProgressBar pbar;</div><div class="line">    String API = <span class="string">"https://api.github.com"</span>;	<span class="comment">// BASE URL</span></div><div class="line">   </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line"> </div><div class="line">        click = (Button) findViewById(R.id.button);</div><div class="line">        tv = (TextView) findViewById(R.id.tv);</div><div class="line">        edit_user = (EditText) findViewById(R.id.edit);</div><div class="line">        pbar = (ProgressBar) findViewById(R.id.pb);</div><div class="line">        pbar.setVisibility(View.INVISIBLE);</div><div class="line">       </div><div class="line">        click.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">                String user = edit_user.getText().toString();</div><div class="line">                pbar.setVisibility(View.VISIBLE);</div><div class="line">               </div><div class="line">                <span class="comment">// Retrofit section start from here...</span></div><div class="line">                <span class="comment">// create an adapter for retrofit with base url</span></div><div class="line">                RestAdapter restAdapter = <span class="keyword">new</span> RestAdapter.Builder().setEndpoint(API).build(); </div><div class="line">                       </div><div class="line">                <span class="comment">// creating a service for adapter with our GET class       </span></div><div class="line">                gitapi git = restAdapter.create(gitapi.class);	</div><div class="line"> </div><div class="line">                <span class="comment">// Now ,we need to call for response</span></div><div class="line">                <span class="comment">// Retrofit using gson for JSON-POJO conversion</span></div><div class="line">               </div><div class="line">                git.getFeed(user,<span class="keyword">new</span> Callback&lt;gitmodel&gt;() &#123;</div><div class="line">                    <span class="meta">@Override</span></div><div class="line">                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">success</span><span class="params">(gitmodel gitmodel, Response response)</span> </span>&#123;</div><div class="line">                        <span class="comment">// we get json object from github server to our POJO or model class</span></div><div class="line">                       </div><div class="line">                        tv.setText(<span class="string">"Github Name :"</span> + gitmodel.getName() + </div><div class="line">                                    <span class="string">"\nWebsite :"</span>+gitmodel.getBlog() + </div><div class="line">                                    <span class="string">"\nCompany Name :"</span>+gitmodel.getCompany());</div><div class="line">                       </div><div class="line">                        pbar.setVisibility(View.INVISIBLE);	<span class="comment">// disable progressbar</span></div><div class="line">                    &#125;</div><div class="line"> </div><div class="line">                    <span class="meta">@Override</span></div><div class="line">                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">failure</span><span class="params">(RetrofitError error)</span> </span>&#123;</div><div class="line">                     	tv.setText(error.getMessage());</div><div class="line">                        pbar.setVisibility(View.INVISIBLE);	<span class="comment">// disable progressbar</span></div><div class="line">                    &#125;</div><div class="line">                &#125;);</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">    &#125;</div><div class="line"> </div><div class="line"> </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onCreateOptionsMenu</span><span class="params">(Menu menu)</span> </span>&#123;</div><div class="line">        <span class="comment">// Inflate the menu; this adds items to the action bar if it is present.</span></div><div class="line">        getMenuInflater().inflate(R.menu.menu_main, menu);</div><div class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onOptionsItemSelected</span><span class="params">(MenuItem item)</span> </span>&#123;</div><div class="line">        <span class="comment">// Handle action bar item clicks here. The action bar will</span></div><div class="line">        <span class="comment">// automatically handle clicks on the Home/Up button, so long</span></div><div class="line">        <span class="comment">// as you specify a parent activity in AndroidManifest.xml.</span></div><div class="line">        <span class="keyword">int</span> id = item.getItemId();</div><div class="line"> </div><div class="line">        <span class="comment">//noinspection SimplifiableIfStatement</span></div><div class="line">        <span class="keyword">if</span> (id == R.id.action_settings) &#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">        &#125;</div><div class="line"> </div><div class="line">        <span class="keyword">return</span> <span class="keyword">super</span>.onOptionsItemSelected(item);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/Retrofit指南/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/Retrofit指南/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/Service测试/" title="Service测试" itemprop="url">Service测试</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ul>
+<li>原文链接 : <a href="http://developer.android.com/tools/testing/service_testing.html" target="_blank" rel="external">Service Testing</a></li>
+</ul>
+<p>Android为Service对象提供了一套测试框架，框架可以独立的运行，并且提供了模拟对象。这个测试用例类的名字叫做<a href="http://developer.android.com/tools/testing/service_testing.html" target="_blank" rel="external">ServiceTestCase</a>。因为这个Service类是独立于客户端的，所以，你不用使用<code>instrumentation</code>就可以测试Service对象。</p>
+<p>这篇文档描述了测试Service对象的技术。如果你对Service不熟悉，请阅读<a href="http://developer.android.com/guide/components/services.html" target="_blank" rel="external">Service</a>文档。如果你不熟悉Android测试，请阅读介绍Android测试和instrumentation框架的<a href="http://developer.android.com/tools/testing/testing_android.html" target="_blank" rel="external">测试文档</a>。</p>
+<h2 id="Service设计和测试"><a href="#Service设计和测试" class="headerlink" title="Service设计和测试"></a><strong><em>Service设计和测试</em></strong></h2><p>当你设计一个Service的时候，你应该考虑你的测试用例怎么样才能测试Service的整个生命周期。如果启动了Service，比如调用了<code>onCreate()</code>或者<code>onStartCommand()</code>，但并没有设置一个检测是否成功的全局变量，你可能想要提供一个以测试为目的的变量。</p>
+<p>大多数其他的测试可以通过<a href="http://developer.android.com/tools/testing/service_testing.html" target="_blank" rel="external">ServiceTestCase</a>的测试用例类来方便地进行测试。例如，<code>getService()</code>方法在测试中返回一个处理Service的句柄，通过这个句柄你可以确定Service是否正在运行。</p>
+<p>##<strong><em>ServiceTestCase</em></strong></p>
+<p>ServiceTestCase扩展了JUnit<a href="http://developer.android.com/reference/junit/framework/TestCase.html" target="_blank" rel="external">测试用例</a>，添加测试应用权限、控制应用和Service的方法。它还提供了独立于系统的mock application和Context对象。</p>
+<p>ServiceTestCase)会在你调用<code>ServiceTestCase.startService()</code>或<code>ServiceTestCase.bindService()</code>的时候初始化测试环境。这是为了允许你在启动Service之前初始化测试环境，尤其是你的mock对象。</p>
+<p>注意：<code>Service.bindService()</code>的参数不同于<code>ServiceTestCase.bindService()</code>。因为<code>ServiceTestCase</code>的版本，你只能提供一个<code>Intent</code>。<code>ServiceTestCase.bindService()</code>会返回一个IBinder子对象，代替一个<code>boolean</code>值。</p>
+<p>ServiceTestCase中的<code>setUp()</code>方法会在每次测试的时候调用。任何方法调用它，它都会创建一个当前系统的上下文的拷贝。你可以通过调用<code>getSystemContext()</code>查看这个上下文对象。如果，你重写该方法，你必须在重写的方法中首先调用<code>super.setUp()</code>。</p>
+<p><code>setApplication()</code>和<code>setContext(Context) setContext()</code>允许你在开启Service之前为Service设置一个模拟的<code>Context</code>和<code>Application</code>（或者两者）。这些模拟的对象在<a href="#mock">模拟对象集合</a>中。</p>
+<p>默认情况下，ServiceTestCase运行<code>testAndroidTestCaseSetupProperly()</code>方法，去声明在测试启动之前已经成功的创建<code>Context</code>。</p>
+<p><b id="mock"></b></p>
+<h2 id="模拟对象集合"><a href="#模拟对象集合" class="headerlink" title="模拟对象集合"></a><strong><em>模拟对象集合</em></strong></h2><p>ServiceTestCase假定你在测试环境中将会使用模拟的<code>Context</code>和<code>Application</code>（或者两者）。这些对象是跟系统分离的。如果你在启动Service之前不创建这些对象的实例，那么，ServiceTestCase会创建它内部的实例并将它们注入到Service中。你可以在开启Service之前通过创建和注入你自己的实例对象来实现这一功能。</p>
+<p>在测试的时候，将一个模拟对象注入到Service中。<br>首先，创建一个<a href="http://developer.android.com/reference/android/test/mock/MockApplication.html" target="_blank" rel="external">MockApplication</a>的子类。<code>MockApplication</code>是Applicatoin的子类。然后，使用<code>setApplication()</code>将它注入到Service中。这个模拟对象允许你操作Service中的值，并且不受真实的系统影响。另外，当你运行测试的时候，你的Service中任何隐藏的应用依赖将会被当做异常处理。</p>
+<p>在测试中，你使用<code>setContext()</code>方法注入一个模拟<code>Context</code>到Service中。在<a href="http://developer.android.com/tools/testing/testing_android.html#MockObjectClasses" target="_blank" rel="external">基础测试</a>中，模拟的<code>Context</code>可以描述更多细节。</p>
+<h2 id="测试什么"><a href="#测试什么" class="headerlink" title="测试什么"></a><strong><em>测试什么</em></strong></h2><p>测试什么这一主题下列出了测试android组件一般需要考虑的问题。这些是测试Service的具体指导：</p>
+<p>确保调用<code>Context.startService()</code>或<code>Context.bindService()</code>时<code>onCreate()</code>做出了响应。同理，调用<code>Context.stopService()</code>,<code>Context.unbindService()</code>,<code>stopSelf()</code>, 或者<code>stopSelfResult()</code>时<code>onDestroy()</code>做出了响应。</p>
+<p>多次调用<code>Context.startService()</code>只有第一次才会触发<code>Service.onCreate()</code>方法，但是所有的调用都会触发<code>Service.onStartCommand()</code>。</p>
+<p>另外，记着<code>startService()</code>不能够嵌套调用。所以，<code>Context.stopService()</code>或者<code>Service.stopSelf()</code>（不是<code>stopSelf(int)</code>）任意一个方法都可以停止Service。你应该测试你的Service是不是在正确的时间点关闭。<br>测试Service中的每个业务逻辑。业务逻辑包括无效值的检查，算法的计算等等。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/Service测试/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/Service测试/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -1635,7 +1857,7 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/04/27/Retrofit指南/" title="Retrofit指南" itemprop="url">Retrofit指南</a>
+      <a href="/2017/04/27/结合RxJava更简单地使用SQLite/" title="结合RxJava更简单地使用SQLite" itemprop="url">结合RxJava更简单地使用SQLite</a>
   </h1>
   <p class="article-author">By
        
@@ -1649,233 +1871,42 @@
     <div class="article-content">
         
         <ul>
-<li>原文链接 : <a href="http://themakeinfo.com/2015/04/retrofit-android-tutorial/" target="_blank" rel="external">Retrofit Android Tutorial</a></li>
+<li>原文链接 : <a href="http://beust.com/weblog/2015/06/01/easy-sqlite-on-android-with-rxjava/" target="_blank" rel="external">Easy SQLite on Android with RxJava</a></li>
+<li>原文作者 : <a href="http://beust.com/weblog/about-2/" target="_blank" rel="external">Cédric Beust</a></li>
+<li><a href="http://www.devtf.cn" target="_blank" rel="external">译文出自 :  开发技术前线 www.devtf.cn</a></li>
+<li>译者 : <a href="https://github.com/tiiime" target="_blank" rel="external">tiiime</a> </li>
+<li>校对者:  <a href="https://github.com/bboyfeiyu" target="_blank" rel="external">Mr.Simple</a> </li>
+<li>状态 :   完成</li>
 </ul>
-<p>这是一篇关于如何使用Retrofit写一个Android的REST客户端的小教程。</p>
-<p><img src="http://img.my.csdn.net/uploads/201504/13/1428932650_8819.jpg" alt="Retrofit+Android"></p>
-<h2 id="我为什么选择Retrofit？"><a href="#我为什么选择Retrofit？" class="headerlink" title="我为什么选择Retrofit？"></a>我为什么选择Retrofit？</h2><p>在使用square的<a href="http://square.github.io/retrofit/" target="_blank" rel="external">Retrofit</a>之前，我尝试过Volley和AsyncTask。但在使用过Retrofit之后，我的工作变得更加简单了。在开始阅读教程之前，建议先阅读一下下面的几个话题。这是一个入门项目，可以让你了解如何使用Retrofit从API获取数据。</p>
-<p>这个项目也加到了<a href="https://github.com/basil2style/Retrofit-Android-Basic" target="_blank" rel="external">我的Github</a>中。</p>
-<p><a href="https://instructure.github.io/blog/2013/12/09/volley-vs-retrofit/" target="_blank" rel="external">AsyncHttp ,Volley和Retrofit的对比</a></p>
-<p><img src="http://img.my.csdn.net/uploads/201504/13/1428929622_5444.png" alt="volley-vs-retrofit"></p>
-<p>与Retrofit相比，Volley是一个小型的、缺乏正式文档说明库。Retrofit是<a href="https://github.com/square" target="_blank" rel="external">Square</a>开发的，后者还开发过okhttp，picasso…等一些著名的库(你可以在<a href="https://square.github.io/#android" target="_blank" rel="external">这里</a>找到其他的库)。如果你需要Volley的指引，你可以在<a href="https://developer.android.com/training/volley/index.html" target="_blank" rel="external">Google Training</a>或者<a href="https://github.com/DWorkS/VolleyPlus" target="_blank" rel="external">Volley Plus from DWork</a>找到相关文档。</p>
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p><a href="http://square.github.io/retrofit/" target="_blank" rel="external">Retrofit</a>是<a href="http://square.github.io/" target="_blank" rel="external">Square</a>开发的一个Android和Java的REST客户端库。这个库非常简单并且具有很多特性，相比其他的网络库，更容易让初学者快速掌握。它可以处理GET、POST、PUT、DELETE…等请求，还可以使用picasso加载图片。在使用Picasso或Volley之前，可以先来读读<a href="https://www.bignerdranch.com/blog/solving-the-android-image-loading-problem-volley-vs-picasso/" target="_blank" rel="external">这个</a>。</p>
-<p>别纠结简介了，开始编码吧!!!</p>
-<p>Demo里使用是Github的API : <a href="https://api.github.com/users/basil2style" target="_blank" rel="external">https://api.github.com/users/basil2style</a></p>
-<p>你可以使用这个Demo App来搜索github的用户详细信息</p>
-<p><a href="https://github.com/basil2style/Retrofit-Android-Basic" target="_blank" rel="external">GITHUB</a></p>
-<p><img src="http://img.my.csdn.net/uploads/201504/13/1428929608_5673.png" alt="Download-Code"></p>
-<p><a href="https://github.com/basil2style/Retrofit-Android-Basic/blob/master/APK/Retrofit%20Example.apk" target="_blank" rel="external">Download APK </a></p>
-<p><a href="https://github.com/basil2style/Retrofit-Android-Basic/blob/master/APK/Retrofit%20Example.apk" target="_blank" rel="external"><img class="" src="http://img.my.csdn.net/uploads/201504/13/1428929607_5991.png" alt="qr code" width="196" height="196"></a></p>
-<h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1) 概述"></a>1) 概述</h2><p><img src="http://img.my.csdn.net/uploads/201504/13/1428929609_1240.png" alt="Retrofit-3-classes"></p>
-<p>1) <strong>POJO或模型实体类</strong> : 从服务器获取的JSON数据将被填充到这种类的实例中。</p>
-<p>2) <strong>接口</strong> : 我们需要创建一个接口来管理像GET,POST…等请求的URL，这是一个服务类。</p>
-<p>3) <strong>RestAdapter类</strong> : 这是一个REST客户端(RestClient)类，retrofit中默认用的是Gson来解析JSON数据，你也可以设置自己的JSON解析器，比如jackson，我们将在下面的教程中详细解说明。</p>
-<h2 id="2-添加Retrofit库到项目中"><a href="#2-添加Retrofit库到项目中" class="headerlink" title="2) 添加Retrofit库到项目中"></a>2) 添加Retrofit库到项目中</h2><p><em><strong>Gradle</strong></em> :</p>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">compile <span class="string">'com.squareup.retrofit:retrofit:1.9.0'</span></div></pre></td></tr></table></figure>
-<p>目前，1.9.0是最新的版本. 你可以在<a href="https://github.com/square/retrofit" target="_blank" rel="external">这里</a>获取更新的版本。</p>
-<p><em><strong>JAR</strong></em> :</p>
-<p> <a href="https://search.maven.org/remote_content?g=com.squareup.retrofit&amp;a=retrofit&amp;v=LATEST" target="_blank" rel="external">下载Jar包</a></p>
-<h2 id="3-创建项目"><a href="#3-创建项目" class="headerlink" title="3) 创建项目"></a>3) 创建项目</h2><p>1) 在Android Studio中创建新项目: <strong>File  =&gt;  New Project</strong> ，填写描述信息并点击<strong>Next</strong>.</p>
-<p>2) 填写<strong>minimum SDK</strong>，我用的是<strong>4.0+</strong>(Retrofit支持Android <strong>2.3+</strong>或Java <strong>6</strong>以上)</p>
-<p>3) 选择<strong>Blank Activity</strong>然后填写<strong>Activity Name</strong>和<strong>Layout Name</strong>，最后点击 <strong>Finish</strong>.</p>
-<p>4) <strong>Gradle</strong> : 你可以在<strong>app =&gt;build.gradle</strong>中添加Retrofit的库文件。</p>
-<p><img src="http://img.my.csdn.net/uploads/201504/13/1428929609_9928.png" alt="gradle-dependencies"></p>
-<p>Jar包的添加方式 :  将jar包添加到libs文件夹下，右键点击Add as Library.</p>
-<p>5) 创建两个包：<strong>API</strong>和<strong>model</strong>。</p>
-<p>6) 在<strong>API</strong>包下右键点击<strong>New</strong> =&gt; <strong>Java Class</strong> , 填写<strong>Name</strong>为<font style="color: #ff0000;">gitapi</font>并设置为<font style="color: #ff0000;">Interface</font>。</p>
-<p>6) 在<strong>API</strong>包下创建名<font style="color: #ff0000;">gitapi</font>的<font style="color: #ff0000;">接口</font>。</p>
-<p>7) 在<strong>model</strong>包下右键点击<strong>New</strong> =&gt; <strong>Java Class</strong>, 填写<strong>Name</strong>为<font style="color: #ff0000;">gitmodel</font>并设置为<font style="color: #ff0000;">Class</font>。</p>
-<p><img src="http://img.my.csdn.net/uploads/201504/13/1428929622_5732.png" alt="proj-structure"></p>
-<h2 id="4-Android-Manifest"><a href="#4-Android-Manifest" class="headerlink" title="4) Android Manifest"></a>4) Android Manifest</h2><p>1) 添加<font style="color: #ff0000;">INTERNET PERMISSION</font>权限</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">uses-permission</span> <span class="attr">android:name</span>=<span class="string">"android.permission.INTERNET"</span>/&gt;</span></div></pre></td></tr></table></figure>
-<p>你的<code>Manifest</code>文件看起来应该是这样的 :</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8"?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">manifest</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span>  </span></div><div class="line">          <span class="attr">package</span>=<span class="string">"com.makeinfo.flowerpi"</span> &gt;</div><div class="line">   <span class="tag">&lt;<span class="name">uses-permission</span> <span class="attr">android:name</span>=<span class="string">"android.permission.INTERNET"</span>/&gt;</span></div><div class="line">   <span class="tag">&lt;<span class="name">application</span> <span class="attr">android:allowBackup</span>=<span class="string">"true"</span></span></div><div class="line">   	   <span class="attr">android:icon</span>=<span class="string">"@mipmap/ic_launcher"</span></div><div class="line">       <span class="attr">android:label</span>=<span class="string">"@string/app_name"</span></div><div class="line">       <span class="attr">android:theme</span>=<span class="string">"@style/AppTheme"</span> &gt;</div><div class="line">       <span class="tag">&lt;<span class="name">activity</span></span></div><div class="line">           <span class="attr">android:name</span>=<span class="string">".MainActivity"</span></div><div class="line">           <span class="attr">android:label</span>=<span class="string">"@string/app_name"</span> &gt;</div><div class="line">            <span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></div><div class="line">                <span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">"android.intent.action.MAIN"</span> /&gt;</span></div><div class="line">                 <span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">"android.intent.category.LAUNCHER"</span> /&gt;</span></div><div class="line">            <span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">activity</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">application</span>&gt;</span></div><div class="line"> <span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></div></pre></td></tr></table></figure>
-<h2 id="5-模型类"><a href="#5-模型类" class="headerlink" title="5) 模型类"></a>5) 模型类</h2><p>首先，我们需要创建一个POJO或模型类。服务器返回的JSON数据不能在Java里直接使用，所以我们需要用模型类来做转换。</p>
-<p>URL的结构是这样的：<a href="https://api.github.com/users/" target="_blank" rel="external">https://api.github.com/users/</a> + “search term”</p>
-<p>举个栗子：<a href="https://api.github.com/users/basil2style" target="_blank" rel="external">https://api.github.com/users/basil2style</a></p>
-<p>我们的JSON返回数据是这样的：</p>
-<p><img src="http://img.my.csdn.net/uploads/201504/13/1428929583_4905.jpg" alt="json object response"></p>
-<p>这是一个<strong>JSON Object</strong>，如果你不了解<strong>JSON Array</strong>和<strong>JSON Object</strong>的区别，请看<a href="http://stackoverflow.com/questions/12289844/difference-between-jsonobject-and-jsonarray" target="_blank" rel="external">这里</a>。</p>
-<p>使用<a href="http://www.jsonschema2pojo.org/" target="_blank" rel="external">jsonschema2pojo</a>来创建POJO更加简单，不要每一个JSON数据的POJO转换都用它，有时候会报错。选择源代码类型为<strong>Json</strong>，注解类型是<strong>Gson</strong>,然后点击<strong>preview</strong>。</p>
-<p>点击<a href="http://pastebin.com/4xckerN1" target="_blank" rel="external">这里</a>(需翻墙)查看<code>gitmodel.java</code>源代码。</p>
-<h2 id="6-gitapi-java"><a href="#6-gitapi-java" class="headerlink" title="6) gitapi.java"></a>6) gitapi.java</h2><p>1) 现在我们需要使用接口调用URL.</p>
-<p><strong><code>@GET(&quot;/users/{user}&quot;)</code></strong>, 添加这个注解会调用服务器，参数url基于BASE URL，服务调用的参数以’/‘开头，其中<font style="color: #ff0000;">{user}</font>是从EditText获取的字符串。</p>
-<p><strong><code>@Path(&quot;user&quot;) String user</code></strong> 就是我们从EditText获取的字符串。</p>
-<p>服务器端响应的数据则会被存储到POJO实例中去。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">gitapi</span> </span>&#123;</div><div class="line">   </div><div class="line">    <span class="meta">@GET</span>(<span class="string">"/users/&#123;user&#125;"</span>)      <span class="comment">// here is the other url part.best way is to start using /</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getFeed</span><span class="params">(@Path(<span class="string">"user"</span>)</span> String user, Callback&lt;gitmodel&gt; response)</span>;</div><div class="line">     <span class="comment">// string user is for passing values from edittext for eg: user=basil2style,google</span></div><div class="line">   	 <span class="comment">// response is the response from the server which is now in the POJO</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h2 id="7-RestAdapter"><a href="#7-RestAdapter" class="headerlink" title="7) RestAdapter"></a>7) RestAdapter</h2><p>现在该主要部分了，你需要设置<code>Rest Adapter</code>和<code>service</code>类.</p>
-<p>1) <font style="color: #ff0000;">API</font>就是<code>Base URL</code>.</p>
-<p>2) 我们需要设置<strong><code>Endpoint(API)</code></strong>并调用<strong><code>buid()</code></strong>方法来创建一个<strong><code>RestAdapter</code></strong>对象。</p>
-<p>3) 使用我们的<strong><code>gitapi</code></strong>来创建一个服务适配器(service for adapter)。</p>
-<p>4) 调用函数并获得响应数据，回调接口是用来异步的获取模型实例的，我们的回调接口需要实现成功回调方法(success request)和错误处理方法(error handling)。</p>
-<p>5) 我们解析好的json数据的现在就存在于POJO实例中了，你可以每次调用一条。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">String API = <span class="string">"https://api.github.com"</span>;</div><div class="line"></div><div class="line">RestAdapter restAdapter = <span class="keyword">new</span> RestAdapter.Builder().setLogLevel(RestAdapter.LogLevel.FULL).setEndpoint(API).build(); </div><div class="line"></div><div class="line">gitapi git = restAdapter.create(gitapi.class);</div><div class="line"></div><div class="line">git.getFeed(user, <span class="keyword">new</span> Callback&lt;gitmodel&gt;() &#123;</div><div class="line">	<span class="meta">@Override</span></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">success</span><span class="params">(gitmodel gitmodel, Response response)</span> </span>&#123;</div><div class="line">		tv.setText(<span class="string">"Github Name :"</span> + gitmodel.getName() + </div><div class="line">		           <span class="string">"\nWebsite :"</span> + gitmodel.getBlog() + </div><div class="line">		           <span class="string">"\nCompany Name :"</span> + gitmodel.getCompany());</div><div class="line"></div><div class="line">		pbar.setVisibility(View.INVISIBLE); <span class="comment">// disable progressbar</span></div><div class="line"> 	&#125;</div><div class="line"></div><div class="line"> 	<span class="meta">@Override</span></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">failure</span><span class="params">(RetrofitError error)</span> </span>&#123;</div><div class="line"> 		tv.setText(error.getMessage());</div><div class="line"> 		pbar.setVisibility(View.INVISIBLE); <span class="comment">//disable progressbar</span></div><div class="line"> 	&#125;</div><div class="line"> &#125;);</div></pre></td></tr></table></figure>
-<p>完整的<code>MainActivty.java</code>代码：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> com.makeinfo.flowerpi;</div><div class="line"> </div><div class="line"><span class="keyword">import</span> android.support.v7.app.ActionBarActivity;</div><div class="line"><span class="keyword">import</span> android.os.Bundle;</div><div class="line"><span class="keyword">import</span> android.view.Menu;</div><div class="line"><span class="keyword">import</span> android.view.MenuItem;</div><div class="line"><span class="keyword">import</span> android.view.View;</div><div class="line"><span class="keyword">import</span> android.widget.Button;</div><div class="line"><span class="keyword">import</span> android.widget.EditText;</div><div class="line"><span class="keyword">import</span> android.widget.ProgressBar;</div><div class="line"><span class="keyword">import</span> android.widget.TextView;</div><div class="line"> </div><div class="line"><span class="keyword">import</span> com.makeinfo.flowerpi.API.gitapi;</div><div class="line"><span class="keyword">import</span> com.makeinfo.flowerpi.model.gitmodel;</div><div class="line"> </div><div class="line"><span class="keyword">import</span> retrofit.Callback;</div><div class="line"><span class="keyword">import</span> retrofit.RestAdapter;</div><div class="line"><span class="keyword">import</span> retrofit.RetrofitError;</div><div class="line"><span class="keyword">import</span> retrofit.client.Response;</div><div class="line"> </div><div class="line"> </div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">ActionBarActivity</span> </span>&#123;</div><div class="line"> </div><div class="line">    Button click;</div><div class="line">    TextView tv;</div><div class="line">    EditText edit_user;</div><div class="line">    ProgressBar pbar;</div><div class="line">    String API = <span class="string">"https://api.github.com"</span>;	<span class="comment">// BASE URL</span></div><div class="line">   </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line"> </div><div class="line">        click = (Button) findViewById(R.id.button);</div><div class="line">        tv = (TextView) findViewById(R.id.tv);</div><div class="line">        edit_user = (EditText) findViewById(R.id.edit);</div><div class="line">        pbar = (ProgressBar) findViewById(R.id.pb);</div><div class="line">        pbar.setVisibility(View.INVISIBLE);</div><div class="line">       </div><div class="line">        click.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">                String user = edit_user.getText().toString();</div><div class="line">                pbar.setVisibility(View.VISIBLE);</div><div class="line">               </div><div class="line">                <span class="comment">// Retrofit section start from here...</span></div><div class="line">                <span class="comment">// create an adapter for retrofit with base url</span></div><div class="line">                RestAdapter restAdapter = <span class="keyword">new</span> RestAdapter.Builder().setEndpoint(API).build(); </div><div class="line">                       </div><div class="line">                <span class="comment">// creating a service for adapter with our GET class       </span></div><div class="line">                gitapi git = restAdapter.create(gitapi.class);	</div><div class="line"> </div><div class="line">                <span class="comment">// Now ,we need to call for response</span></div><div class="line">                <span class="comment">// Retrofit using gson for JSON-POJO conversion</span></div><div class="line">               </div><div class="line">                git.getFeed(user,<span class="keyword">new</span> Callback&lt;gitmodel&gt;() &#123;</div><div class="line">                    <span class="meta">@Override</span></div><div class="line">                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">success</span><span class="params">(gitmodel gitmodel, Response response)</span> </span>&#123;</div><div class="line">                        <span class="comment">// we get json object from github server to our POJO or model class</span></div><div class="line">                       </div><div class="line">                        tv.setText(<span class="string">"Github Name :"</span> + gitmodel.getName() + </div><div class="line">                                    <span class="string">"\nWebsite :"</span>+gitmodel.getBlog() + </div><div class="line">                                    <span class="string">"\nCompany Name :"</span>+gitmodel.getCompany());</div><div class="line">                       </div><div class="line">                        pbar.setVisibility(View.INVISIBLE);	<span class="comment">// disable progressbar</span></div><div class="line">                    &#125;</div><div class="line"> </div><div class="line">                    <span class="meta">@Override</span></div><div class="line">                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">failure</span><span class="params">(RetrofitError error)</span> </span>&#123;</div><div class="line">                     	tv.setText(error.getMessage());</div><div class="line">                        pbar.setVisibility(View.INVISIBLE);	<span class="comment">// disable progressbar</span></div><div class="line">                    &#125;</div><div class="line">                &#125;);</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">    &#125;</div><div class="line"> </div><div class="line"> </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onCreateOptionsMenu</span><span class="params">(Menu menu)</span> </span>&#123;</div><div class="line">        <span class="comment">// Inflate the menu; this adds items to the action bar if it is present.</span></div><div class="line">        getMenuInflater().inflate(R.menu.menu_main, menu);</div><div class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onOptionsItemSelected</span><span class="params">(MenuItem item)</span> </span>&#123;</div><div class="line">        <span class="comment">// Handle action bar item clicks here. The action bar will</span></div><div class="line">        <span class="comment">// automatically handle clicks on the Home/Up button, so long</span></div><div class="line">        <span class="comment">// as you specify a parent activity in AndroidManifest.xml.</span></div><div class="line">        <span class="keyword">int</span> id = item.getItemId();</div><div class="line"> </div><div class="line">        <span class="comment">//noinspection SimplifiableIfStatement</span></div><div class="line">        <span class="keyword">if</span> (id == R.id.action_settings) &#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">        &#125;</div><div class="line"> </div><div class="line">        <span class="keyword">return</span> <span class="keyword">super</span>.onOptionsItemSelected(item);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2017/04/27/Retrofit指南/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/Retrofit指南/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/27/Service测试/" title="Service测试" itemprop="url">Service测试</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <ul>
-<li>原文链接 : <a href="http://developer.android.com/tools/testing/service_testing.html" target="_blank" rel="external">Service Testing</a></li>
-</ul>
-<p>Android为Service对象提供了一套测试框架，框架可以独立的运行，并且提供了模拟对象。这个测试用例类的名字叫做<a href="http://developer.android.com/tools/testing/service_testing.html" target="_blank" rel="external">ServiceTestCase</a>。因为这个Service类是独立于客户端的，所以，你不用使用<code>instrumentation</code>就可以测试Service对象。</p>
-<p>这篇文档描述了测试Service对象的技术。如果你对Service不熟悉，请阅读<a href="http://developer.android.com/guide/components/services.html" target="_blank" rel="external">Service</a>文档。如果你不熟悉Android测试，请阅读介绍Android测试和instrumentation框架的<a href="http://developer.android.com/tools/testing/testing_android.html" target="_blank" rel="external">测试文档</a>。</p>
-<h2 id="Service设计和测试"><a href="#Service设计和测试" class="headerlink" title="Service设计和测试"></a><strong><em>Service设计和测试</em></strong></h2><p>当你设计一个Service的时候，你应该考虑你的测试用例怎么样才能测试Service的整个生命周期。如果启动了Service，比如调用了<code>onCreate()</code>或者<code>onStartCommand()</code>，但并没有设置一个检测是否成功的全局变量，你可能想要提供一个以测试为目的的变量。</p>
-<p>大多数其他的测试可以通过<a href="http://developer.android.com/tools/testing/service_testing.html" target="_blank" rel="external">ServiceTestCase</a>的测试用例类来方便地进行测试。例如，<code>getService()</code>方法在测试中返回一个处理Service的句柄，通过这个句柄你可以确定Service是否正在运行。</p>
-<p>##<strong><em>ServiceTestCase</em></strong></p>
-<p>ServiceTestCase扩展了JUnit<a href="http://developer.android.com/reference/junit/framework/TestCase.html" target="_blank" rel="external">测试用例</a>，添加测试应用权限、控制应用和Service的方法。它还提供了独立于系统的mock application和Context对象。</p>
-<p>ServiceTestCase)会在你调用<code>ServiceTestCase.startService()</code>或<code>ServiceTestCase.bindService()</code>的时候初始化测试环境。这是为了允许你在启动Service之前初始化测试环境，尤其是你的mock对象。</p>
-<p>注意：<code>Service.bindService()</code>的参数不同于<code>ServiceTestCase.bindService()</code>。因为<code>ServiceTestCase</code>的版本，你只能提供一个<code>Intent</code>。<code>ServiceTestCase.bindService()</code>会返回一个IBinder子对象，代替一个<code>boolean</code>值。</p>
-<p>ServiceTestCase中的<code>setUp()</code>方法会在每次测试的时候调用。任何方法调用它，它都会创建一个当前系统的上下文的拷贝。你可以通过调用<code>getSystemContext()</code>查看这个上下文对象。如果，你重写该方法，你必须在重写的方法中首先调用<code>super.setUp()</code>。</p>
-<p><code>setApplication()</code>和<code>setContext(Context) setContext()</code>允许你在开启Service之前为Service设置一个模拟的<code>Context</code>和<code>Application</code>（或者两者）。这些模拟的对象在<a href="#mock">模拟对象集合</a>中。</p>
-<p>默认情况下，ServiceTestCase运行<code>testAndroidTestCaseSetupProperly()</code>方法，去声明在测试启动之前已经成功的创建<code>Context</code>。</p>
-<p><b id="mock"></b></p>
-<h2 id="模拟对象集合"><a href="#模拟对象集合" class="headerlink" title="模拟对象集合"></a><strong><em>模拟对象集合</em></strong></h2><p>ServiceTestCase假定你在测试环境中将会使用模拟的<code>Context</code>和<code>Application</code>（或者两者）。这些对象是跟系统分离的。如果你在启动Service之前不创建这些对象的实例，那么，ServiceTestCase会创建它内部的实例并将它们注入到Service中。你可以在开启Service之前通过创建和注入你自己的实例对象来实现这一功能。</p>
-<p>在测试的时候，将一个模拟对象注入到Service中。<br>首先，创建一个<a href="http://developer.android.com/reference/android/test/mock/MockApplication.html" target="_blank" rel="external">MockApplication</a>的子类。<code>MockApplication</code>是Applicatoin的子类。然后，使用<code>setApplication()</code>将它注入到Service中。这个模拟对象允许你操作Service中的值，并且不受真实的系统影响。另外，当你运行测试的时候，你的Service中任何隐藏的应用依赖将会被当做异常处理。</p>
-<p>在测试中，你使用<code>setContext()</code>方法注入一个模拟<code>Context</code>到Service中。在<a href="http://developer.android.com/tools/testing/testing_android.html#MockObjectClasses" target="_blank" rel="external">基础测试</a>中，模拟的<code>Context</code>可以描述更多细节。</p>
-<h2 id="测试什么"><a href="#测试什么" class="headerlink" title="测试什么"></a><strong><em>测试什么</em></strong></h2><p>测试什么这一主题下列出了测试android组件一般需要考虑的问题。这些是测试Service的具体指导：</p>
-<p>确保调用<code>Context.startService()</code>或<code>Context.bindService()</code>时<code>onCreate()</code>做出了响应。同理，调用<code>Context.stopService()</code>,<code>Context.unbindService()</code>,<code>stopSelf()</code>, 或者<code>stopSelfResult()</code>时<code>onDestroy()</code>做出了响应。</p>
-<p>多次调用<code>Context.startService()</code>只有第一次才会触发<code>Service.onCreate()</code>方法，但是所有的调用都会触发<code>Service.onStartCommand()</code>。</p>
-<p>另外，记着<code>startService()</code>不能够嵌套调用。所以，<code>Context.stopService()</code>或者<code>Service.stopSelf()</code>（不是<code>stopSelf(int)</code>）任意一个方法都可以停止Service。你应该测试你的Service是不是在正确的时间点关闭。<br>测试Service中的每个业务逻辑。业务逻辑包括无效值的检查，算法的计算等等。</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2017/04/27/Service测试/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/Service测试/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/27/Android dex分包导致的App启动速度下降/" title="Android Multidex导致的App启动缓慢" itemprop="url">Android Multidex导致的App启动缓慢</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <ul>
-<li>原文链接 : <a href="https://medium.com/groupon-eng/android-s-multidex-slows-down-app-startup-d9f10b46770f#.wzy9fijs5" target="_blank" rel="external">Android’s multidex slows down app startup</a></li>
-</ul>
-<p>Android社区中多次说到了dex包的65536方法数限制，现在针对这个问题的解决方法是dex分包(Multidexing)。虽然这是google提出的一个很好的解决办法，但是我注意到了它对App的启动速度影响很严重（这个问题现在还没有被Android社区所重视）。所以我写下了这篇文章，写给那些想实现dex分包但是不知道它的这个缺点或者已经实现了dex分包但是想看看它性能的开发者。</p>
-<p>##背景</p>
-<p>简单来说，构建Android应用时这样一个流程：Java代码=&gt;.class文件（与依赖库）=&gt;独立的.dex文件。这个.dex文件最后与资源文件一起打包成.apk文件，这就是你最后从应用商店下载下来的安装文件。具体可以参考<a href="https://github.com/dogriffiths/HeadFirstAndroid/wiki/How-Android-Apps-are-Built-and-Run" target="_blank" rel="external">这里</a>。</p>
-<p>对编译过程的一个限制就是在dex文件中系统允许的方法总数最多为65536。早期的Android开发者通过混淆来减少不必要的代码，从而避免方法数超过限制的问题。然而混淆在这方面能做到的事情比较有限，而且它只是延缓了方法数量过限的时间，并没有根治。所以后来Google在support library里面出了一个解决方案：dex分包（Multidex），这个方案可以很方便地处理方法数超过限制的问题，但是就如同我之前所说，它会极大地延缓App的启动速度。</p>
-<p>##使用Multidex</p>
-<p>Multidex现在是一个成熟的、文档丰富的工具。我强烈推荐通过<a href="http://developer.android.com/tools/building/multidex.html#mdex-gradle" target="_blank" rel="external">官网流程</a>来在工程中实现Multidex，你也可以在<a href="https://github.com/mmadev/multidex-sample" target="_blank" rel="external">我的github</a>。</p>
-<p>###NoClassDefFoundError?!</p>
-<p>当你在项目中使用了multidex的时候，你的app可能会产生<code>java.lang.NoClassDefFoundError</code>异常。这意味着你的app在启动的时候没有找到含有指定类的class文件。Android的Gradle插件首先需要SDK build tools 21.1及以上才支持multidex，它会在混淆工程之后列出一个主dex文件中包含的类的清单（<code>[buildDir]/intermediates/multi-dex/[buildType]/maindexlist.txt</code>）。但这里面可能没有包含所有在App启动时需要加载的类，这时启动App就会抛出这个异常。</p>
-<p>###如何解决？</p>
-<p>要解决这个问题，你要列出一份启动App时需要加载的类的清单，并告诉编译器这些类要保留在主dex文件中。你可以这么做：</p>
+<p>我经常想在项目中使用 ORM 来简化操作，但是最终都将这个念头打消。主要有以下几点原因：</p>
 <ul>
-<li>在工程文件夹下创建一个<code>multidex.keep</code>文件</li>
-<li>将<code>java.lang.NoClassDefFoundError</code>异常中报出的类列到<code>multidex.keep</code>中。（不要修改<code>maindexlist.txt</code>，这个文件每次都会重新生成，改动无效）</li>
-<li>在使用混淆的模块的gradle脚本中天下如下代码，它会每次在编译的时候将<code>multidex.keep</code>文件中的内容添加到`maindexlist.txt”中。</li>
+<li>我的数据模型远远没有复杂到需要 ORM 帮助</li>
+<li>出于 Android 性能上的考虑，自动生成的SQL语句可能没有被优化</li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">android.applicationVariants.all &#123; variant -&gt;</div><div class="line">    task &quot;fix$&#123;variant.name.capitalize()&#125;MainDexClassList&quot; &lt;&lt; &#123;</div><div class="line">        logger.info &quot;Fixing main dex keep file for $variant.name&quot;</div><div class="line">        File keepFile = new File(&quot;$buildDir/intermediates/multi-dex/$variant.buildType.name/maindexlist.txt&quot;)</div><div class="line"></div><div class="line">        keepFile.withWriterAppend &#123; w -&gt;</div><div class="line">            // Get a reader for the input file</div><div class="line">            w.append(&apos;\n&apos;)</div><div class="line">            new File(&quot;$&#123;projectDir&#125;/multidex.keep&quot;).withReader &#123; r -&gt;</div><div class="line">                // And write data from the input into the output</div><div class="line">                w &lt;&lt; r &lt;&lt; &apos;\n&apos;</div><div class="line">            &#125;</div><div class="line">            logger.info &quot;Updated main dex keep file for $&#123;keepFile.getAbsolutePath()&#125;\n$keepFile.text&quot;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">tasks.whenTaskAdded &#123; task -&gt;</div><div class="line">    android.applicationVariants.all &#123; variant -&gt;</div><div class="line">        if (task.name == &quot;create$&#123;variant.name.capitalize()&#125;MainDexClassList&quot;) &#123;</div><div class="line">            task.finalizedBy &quot;fix$&#123;variant.name.capitalize()&#125;MainDexClassList&quot;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>##Multidex对应用启动速度造成的影响。</p>
-<p>如果你使用了multidex，那么你需要注意它可能会加长App的启动速度。我们通过追踪App的启动时间（从点击icon到所有的图标被下载、显示的时间）。当使用multidex后，4.4及以下的系统启动时间会加长大约15%，你可以在Carlos Sessa的<a href="https://medium.com/@Macarse/lazy-loading-dex-files-d41f6f37df0e#.6sa62ufed" target="_blank" rel="external">这篇文章</a>中了解到更多信息。</p>
-<p>由于5.0以上的Android系统采用了ART运行时，它本身就支持multidex的加载，所以5.0以上系统影响较小。但是5.0以下的系统将会在加载主dex之外的类时会有比较明显的延迟。</p>
-<p>##解决multidex带来的启动时间影响</p>
-<p>在App启动到所有图片加载到屏幕上之间的这段时间内，有很多类既没有被混淆，也不在主dex文件中。我们要怎么知道哪些类已经被App加载了呢？</p>
-<p>幸运的是，在<code>ClassLoader</code>中有一个<code>findLoadedClass()</code>方法，我们的解决办法就是在启动结束的时候查看有没有不在主dex文件中却依然在启动阶段被加载的类，将它们添加到之前的<code>multidex.keep</code>文件中，手动将其加入主dex文件：</p>
+<p>不过最近，我开始使用一个简单的设计模式，使用 RxJava 来提供一个简单的数据库访问管理。<br>我称它为 “Async Rx Read” 设计模式，很渣的一个名字哈，不过是我能想到最好的了，命名总是程序员的难题嘛。</p>
+<p>#Easy Read<br>Android 开发中有一条很重要的设计原则，永远不要在主线程执行 I/O 操作，显然这条规则对数据库访问也适用。<br>RxJava 很适用于解决这个问题。<br>在以前，我通常为每个 table 创建一个 Java 类，然后通过我的 <a href="http://developer.android.com/reference/android/database/sqlite/SQLiteOpenHelper.html" target="_blank" rel="external">SQLiteOpenHelper</a> 来管理这些 table。<br>现在使用这个新的方法后，我将这个工具类扩展成所有事物读写 SQL table 的唯一入口。<br>我们来想个简单的例子：一个由 UserTable 类管理的 USERS 表：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// UserTable.java</span></div><div class="line"><span class="function">List&lt;User&gt; <span class="title">getUsers</span><span class="params">(SQLiteDatabase db, String userId)</span> </span>&#123;</div><div class="line">  <span class="comment">// select * from users where _id = &#123;userId&#125;</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>上面的方法有一个缺点，就是你一不小心可能会在主线程调用它，这里面是由调用者确保它是在后台线程中被执行的<br>(如果需要更新 UI 的话，再将结果返回给主线程)。而不是依赖一个线程池管理，或者更糟点，使用 <code>AsyncTask</code> 管理，<br>我们将使用 RxJava 替我们管理线程模型。</p>
+<p>让我们重写这个方法返回一个 callback ：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// UserTable.java</span></div><div class="line">Callable&lt;List&lt;User&gt;&gt; getUsers(SQLiteDatabase db, String userId) &#123;</div><div class="line">  <span class="keyword">return</span> <span class="keyword">new</span> Callable&lt;List&lt;User&gt;&gt;() &#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> List&lt;User&gt; <span class="title">call</span><span class="params">()</span> </span>&#123;</div><div class="line">      <span class="comment">// select * from users where _id is userId</span></div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>实际上，我们只是重构了一下这个方法返回一个 lazy result ，使得 database helper 可以将这个<br>result 转变成一个 <code>Observable</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// MySqliteOpenHelper.java</span></div><div class="line">Observable&lt;List&lt;User&gt;&gt; getUsers(String userId) &#123;</div><div class="line">  <span class="keyword">return</span> makeObservable(mUserTable.getUsers(getReadableDatabase(), userId))</div><div class="line">    .subscribeOn(Schedulers.computation()) <span class="comment">// note: do not use Schedulers.io()</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>注意到将 lazy result 转换成一个 <code>Observable</code> 时，helper 强制 subscription 运行在后台线程<br>(这里使用的是 computation scheduler;不要使用 <code>Schedulers.io()</code> 因为它是由 unbounded executor 支持的)。<br>这样调用者就不必担心这个方法会阻塞主线程了。</p>
+<p>最后，<code>makeObservable()</code> 方法的实现很简单(而且是完全通用的)：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// MySqliteOpenHelper.java</span></div><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">Observable&lt;T&gt; <span class="title">makeObservable</span><span class="params">(<span class="keyword">final</span> Callable&lt;T&gt; func)</span> </span>&#123;</div><div class="line">  <span class="keyword">return</span> Observable.create(</div><div class="line">      <span class="keyword">new</span> Observable.OnSubscribe&lt;T&gt;() &#123;</div><div class="line">          <span class="meta">@Override</span></div><div class="line">          <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">call</span><span class="params">(Subscriber&lt;? <span class="keyword">super</span> T&gt; subscriber)</span> </span>&#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">              subscriber.onNext(func.call());</div><div class="line">            &#125; <span class="keyword">catch</span>(Exception ex) &#123;</div><div class="line">              Log.e(TAG, <span class="string">"Error reading from the database"</span>, ex);</div><div class="line">            &#125;</div><div class="line">          &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在，我们的 database 读取已经变成了 <code>observables</code>，保证查询是执行在后台线程的。<br>访问数据库操作也是很标准的 Rx code：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// DisplayUsersFragment.java</span></div><div class="line"><span class="meta">@Inject</span></div><div class="line">MySqliteOpenHelper mDbHelper;</div><div class="line"></div><div class="line"><span class="comment">// ...</span></div><div class="line"></div><div class="line">mDbHelper.getUsers(userId)</div><div class="line">  .observeOn(AndroidSchedulers.mainThread())</div><div class="line">  .subscribe(<span class="keyword">new</span> Action1&lt;List&lt;User&gt;&gt;()) &#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(List&lt;User&gt; users)</span> </span>&#123;</div><div class="line">      <span class="comment">// Update our UI with the users</span></div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果你不需要返回结果更新你的 UI，那么你只需要 observe 一个后台线程。<br>然后你的 database 层会返回 observables，当获得结果时很容易将它组合变换。<br>例如，假定 <code>ContactTable</code> 是一个底层类， model (User class) 对它是不可见的，<br>它应该返回底层 object (可能是 <code>Cursor</code> 或者 <code>ContentValues</code>)。然后你可以用<br>Rx 去 <code>map</code> 这些底层值，把它们转换成你的 model 类，实现更加清晰的分离层。</p>
+<p>两个提示：</p>
 <ul>
-<li>将下面这个类添加到代码中，运行其中的<code>getLoadedExternalDexClasses</code>查看是否有一些副dex中的类在启动结束后被加载了；</li>
-<li>将上一步检测到的类添加到我们的<code>multidex.keep</code>文件中，重新编译。</li>
+<li><p>你的 Table 类不应该包含 public 方法：只能有 package 的 protected 方法(仅允许相同 package 内的 Helper 访问 ) 和 private 方法，<br>其他类不能直接访问 Table 类。</p>
+</li>
+<li><p>这个方法对依赖注入兼容性很好：很轻松就可以同时实现 database helper 和注入单个 Table<br>(意外收获：使用 Dagger 2，你的 table 可以拥有自己的组件，因为 database helper<br>是实例化它们所需的唯一参考资料 )。</p>
+</li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div></pre></td><td class="code"><pre><div class="line">public class MultiDexUtils &#123;</div><div class="line">    private static final String EXTRACTED_NAME_EXT = &quot;.classes&quot;;</div><div class="line">    private static final String EXTRACTED_SUFFIX = &quot;.zip&quot;;</div><div class="line"> </div><div class="line">    private static final String SECONDARY_FOLDER_NAME = &quot;code_cache&quot; + File.separator +</div><div class="line">            &quot;secondary-dexes&quot;;</div><div class="line"> </div><div class="line">    private static final String PREFS_FILE = &quot;multidex.version&quot;;</div><div class="line">    private static final String KEY_DEX_NUMBER = &quot;dex.number&quot;;</div><div class="line"> </div><div class="line">    private SharedPreferences getMultiDexPreferences(Context context) &#123;</div><div class="line">        return context.getSharedPreferences(PREFS_FILE,</div><div class="line">                Build.VERSION.SDK_INT &lt; Build.VERSION_CODES.HONEYCOMB</div><div class="line">                        ? Context.MODE_PRIVATE</div><div class="line">                        : Context.MODE_PRIVATE | Context.MODE_MULTI_PROCESS);</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    /**</div><div class="line">     - get all the dex path</div><div class="line">     *</div><div class="line">     - @param context the application context</div><div class="line">     - @return all the dex path</div><div class="line">     - @throws PackageManager.NameNotFoundException</div><div class="line">     - @throws IOException</div><div class="line">     */</div><div class="line">    public List&lt;String&gt; getSourcePaths(Context context) throws PackageManager.NameNotFoundException, IOException &#123;</div><div class="line">        final ApplicationInfo applicationInfo = context.getPackageManager().getApplicationInfo(context.getPackageName(), 0);</div><div class="line">        final File sourceApk = new File(applicationInfo.sourceDir);</div><div class="line">        final File dexDir = new File(applicationInfo.dataDir, SECONDARY_FOLDER_NAME);</div><div class="line"> </div><div class="line">        final List&lt;String&gt; sourcePaths = new ArrayList&lt;&gt;();</div><div class="line">        sourcePaths.add(applicationInfo.sourceDir); //add the default apk path</div><div class="line"> </div><div class="line">        //the prefix of extracted file, ie: test.classes</div><div class="line">        final String extractedFilePrefix = sourceApk.getName() + EXTRACTED_NAME_EXT;</div><div class="line">        //the total dex numbers</div><div class="line">        final int totalDexNumber = getMultiDexPreferences(context).getInt(KEY_DEX_NUMBER, 1);</div><div class="line"> </div><div class="line">        for (int secondaryNumber = 2; secondaryNumber &lt;= totalDexNumber; secondaryNumber++) &#123;</div><div class="line">            //for each dex file, ie: test.classes2.zip, test.classes3.zip...</div><div class="line">            final String fileName = extractedFilePrefix + secondaryNumber + EXTRACTED_SUFFIX;</div><div class="line">            final File extractedFile = new File(dexDir, fileName);</div><div class="line">            if (extractedFile.isFile()) &#123;</div><div class="line">                sourcePaths.add(extractedFile.getAbsolutePath());</div><div class="line">                //we ignore the verify zip part</div><div class="line">            &#125; else &#123;</div><div class="line">                throw new IOException(&quot;Missing extracted secondary dex file &apos;&quot; +</div><div class="line">                        extractedFile.getPath() + &quot;&apos;&quot;);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"> </div><div class="line">        return sourcePaths;</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    /**</div><div class="line">     - get all the external classes name in &quot;classes2.dex&quot;, &quot;classes3.dex&quot; ....</div><div class="line">     *</div><div class="line">     - @param context the application context</div><div class="line">     - @return all the classes name in the external dex</div><div class="line">     - @throws PackageManager.NameNotFoundException</div><div class="line">     - @throws IOException</div><div class="line">     */</div><div class="line">    public List&lt;String&gt; getExternalDexClasses(Context context) throws PackageManager.NameNotFoundException, IOException &#123;</div><div class="line">        final List&lt;String&gt; paths = getSourcePaths(context);</div><div class="line">        if(paths.size() &lt;= 1) &#123;</div><div class="line">            // no external dex</div><div class="line">            return null;</div><div class="line">        &#125;</div><div class="line">        // the first element is the main dex, remove it.</div><div class="line">        paths.remove(0);</div><div class="line">        final List&lt;String&gt; classNames = new ArrayList&lt;&gt;();</div><div class="line">        for (String path : paths) &#123;</div><div class="line">            try &#123;</div><div class="line">                DexFile dexfile = null;</div><div class="line">                if (path.endsWith(EXTRACTED_SUFFIX)) &#123;</div><div class="line">                    //NOT use new DexFile(path), because it will throw &quot;permission error in /data/dalvik-cache&quot;</div><div class="line">                    dexfile = DexFile.loadDex(path, path + &quot;.tmp&quot;, 0);</div><div class="line">                &#125; else &#123;</div><div class="line">                    dexfile = new DexFile(path);</div><div class="line">                &#125;</div><div class="line">                final Enumeration&lt;String&gt; dexEntries = dexfile.entries();</div><div class="line">                while (dexEntries.hasMoreElements()) &#123;</div><div class="line">                    classNames.add(dexEntries.nextElement());</div><div class="line">                &#125;</div><div class="line">            &#125; catch (IOException e) &#123;</div><div class="line">                throw new IOException(&quot;Error at loading dex file &apos;&quot; +</div><div class="line">                        path + &quot;&apos;&quot;);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        return classNames;</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    /**</div><div class="line">     - Get all loaded external classes name in &quot;classes2.dex&quot;, &quot;classes3.dex&quot; ....</div><div class="line">     - @param context</div><div class="line">     - @return get all loaded external classes</div><div class="line">     */</div><div class="line">    public List&lt;String&gt; getLoadedExternalDexClasses(Context context) &#123;</div><div class="line">        try &#123;</div><div class="line">            final List&lt;String&gt; externalDexClasses = getExternalDexClasses(context);</div><div class="line">            if (externalDexClasses != null &amp;&amp; !externalDexClasses.isEmpty()) &#123;</div><div class="line">                final ArrayList&lt;String&gt; classList = new ArrayList&lt;&gt;();</div><div class="line">                final java.lang.reflect.Method m = ClassLoader.class.getDeclaredMethod(&quot;findLoadedClass&quot;, new Class[]&#123;String.class&#125;);</div><div class="line">                m.setAccessible(true);</div><div class="line">                final ClassLoader cl = context.getClassLoader();</div><div class="line">                for (String clazz : externalDexClasses) &#123;</div><div class="line">                    if (m.invoke(cl, clazz) != null) &#123;</div><div class="line">                        classList.add(clazz.replaceAll(&quot;\\.&quot;, &quot;/&quot;).replaceAll(&quot;$&quot;, &quot;.class&quot;));</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">                return classList;</div><div class="line">            &#125;</div><div class="line">        &#125; catch (Exception e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">        return null;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>##实验结果</p>
-<p>这里是我们得出的实验结果。蓝色柱是不使用multidex时的启动时间，红色柱是使用multidex时的启动时间，你可以看到两者之间的巨大差距，仅仅是因为我们使用了multidex而已。之后我们进行了上述优化改进，得出的启动时间是绿色柱，你可以看到它回到了原先的启动速度，甚至比原先更快。你可以尝试一下，它会为你的app性能带来提升。</p>
-<p><img src="https://cdn-images-1.medium.com/max/1000/1*n8CB6MRbJDEvXVq0VBwanQ.png" alt="multidex"></p>
-<p>##最后的话</p>
-<blockquote>
-<p>你可以这么做不代表你必须这么做。</p>
-</blockquote>
-<p>你应该将multidex认为是一种走投无路的解决办法，因为它会严重影响App的启动速度，并且还要维护额外的代码来解决奇怪的异常（<code>java.lang.NoClassDefFoundError</code>）。当达到了65536的方法数限制时，我们不应该先想到multidex因为它会带来性能影响。我们检查工程并发现了很多没有用处的代码，进行删除、重构。仅仅当没有别的办法时，才引入multidex，并且从此我们都会十分注意代码质量、标准。与其直接使用multidex，不如花时间让你的代码变得简洁、高效，重构你的代码使其不要超过65536的方法数限制。</p>
+<p>这是一个很简单的设计模式，它显著提升了 RxJava 在项目中发挥的效果。<br>我正在扩展这层结构，让它可以为 list view adapter update 提供更灵活的通知机制<br>(和 SQLBrite 提供的不同)，会在以后的文章中介绍。</p>
+<p>这项工作还在进行中，欢迎反馈。</p>
+<hr>
 
         
         
@@ -1895,7 +1926,7 @@
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2017/04/27/Android dex分包导致的App启动速度下降/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/Android dex分包导致的App启动速度下降/" data-count-type="comments">&nbsp;</a>
+		<a href="/2017/04/27/结合RxJava更简单地使用SQLite/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/结合RxJava更简单地使用SQLite/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 

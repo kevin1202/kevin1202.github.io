@@ -210,6 +210,116 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2017/04/27/chap5/" title="RxJava开发精要5 - Observables变换" itemprop="url">RxJava开发精要5 - Observables变换</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ul>
+<li>原文出自《RxJava Essentials》</li>
+<li>原文作者 : <a href="https://www.packtpub.com/books/info/authors/ivan-morgillo" target="_blank" rel="external">Ivan Morgillo</a></li>
+<li>译文出自 : <a href="http://www.devtf.cn" target="_blank" rel="external">开发技术前线 www.devtf.cn</a></li>
+<li>转载声明: 本译文已授权<a href="http://toutiao.io/download" target="_blank" rel="external">开发者头条</a>享有独家转载权，未经允许，不得转载!</li>
+<li>译者 : <a href="https://github.com/yuxingxin" target="_blank" rel="external">yuxingxin</a> </li>
+<li>项目地址 : <a href="https://github.com/yuxingxin/RxJava-Essentials-CN" target="_blank" rel="external">RxJava-Essentials-CN</a></li>
+</ul>
+<p>在上一章中，我们探索了RxJava通用过滤方法。我们学习了如何使用<code>filter()</code>方法过滤我们不需要的值，如何使用<code>take()</code>得到发射元素的子集，如何使用<code>distinct()</code>函数来去除重复的。我们学习了如何使用<code>timeout()</code>，<code>sample()</code>，以及<code>debounce()</code>来利用时间。</p>
+<p>这一章中，我们将学习如何变换可观测序列来创建一个更好满足我们需求的序列。</p>
+<h2 id="map家族"><a href="#map家族" class="headerlink" title="*map家族"></a>*map家族</h2><p>RxJava提供了几个mapping函数：<code>map()</code>,<code>flatMap()</code>,<code>concatMap()</code>,<code>flatMapIterable()</code>以及<code>switchMap()</code>.所有这些函数都作用于一个可观测序列，然后变换它发射的值，最后用一种新的形式返回它们。让我们用“真实世界”合适的例子一个个的学习下。</p>
+<h2 id="Map"><a href="#Map" class="headerlink" title="Map"></a>Map</h2><p>RxJava的<code>map</code>函数接收一个指定的<code>Func</code>对象然后将它应用到每一个由Observable发射的值上。下图展示了如何将一个乘法函数应用到每个发出的值上以此创建一个新的Observable来发射转换的数据。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_1.png" alt=""></p>
+<p>考虑我们已安装的应用列表。我们怎么才能够显示同样的列表，但是所有的名字都是小写。</p>
+<p>我们的<code>loadList()</code>函数可以改成这样：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">loadList</span><span class="params">(List&lt;AppInfo&gt; apps)</span> </span>&#123;</div><div class="line">    mRecyclerView.setVisibility(View.VISIBLE);</div><div class="line">    Observable.from(apps)</div><div class="line">        .map(<span class="keyword">new</span> Func1&lt;AppInfo,AppInfo&gt;()&#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> Appinfo <span class="title">call</span><span class="params">(AppInfo appInfo)</span></span>&#123;</div><div class="line">                String currentName = appInfo.getName();</div><div class="line">                String lowerCaseName = currentName.toLowerCase();</div><div class="line">                appInfo.setName(lowerCaseName);</div><div class="line">                <span class="keyword">return</span> appInfo;</div><div class="line">            &#125;</div><div class="line">        &#125;)</div><div class="line">        .subscribe(<span class="keyword">new</span> Observable&lt;AppInfo&gt;() &#123;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123;</div><div class="line">                mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">                Toast.makeText(getActivity(), <span class="string">"Something went wrong!"</span>, Toast.LENGTH_SHORT).show();</div><div class="line">                mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(AppInfo appInfo)</span> </span>&#123;</div><div class="line">                mAddedApps.add(appInfo); </div><div class="line">                mAdapter.addApplication(mAddedApps.size() - <span class="number">1</span>,appInfo);</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>正如你看到的，像往常一样创建我们发射的Observable，我们加一个<code>map</code>调用，我们可以创建一个简单的函数来更新<code>AppInfo</code>对象并提供一个名字小写的新版本给观察者。</p>
+<h2 id="FlatMap"><a href="#FlatMap" class="headerlink" title="FlatMap"></a>FlatMap</h2><p>在复杂的场景中，我们有一个这样的Observable：它发射一个数据序列，这些数据本身也可以发射Observable。RxJava的<code>flatMap()</code>函数提供一种铺平序列的方式，然后合并这些Observables发射的数据，最后将合并后的结果作为最终的Observable。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_2.png" alt=""></p>
+<p>当我们在处理可能有大量的Observables时，重要是记住任何一个Observables发生错误的情况，<code>flatMap()</code>函数将会触发它自己的<code>onError()</code>函数并放弃整个链。</p>
+<p>重要的一点是关于合并部分：它允许交叉。正如上图所示，这意味着<code>flatMap()</code>函数在最后的Observable中不能够保证源Observables确切的发射顺序。</p>
+<h2 id="ConcatMap"><a href="#ConcatMap" class="headerlink" title="ConcatMap"></a>ConcatMap</h2><p>RxJava的<code>concatMap()</code>函数解决了<code>flatMap()</code>的交叉问题，提供了一种能够把发射的值连续在一起的铺平函数，而不是合并它们，如下图所示：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_3.png" alt=""></p>
+<h2 id="FlatMapIterable"><a href="#FlatMapIterable" class="headerlink" title="FlatMapIterable"></a>FlatMapIterable</h2><p>作为*map家族的一员，<code>flatMapInterable()</code>和<code>flatMap()</code>很像。仅有的本质不同是它将源数据两两结成对，然后生成Iterable而不是原始数据和生成的Observables。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_4.png" alt=""></p>
+<h2 id="SwitchMap"><a href="#SwitchMap" class="headerlink" title="SwitchMap"></a>SwitchMap</h2><p>如下图所示，<code>switchMap()</code>和<code>flatMap()</code>很像，除了一点：当原始Observable发射一个新的数据（Observable）时，它将取消订阅并停止监视之前那个数据的Observable产生的Observable，并开始监视当前这一个。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_5.png" alt=""></p>
+<h2 id="Scan"><a href="#Scan" class="headerlink" title="Scan"></a>Scan</h2><p>RxJava的<code>scan()</code>函数可以看做是一个累加器函数。<code>scan()</code>函数对原始Observable发射的每一项数据都应用一个函数，它将函数的结果填充回可观测序列，等待和下一次发射的数据一起使用。</p>
+<p>作为一个通用的例子，给出一个累加器：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">Observable.just(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>)</div><div class="line">        .scan((sum,item) -&gt; sum + item)</div><div class="line">        .subscribe(<span class="keyword">new</span> Subscriber&lt;Integer&gt;() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123;</div><div class="line">                Log.d(<span class="string">"RXJAVA"</span>, <span class="string">"Sequence completed."</span>);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">                Log.e(<span class="string">"RXJAVA"</span>, <span class="string">"Something went south!"</span>);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(Integer item)</span> </span>&#123;</div><div class="line">                Log.d(<span class="string">"RXJAVA"</span>, <span class="string">"item is: "</span> + item);</div><div class="line">            &#125;</div><div class="line">        &#125;);</div></pre></td></tr></table></figure></p>
+<p>我们得到的结果是：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">RXJAVA: item is: <span class="number">1</span></div><div class="line">RXJAVA: item is: <span class="number">3</span></div><div class="line">RXJAVA: item is: <span class="number">6</span></div><div class="line">RXJAVA: item is: <span class="number">10</span></div><div class="line">RXJAVA: item is: <span class="number">15</span></div><div class="line">RXJAVA: Sequence completed.</div></pre></td></tr></table></figure></p>
+<p>我们也可以创建一个新版本的<code>loadList()</code>函数用来比较每个安装应用的名字从而创建一个名字长度递增的列表。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">loadList</span><span class="params">(List&lt;AppInfo&gt; apps)</span> </span>&#123;</div><div class="line">    mRecyclerView.setVisibility(View.VISIBLE);</div><div class="line">    Observable.from(apps)</div><div class="line">            .scan((appInfo,appInfo2) -&gt; &#123;</div><div class="line">                <span class="keyword">if</span>(appInfo.getName().length &gt; appInfo2.getName().length())&#123;</div><div class="line">                    <span class="keyword">return</span> appInfo;</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    <span class="keyword">return</span> appInfo2;</div><div class="line">                &#125;</div><div class="line">            &#125;)</div><div class="line">            .distinct()</div><div class="line">            .subscribe(<span class="keyword">new</span> Observable&lt;AppInfo&gt;() &#123;</div><div class="line"></div><div class="line">                <span class="meta">@Override</span></div><div class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123;</div><div class="line">                    mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">                &#125;</div><div class="line"></div><div class="line">                <span class="meta">@Override</span></div><div class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">                    Toast.makeText(getActivity(), <span class="string">"Something went wrong!"</span>, Toast.LENGTH_SHORT).show();</div><div class="line">                    mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">                &#125;</div><div class="line"></div><div class="line">                <span class="meta">@Override</span></div><div class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(AppInfo appInfo)</span> </span>&#123;</div><div class="line">                    mAddedApps.add(appInfo); </div><div class="line">                    mAdapter.addApplication(mAddedApps.size() - <span class="number">1</span>,appInfo);</div><div class="line">                &#125;</div><div class="line">            &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>结果如下：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_6.png" width="240"></p>
+<p>有一个<code>scan()</code>函数的变体，它用初始值作为第一个发射的值，方法特征就像：<code>scan(R,Func2)</code>，就像下图中的例子这样：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_7.png"></p>
+<h2 id="GroupBy"><a href="#GroupBy" class="headerlink" title="GroupBy"></a>GroupBy</h2><p>拿第一个例子开始，我们安装的应用程序列表按照字母表的顺序排序。然而，如果现在我们想按照最近更新日期来排序我们的App时该怎么办？RxJava提供了一个有用的函数从列表中按照指定的规则：<code>groupBy()</code>来分组元素。下图中的例子展示了<code>groupBy()</code>如何将发射的值根据他们的形状来进行分组。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_8.png" alt=""></p>
+<p>这个函数将源Observable变换成一个发射Observables的新的Observable。它们中的每一个新的Observable都发射一组指定的数据。</p>
+<p>为了创建一个分组了的已安装应用列表，我们在<code>loadList()</code>函数中引入了一个新的元素：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">Observable&lt;GroupedObservable&lt;String,AppInfo&gt;&gt; groupedItems = Observable.from(apps)</div><div class="line">    .groupBy(<span class="keyword">new</span> Func1&lt;AppInfo,String&gt;()&#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> String <span class="title">call</span><span class="params">(AppInfo appInfo)</span></span>&#123;</div><div class="line">            SimpleDateFormat formatter = <span class="keyword">new</span> SimpleDateFormat(<span class="string">"MM/yyyy"</span>);</div><div class="line">            <span class="keyword">return</span> formatter.format(<span class="keyword">new</span> Date(appInfo.getLastUpdateTime()));</div><div class="line">        &#125;</div><div class="line">    &#125;);</div></pre></td></tr></table></figure></p>
+<p>现在我们创建了一个新的Observable，<code>groupedItems</code>，将会发射一个带有<code>GroupedObservable</code>的序列。<code>GroupedObservable</code>是一个特殊的Observable，它源自一个分组的key。在这个例子中，key就是<code>String</code>，代表的意思是<code>Month/Year</code>格式化的最近更新日期。</p>
+<p>这一点，我们已经创建了几个发射<code>AppInfo</code>数据的Observable，用来填充我们的列表。我们想保留字母排序和分组排序。我们将创建一个新的Observable将所有的联系起来，像通常一样然后订阅它：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">Observable.concat(groupedItems)</div><div class="line">    .subscribe(<span class="keyword">new</span> Observable&lt;AppInfo&gt;() &#123;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123;</div><div class="line">            mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">            Toast.makeText(getActivity(), <span class="string">"Something went wrong!"</span>, Toast.LENGTH_SHORT).show();</div><div class="line">            mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(AppInfo appInfo)</span> </span>&#123;</div><div class="line">            mAddedApps.add(appInfo); </div><div class="line">            mAdapter.addApplication(mAddedApps.size() - <span class="number">1</span>,appInfo);</div><div class="line">        &#125;</div><div class="line">    &#125;);</div></pre></td></tr></table></figure>
+<p>我们的<code>loadList()</code>函数完成了，结果是：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_9.png" width="240"></p>
+<h2 id="Buffer"><a href="#Buffer" class="headerlink" title="Buffer"></a>Buffer</h2><p>RxJava中的<code>buffer()</code>函数将源Observable变换一个新的Observable，这个新的Observable每次发射一组列表值而不是一个一个发射。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_10.png" alt=""></p>
+<p>上图中展示了<code>buffer()</code>如何将<code>count</code>作为一个参数来指定有多少数据项被包在发射的列表中。实际上，<code>buffer()</code>函数有几种变体。其中有一个时允许你指定一个<code>skip</code>值：此后每当收到skip项数据，用count项数据就填充缓存。如下图所示：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_11.png" alt=""></p>
+<p><code>buffer()</code>带一个<code>timespan</code>的参数，会创建一个每隔timespan时间段就会发射一个列表的Observable。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_12.png" alt=""></p>
+<h2 id="Window"><a href="#Window" class="headerlink" title="Window"></a>Window</h2><p>RxJava的<code>window()</code>函数和<code>buffer()</code>很像，但是它发射的时Observable而不是列表。下图展示了<code>window()</code>如何缓存3个数据项并把它们作为一个新的Observable发射出去。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_13.png" alt=""></p>
+<p>这些Observables中的每一个都发射原始Observable数据的一个子集，数量由<code>count</code>指定,最后发射一个<code>onCompleted()</code>结束。正如<code>buffer()</code>一样,<code>window()</code>也有一个<code>skip</code>变体,如下图所示：</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_14.png" alt=""></p>
+<h2 id="Cast"><a href="#Cast" class="headerlink" title="Cast"></a>Cast</h2><p>RxJava的<code>cast()</code>函数是本章中最后一个操作符。它是<code>map()</code>操作符的特殊版本。它将源Observable中的每一项数据都转换为新的类型，把它变成了不同的<code>Class</code>。</p>
+<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_15.png" alt=""></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这一章中，我们学习了RxJava时如何控制和转换可观测序列。用我们现在所学的知识，我们可以创建、过滤、转换我们所想要的任何种类的可观测序列。</p>
+<p>下一章，我们将学习如何组合Observable，合并它们，连接它们，再或者打包它们。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/chap5/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/chap5/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2017/04/27/chap3/" title="RxJava开发精要3-向响应式世界问好" itemprop="url">RxJava开发精要3-向响应式世界问好</a>
   </h1>
   <p class="article-author">By
@@ -310,116 +420,6 @@
 	
 	  	<span></span>
 		<a href="/2017/04/27/chap3/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/chap3/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/27/chap5/" title="RxJava开发精要5 - Observables变换" itemprop="url">RxJava开发精要5 - Observables变换</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <ul>
-<li>原文出自《RxJava Essentials》</li>
-<li>原文作者 : <a href="https://www.packtpub.com/books/info/authors/ivan-morgillo" target="_blank" rel="external">Ivan Morgillo</a></li>
-<li>译文出自 : <a href="http://www.devtf.cn" target="_blank" rel="external">开发技术前线 www.devtf.cn</a></li>
-<li>转载声明: 本译文已授权<a href="http://toutiao.io/download" target="_blank" rel="external">开发者头条</a>享有独家转载权，未经允许，不得转载!</li>
-<li>译者 : <a href="https://github.com/yuxingxin" target="_blank" rel="external">yuxingxin</a> </li>
-<li>项目地址 : <a href="https://github.com/yuxingxin/RxJava-Essentials-CN" target="_blank" rel="external">RxJava-Essentials-CN</a></li>
-</ul>
-<p>在上一章中，我们探索了RxJava通用过滤方法。我们学习了如何使用<code>filter()</code>方法过滤我们不需要的值，如何使用<code>take()</code>得到发射元素的子集，如何使用<code>distinct()</code>函数来去除重复的。我们学习了如何使用<code>timeout()</code>，<code>sample()</code>，以及<code>debounce()</code>来利用时间。</p>
-<p>这一章中，我们将学习如何变换可观测序列来创建一个更好满足我们需求的序列。</p>
-<h2 id="map家族"><a href="#map家族" class="headerlink" title="*map家族"></a>*map家族</h2><p>RxJava提供了几个mapping函数：<code>map()</code>,<code>flatMap()</code>,<code>concatMap()</code>,<code>flatMapIterable()</code>以及<code>switchMap()</code>.所有这些函数都作用于一个可观测序列，然后变换它发射的值，最后用一种新的形式返回它们。让我们用“真实世界”合适的例子一个个的学习下。</p>
-<h2 id="Map"><a href="#Map" class="headerlink" title="Map"></a>Map</h2><p>RxJava的<code>map</code>函数接收一个指定的<code>Func</code>对象然后将它应用到每一个由Observable发射的值上。下图展示了如何将一个乘法函数应用到每个发出的值上以此创建一个新的Observable来发射转换的数据。</p>
-<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_1.png" alt=""></p>
-<p>考虑我们已安装的应用列表。我们怎么才能够显示同样的列表，但是所有的名字都是小写。</p>
-<p>我们的<code>loadList()</code>函数可以改成这样：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">loadList</span><span class="params">(List&lt;AppInfo&gt; apps)</span> </span>&#123;</div><div class="line">    mRecyclerView.setVisibility(View.VISIBLE);</div><div class="line">    Observable.from(apps)</div><div class="line">        .map(<span class="keyword">new</span> Func1&lt;AppInfo,AppInfo&gt;()&#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> Appinfo <span class="title">call</span><span class="params">(AppInfo appInfo)</span></span>&#123;</div><div class="line">                String currentName = appInfo.getName();</div><div class="line">                String lowerCaseName = currentName.toLowerCase();</div><div class="line">                appInfo.setName(lowerCaseName);</div><div class="line">                <span class="keyword">return</span> appInfo;</div><div class="line">            &#125;</div><div class="line">        &#125;)</div><div class="line">        .subscribe(<span class="keyword">new</span> Observable&lt;AppInfo&gt;() &#123;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123;</div><div class="line">                mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">                Toast.makeText(getActivity(), <span class="string">"Something went wrong!"</span>, Toast.LENGTH_SHORT).show();</div><div class="line">                mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(AppInfo appInfo)</span> </span>&#123;</div><div class="line">                mAddedApps.add(appInfo); </div><div class="line">                mAdapter.addApplication(mAddedApps.size() - <span class="number">1</span>,appInfo);</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>正如你看到的，像往常一样创建我们发射的Observable，我们加一个<code>map</code>调用，我们可以创建一个简单的函数来更新<code>AppInfo</code>对象并提供一个名字小写的新版本给观察者。</p>
-<h2 id="FlatMap"><a href="#FlatMap" class="headerlink" title="FlatMap"></a>FlatMap</h2><p>在复杂的场景中，我们有一个这样的Observable：它发射一个数据序列，这些数据本身也可以发射Observable。RxJava的<code>flatMap()</code>函数提供一种铺平序列的方式，然后合并这些Observables发射的数据，最后将合并后的结果作为最终的Observable。</p>
-<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_2.png" alt=""></p>
-<p>当我们在处理可能有大量的Observables时，重要是记住任何一个Observables发生错误的情况，<code>flatMap()</code>函数将会触发它自己的<code>onError()</code>函数并放弃整个链。</p>
-<p>重要的一点是关于合并部分：它允许交叉。正如上图所示，这意味着<code>flatMap()</code>函数在最后的Observable中不能够保证源Observables确切的发射顺序。</p>
-<h2 id="ConcatMap"><a href="#ConcatMap" class="headerlink" title="ConcatMap"></a>ConcatMap</h2><p>RxJava的<code>concatMap()</code>函数解决了<code>flatMap()</code>的交叉问题，提供了一种能够把发射的值连续在一起的铺平函数，而不是合并它们，如下图所示：</p>
-<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_3.png" alt=""></p>
-<h2 id="FlatMapIterable"><a href="#FlatMapIterable" class="headerlink" title="FlatMapIterable"></a>FlatMapIterable</h2><p>作为*map家族的一员，<code>flatMapInterable()</code>和<code>flatMap()</code>很像。仅有的本质不同是它将源数据两两结成对，然后生成Iterable而不是原始数据和生成的Observables。</p>
-<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_4.png" alt=""></p>
-<h2 id="SwitchMap"><a href="#SwitchMap" class="headerlink" title="SwitchMap"></a>SwitchMap</h2><p>如下图所示，<code>switchMap()</code>和<code>flatMap()</code>很像，除了一点：当原始Observable发射一个新的数据（Observable）时，它将取消订阅并停止监视之前那个数据的Observable产生的Observable，并开始监视当前这一个。</p>
-<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_5.png" alt=""></p>
-<h2 id="Scan"><a href="#Scan" class="headerlink" title="Scan"></a>Scan</h2><p>RxJava的<code>scan()</code>函数可以看做是一个累加器函数。<code>scan()</code>函数对原始Observable发射的每一项数据都应用一个函数，它将函数的结果填充回可观测序列，等待和下一次发射的数据一起使用。</p>
-<p>作为一个通用的例子，给出一个累加器：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">Observable.just(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>)</div><div class="line">        .scan((sum,item) -&gt; sum + item)</div><div class="line">        .subscribe(<span class="keyword">new</span> Subscriber&lt;Integer&gt;() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123;</div><div class="line">                Log.d(<span class="string">"RXJAVA"</span>, <span class="string">"Sequence completed."</span>);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">                Log.e(<span class="string">"RXJAVA"</span>, <span class="string">"Something went south!"</span>);</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(Integer item)</span> </span>&#123;</div><div class="line">                Log.d(<span class="string">"RXJAVA"</span>, <span class="string">"item is: "</span> + item);</div><div class="line">            &#125;</div><div class="line">        &#125;);</div></pre></td></tr></table></figure></p>
-<p>我们得到的结果是：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">RXJAVA: item is: <span class="number">1</span></div><div class="line">RXJAVA: item is: <span class="number">3</span></div><div class="line">RXJAVA: item is: <span class="number">6</span></div><div class="line">RXJAVA: item is: <span class="number">10</span></div><div class="line">RXJAVA: item is: <span class="number">15</span></div><div class="line">RXJAVA: Sequence completed.</div></pre></td></tr></table></figure></p>
-<p>我们也可以创建一个新版本的<code>loadList()</code>函数用来比较每个安装应用的名字从而创建一个名字长度递增的列表。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">loadList</span><span class="params">(List&lt;AppInfo&gt; apps)</span> </span>&#123;</div><div class="line">    mRecyclerView.setVisibility(View.VISIBLE);</div><div class="line">    Observable.from(apps)</div><div class="line">            .scan((appInfo,appInfo2) -&gt; &#123;</div><div class="line">                <span class="keyword">if</span>(appInfo.getName().length &gt; appInfo2.getName().length())&#123;</div><div class="line">                    <span class="keyword">return</span> appInfo;</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    <span class="keyword">return</span> appInfo2;</div><div class="line">                &#125;</div><div class="line">            &#125;)</div><div class="line">            .distinct()</div><div class="line">            .subscribe(<span class="keyword">new</span> Observable&lt;AppInfo&gt;() &#123;</div><div class="line"></div><div class="line">                <span class="meta">@Override</span></div><div class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123;</div><div class="line">                    mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">                &#125;</div><div class="line"></div><div class="line">                <span class="meta">@Override</span></div><div class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">                    Toast.makeText(getActivity(), <span class="string">"Something went wrong!"</span>, Toast.LENGTH_SHORT).show();</div><div class="line">                    mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">                &#125;</div><div class="line"></div><div class="line">                <span class="meta">@Override</span></div><div class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(AppInfo appInfo)</span> </span>&#123;</div><div class="line">                    mAddedApps.add(appInfo); </div><div class="line">                    mAdapter.addApplication(mAddedApps.size() - <span class="number">1</span>,appInfo);</div><div class="line">                &#125;</div><div class="line">            &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>结果如下：</p>
-<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_6.png" width="240"></p>
-<p>有一个<code>scan()</code>函数的变体，它用初始值作为第一个发射的值，方法特征就像：<code>scan(R,Func2)</code>，就像下图中的例子这样：</p>
-<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_7.png"></p>
-<h2 id="GroupBy"><a href="#GroupBy" class="headerlink" title="GroupBy"></a>GroupBy</h2><p>拿第一个例子开始，我们安装的应用程序列表按照字母表的顺序排序。然而，如果现在我们想按照最近更新日期来排序我们的App时该怎么办？RxJava提供了一个有用的函数从列表中按照指定的规则：<code>groupBy()</code>来分组元素。下图中的例子展示了<code>groupBy()</code>如何将发射的值根据他们的形状来进行分组。</p>
-<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_8.png" alt=""></p>
-<p>这个函数将源Observable变换成一个发射Observables的新的Observable。它们中的每一个新的Observable都发射一组指定的数据。</p>
-<p>为了创建一个分组了的已安装应用列表，我们在<code>loadList()</code>函数中引入了一个新的元素：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">Observable&lt;GroupedObservable&lt;String,AppInfo&gt;&gt; groupedItems = Observable.from(apps)</div><div class="line">    .groupBy(<span class="keyword">new</span> Func1&lt;AppInfo,String&gt;()&#123;</div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> String <span class="title">call</span><span class="params">(AppInfo appInfo)</span></span>&#123;</div><div class="line">            SimpleDateFormat formatter = <span class="keyword">new</span> SimpleDateFormat(<span class="string">"MM/yyyy"</span>);</div><div class="line">            <span class="keyword">return</span> formatter.format(<span class="keyword">new</span> Date(appInfo.getLastUpdateTime()));</div><div class="line">        &#125;</div><div class="line">    &#125;);</div></pre></td></tr></table></figure></p>
-<p>现在我们创建了一个新的Observable，<code>groupedItems</code>，将会发射一个带有<code>GroupedObservable</code>的序列。<code>GroupedObservable</code>是一个特殊的Observable，它源自一个分组的key。在这个例子中，key就是<code>String</code>，代表的意思是<code>Month/Year</code>格式化的最近更新日期。</p>
-<p>这一点，我们已经创建了几个发射<code>AppInfo</code>数据的Observable，用来填充我们的列表。我们想保留字母排序和分组排序。我们将创建一个新的Observable将所有的联系起来，像通常一样然后订阅它：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">Observable.concat(groupedItems)</div><div class="line">    .subscribe(<span class="keyword">new</span> Observable&lt;AppInfo&gt;() &#123;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123;</div><div class="line">            mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123;</div><div class="line">            Toast.makeText(getActivity(), <span class="string">"Something went wrong!"</span>, Toast.LENGTH_SHORT).show();</div><div class="line">            mSwipeRefreshLayout.setRefreshing(<span class="keyword">false</span>);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(AppInfo appInfo)</span> </span>&#123;</div><div class="line">            mAddedApps.add(appInfo); </div><div class="line">            mAdapter.addApplication(mAddedApps.size() - <span class="number">1</span>,appInfo);</div><div class="line">        &#125;</div><div class="line">    &#125;);</div></pre></td></tr></table></figure>
-<p>我们的<code>loadList()</code>函数完成了，结果是：</p>
-<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_9.png" width="240"></p>
-<h2 id="Buffer"><a href="#Buffer" class="headerlink" title="Buffer"></a>Buffer</h2><p>RxJava中的<code>buffer()</code>函数将源Observable变换一个新的Observable，这个新的Observable每次发射一组列表值而不是一个一个发射。</p>
-<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_10.png" alt=""></p>
-<p>上图中展示了<code>buffer()</code>如何将<code>count</code>作为一个参数来指定有多少数据项被包在发射的列表中。实际上，<code>buffer()</code>函数有几种变体。其中有一个时允许你指定一个<code>skip</code>值：此后每当收到skip项数据，用count项数据就填充缓存。如下图所示：</p>
-<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_11.png" alt=""></p>
-<p><code>buffer()</code>带一个<code>timespan</code>的参数，会创建一个每隔timespan时间段就会发射一个列表的Observable。</p>
-<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_12.png" alt=""></p>
-<h2 id="Window"><a href="#Window" class="headerlink" title="Window"></a>Window</h2><p>RxJava的<code>window()</code>函数和<code>buffer()</code>很像，但是它发射的时Observable而不是列表。下图展示了<code>window()</code>如何缓存3个数据项并把它们作为一个新的Observable发射出去。</p>
-<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_13.png" alt=""></p>
-<p>这些Observables中的每一个都发射原始Observable数据的一个子集，数量由<code>count</code>指定,最后发射一个<code>onCompleted()</code>结束。正如<code>buffer()</code>一样,<code>window()</code>也有一个<code>skip</code>变体,如下图所示：</p>
-<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_14.png" alt=""></p>
-<h2 id="Cast"><a href="#Cast" class="headerlink" title="Cast"></a>Cast</h2><p>RxJava的<code>cast()</code>函数是本章中最后一个操作符。它是<code>map()</code>操作符的特殊版本。它将源Observable中的每一项数据都转换为新的类型，把它变成了不同的<code>Class</code>。</p>
-<p><img src="https://github.com/yuxingxin/RxJava-Essentials-CN/raw/master/images/chapter5_15.png" alt=""></p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这一章中，我们学习了RxJava时如何控制和转换可观测序列。用我们现在所学的知识，我们可以创建、过滤、转换我们所想要的任何种类的可观测序列。</p>
-<p>下一章，我们将学习如何组合Observable，合并它们，连接它们，再或者打包它们。</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2017/04/27/chap5/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/chap5/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -1118,85 +1118,6 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/04/27/优化android-studio编译效率的方法/" title="优化android studio编译效率的方法" itemprop="url">优化android studio编译效率的方法</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <ul>
-<li>原文链接 : <a href="https://medium.com/@erikhellman/boosting-the-performance-for-gradle-in-your-android-projects-6d5f9e4580b6" target="_blank" rel="external">Boosting the performance for Gradle in your Android projects</a></li>
-<li>原文作者 : <a href="https://medium.com/@erikhellman" target="_blank" rel="external">Erik Hellman</a></li>
-<li><a href="http://www.devtf.cn" target="_blank" rel="external">译文出自 :  开发技术前线 www.devtf.cn</a></li>
-<li>译者 : <a href="https://github.com/FTExplore" target="_blank" rel="external">FTExplore</a> </li>
-</ul>
-<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>如果你之前用eclipse开发过Android app的化,转到android studio的第一反应也许就是:”编译速度有点慢”. 表现的最明显的一点就是,当我使用eclipse开发的时候,选中了auto building.这个时候<br>我更改了几个字符,eclipse会速度非常快的编译出一个新的apk. 而android studio使用gradle编译,每次编译,即便是更改的代码量很少,也会按照预先设置的task的顺序,依次走完编译的各项流程.所以<br>这点就让人很痛苦. 然而问题总还是要被解决的,作者曾经亲眼看到过使用android studio仅仅用了2.5秒就编译完毕(在代码更改很少的情况下). 现在把如何优化gradle编译速度的方法记录在此,希望可以<br>帮助到广大的同行们.</p>
-<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>gradle现在最新的版本是2.4, 相比较之前的版本, 在编译效率上面有了一个非常大的提高,为了确保你的android项目使用的是最新版的gradle版本,有两种方法可以使用,下面依次进行介绍</p>
-<h3 id="1、在build-gradle中进行设置"><a href="#1、在build-gradle中进行设置" class="headerlink" title="1、在build.gradle中进行设置"></a>1、在build.gradle中进行设置</h3><p>在你的项目gradle文件内(不是app里面的gradle文件), 添加一个task, 代码如下:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function">task <span class="title">wrapper</span><span class="params">(type: Wrapper)</span> </span>&#123;</div><div class="line">    gradleVersion = <span class="string">'2.4'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>然后打开terminal, 输入./gradlew wrapper, 然后gradle就会自动去下载2.4版本,这也是官方推荐的手动设置gradle的方法(<a href="http://gradle.org/docs/current/userguide/gradle_wrapper.html" target="_blank" rel="external">http://gradle.org/docs/current/userguide/gradle_wrapper.html</a>)</p>
-<h3 id="2、使用android-studio对gradle版本进行设置"><a href="#2、使用android-studio对gradle版本进行设置" class="headerlink" title="2、使用android studio对gradle版本进行设置"></a>2、使用android studio对gradle版本进行设置</h3><p>这种方法需要你去手动去gradle官网下载一个zip包,解压缩后,打开android studio 设置界面的Project Structure. 然后手动添加你解压缩后的gradle的磁盘路径即可,可以参考如下的图片</p>
-<p><img src="http://img.blog.csdn.net/20150604104904903" alt="image"></p>
-<p>有一点需要注意的是,这种设置方法仅适用于在你的项目中使用gradle wrapper进行编译打包的操作(就是android studio默认需要的东东).如果你想使用gradle做其他的事情,请出门左转,去gradle官网(<a href="http://gradle.org" target="_blank" rel="external">http://gradle.org</a>)</p>
-<h2 id="守护进程-并行编译"><a href="#守护进程-并行编译" class="headerlink" title="守护进程,并行编译"></a>守护进程,并行编译</h2><p>通过以上步骤,我们设置好了android studio使用最新的gradle版本,下一步就是正式开启优化之路了. 我们需要将gradle作为守护进程一直在后台运行,这样当我们需要编译的时候,gradle就会立即跑过来然后<br>吭哧吭哧的开始干活.除了设置gradle一直开启之外,当你的工作空间存在多个project的时候,还需要设置gradle对这些projects并行编译,而不是单线的依次进行编译操作.</p>
-<p>说了那么多, 那么怎么设置守护进程和并行编译呢?其实非常简单,gradle本身已经有了相关的配置选项,在你电脑的GRADLE_HOME这个环境变量所指的那个文件夹内,有一个<code>.gradle/gradle.properties</code>文件.<br>在这个文件里,放入下面两句话就OK了:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">org.gradle.daemon=true</div><div class="line">org.gradle.parallel=true</div></pre></td></tr></table></figure>
-<p>有一个地方需要注意的是,android studio 本身在编译的时候,已经是使用守护进程中的gradle了,那么这里加上了org.gradle.daemon=true就是保证了你在使用命令行编译apk的时候也是使用的守护进程.</p>
-<p>你也可以将上述的配置文件放到你project中的根目录下,以绝对确保在任何情况下,这个project都会使用守护进程进行编译.不过有些特殊的情况下也许你应该注意守护进程的使用,具体的细节参考<a href="http://gradle.org/docs/current/userguide/gradle_daemon.html#when_should_i_not_use_the_gradle_daemon" target="_blank" rel="external">http://gradle.org/docs/current/userguide/gradle_daemon.html#when_should_i_not_use_the_gradle_daemon</a></p>
-<p>在使用并行编译的时候必须要注意的就是,你的各个project之间不要有依赖关系,否则的话,很可能因为你的Project A 依赖Project B, 而Project B还没有编译出来的时候,gradle就开始编译Project A 了.最终<br>导致编译失败.具体可以参考<a href="http://gradle.org/docs/current/userguide/multi_project_builds.html#sec:decoupled_projects。" target="_blank" rel="external">http://gradle.org/docs/current/userguide/multi_project_builds.html#sec:decoupled_projects。</a></p>
-<p>还有一些额外的gradle设置也许会引起你的兴趣,例如你想增加堆内存的空间,或者指定使用哪个jvm虚拟机等等(代码如下)  </p>
-<p>org.gradle.jvmargs=-Xmx768m<br>org.gradle.java.home=/path/to/jvm</p>
-<p>如果你想详细的了解gradle的配置,请猛戳<a href="http://gradle.org/docs/current/userguide/userguide_single.html#sec:gradle_configuration_properties" target="_blank" rel="external">http://gradle.org/docs/current/userguide/userguide_single.html#sec:gradle_configuration_properties</a></p>
-<h2 id="一个实验性的功能"><a href="#一个实验性的功能" class="headerlink" title="一个实验性的功能"></a>一个实验性的功能</h2><p>最后一个要介绍的是incremental dexing, 这个功能目前还在试验阶段,android studio默认是关闭的, 作者个人是非常推荐的,程序员就是爱折腾啊.</p>
-<p>开启incremental dexing也是非常简单的,就是在app级别的buid.gradle文件中加入下面的代码:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">dexOptions &#123;</div><div class="line">        incremental true</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>感性您的阅读,希望这边文章可以对您有所帮助. 如果您有好的建议或者意见请联系我</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2017/04/27/优化android-studio编译效率的方法/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/优化android-studio编译效率的方法/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
       <a href="/2017/04/27/上传拍下的照片、视频到服务器/" title="上传拍下的照片、视频到服务器" itemprop="url">上传拍下的照片、视频到服务器</a>
   </h1>
   <p class="article-author">By
@@ -1390,6 +1311,85 @@
 	
 	  	<span></span>
 		<a href="/2017/04/27/你可能漏掉的知识点-onResumeFragments/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/你可能漏掉的知识点-onResumeFragments/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/优化android-studio编译效率的方法/" title="优化android studio编译效率的方法" itemprop="url">优化android studio编译效率的方法</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ul>
+<li>原文链接 : <a href="https://medium.com/@erikhellman/boosting-the-performance-for-gradle-in-your-android-projects-6d5f9e4580b6" target="_blank" rel="external">Boosting the performance for Gradle in your Android projects</a></li>
+<li>原文作者 : <a href="https://medium.com/@erikhellman" target="_blank" rel="external">Erik Hellman</a></li>
+<li><a href="http://www.devtf.cn" target="_blank" rel="external">译文出自 :  开发技术前线 www.devtf.cn</a></li>
+<li>译者 : <a href="https://github.com/FTExplore" target="_blank" rel="external">FTExplore</a> </li>
+</ul>
+<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>如果你之前用eclipse开发过Android app的化,转到android studio的第一反应也许就是:”编译速度有点慢”. 表现的最明显的一点就是,当我使用eclipse开发的时候,选中了auto building.这个时候<br>我更改了几个字符,eclipse会速度非常快的编译出一个新的apk. 而android studio使用gradle编译,每次编译,即便是更改的代码量很少,也会按照预先设置的task的顺序,依次走完编译的各项流程.所以<br>这点就让人很痛苦. 然而问题总还是要被解决的,作者曾经亲眼看到过使用android studio仅仅用了2.5秒就编译完毕(在代码更改很少的情况下). 现在把如何优化gradle编译速度的方法记录在此,希望可以<br>帮助到广大的同行们.</p>
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>gradle现在最新的版本是2.4, 相比较之前的版本, 在编译效率上面有了一个非常大的提高,为了确保你的android项目使用的是最新版的gradle版本,有两种方法可以使用,下面依次进行介绍</p>
+<h3 id="1、在build-gradle中进行设置"><a href="#1、在build-gradle中进行设置" class="headerlink" title="1、在build.gradle中进行设置"></a>1、在build.gradle中进行设置</h3><p>在你的项目gradle文件内(不是app里面的gradle文件), 添加一个task, 代码如下:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function">task <span class="title">wrapper</span><span class="params">(type: Wrapper)</span> </span>&#123;</div><div class="line">    gradleVersion = <span class="string">'2.4'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>然后打开terminal, 输入./gradlew wrapper, 然后gradle就会自动去下载2.4版本,这也是官方推荐的手动设置gradle的方法(<a href="http://gradle.org/docs/current/userguide/gradle_wrapper.html" target="_blank" rel="external">http://gradle.org/docs/current/userguide/gradle_wrapper.html</a>)</p>
+<h3 id="2、使用android-studio对gradle版本进行设置"><a href="#2、使用android-studio对gradle版本进行设置" class="headerlink" title="2、使用android studio对gradle版本进行设置"></a>2、使用android studio对gradle版本进行设置</h3><p>这种方法需要你去手动去gradle官网下载一个zip包,解压缩后,打开android studio 设置界面的Project Structure. 然后手动添加你解压缩后的gradle的磁盘路径即可,可以参考如下的图片</p>
+<p><img src="http://img.blog.csdn.net/20150604104904903" alt="image"></p>
+<p>有一点需要注意的是,这种设置方法仅适用于在你的项目中使用gradle wrapper进行编译打包的操作(就是android studio默认需要的东东).如果你想使用gradle做其他的事情,请出门左转,去gradle官网(<a href="http://gradle.org" target="_blank" rel="external">http://gradle.org</a>)</p>
+<h2 id="守护进程-并行编译"><a href="#守护进程-并行编译" class="headerlink" title="守护进程,并行编译"></a>守护进程,并行编译</h2><p>通过以上步骤,我们设置好了android studio使用最新的gradle版本,下一步就是正式开启优化之路了. 我们需要将gradle作为守护进程一直在后台运行,这样当我们需要编译的时候,gradle就会立即跑过来然后<br>吭哧吭哧的开始干活.除了设置gradle一直开启之外,当你的工作空间存在多个project的时候,还需要设置gradle对这些projects并行编译,而不是单线的依次进行编译操作.</p>
+<p>说了那么多, 那么怎么设置守护进程和并行编译呢?其实非常简单,gradle本身已经有了相关的配置选项,在你电脑的GRADLE_HOME这个环境变量所指的那个文件夹内,有一个<code>.gradle/gradle.properties</code>文件.<br>在这个文件里,放入下面两句话就OK了:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">org.gradle.daemon=true</div><div class="line">org.gradle.parallel=true</div></pre></td></tr></table></figure>
+<p>有一个地方需要注意的是,android studio 本身在编译的时候,已经是使用守护进程中的gradle了,那么这里加上了org.gradle.daemon=true就是保证了你在使用命令行编译apk的时候也是使用的守护进程.</p>
+<p>你也可以将上述的配置文件放到你project中的根目录下,以绝对确保在任何情况下,这个project都会使用守护进程进行编译.不过有些特殊的情况下也许你应该注意守护进程的使用,具体的细节参考<a href="http://gradle.org/docs/current/userguide/gradle_daemon.html#when_should_i_not_use_the_gradle_daemon" target="_blank" rel="external">http://gradle.org/docs/current/userguide/gradle_daemon.html#when_should_i_not_use_the_gradle_daemon</a></p>
+<p>在使用并行编译的时候必须要注意的就是,你的各个project之间不要有依赖关系,否则的话,很可能因为你的Project A 依赖Project B, 而Project B还没有编译出来的时候,gradle就开始编译Project A 了.最终<br>导致编译失败.具体可以参考<a href="http://gradle.org/docs/current/userguide/multi_project_builds.html#sec:decoupled_projects。" target="_blank" rel="external">http://gradle.org/docs/current/userguide/multi_project_builds.html#sec:decoupled_projects。</a></p>
+<p>还有一些额外的gradle设置也许会引起你的兴趣,例如你想增加堆内存的空间,或者指定使用哪个jvm虚拟机等等(代码如下)  </p>
+<p>org.gradle.jvmargs=-Xmx768m<br>org.gradle.java.home=/path/to/jvm</p>
+<p>如果你想详细的了解gradle的配置,请猛戳<a href="http://gradle.org/docs/current/userguide/userguide_single.html#sec:gradle_configuration_properties" target="_blank" rel="external">http://gradle.org/docs/current/userguide/userguide_single.html#sec:gradle_configuration_properties</a></p>
+<h2 id="一个实验性的功能"><a href="#一个实验性的功能" class="headerlink" title="一个实验性的功能"></a>一个实验性的功能</h2><p>最后一个要介绍的是incremental dexing, 这个功能目前还在试验阶段,android studio默认是关闭的, 作者个人是非常推荐的,程序员就是爱折腾啊.</p>
+<p>开启incremental dexing也是非常简单的,就是在app级别的buid.gradle文件中加入下面的代码:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">dexOptions &#123;</div><div class="line">        incremental true</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>感性您的阅读,希望这边文章可以对您有所帮助. 如果您有好的建议或者意见请联系我</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/优化android-studio编译效率的方法/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/优化android-studio编译效率的方法/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -1731,89 +1731,6 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/04/27/创建-RecyclerView-LayoutManager-Redux/" title="创建-RecyclerView-LayoutManager-Redux" itemprop="url">创建-RecyclerView-LayoutManager-Redux</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <ul>
-<li>原文链接 : <a href="http://wiresareobsolete.com/2015/02/recyclerview-layoutmanager-redux/" target="_blank" rel="external">Building A RecyclerView LayoutManager – Redux</a></li>
-<li>原文作者 : <a href="http://wiresareobsolete.com/" target="_blank" rel="external">Dave Smith</a></li>
-<li><a href="http://www.devtf.cn" target="_blank" rel="external">译文出自 :  开发技术前线 www.devtf.cn</a></li>
-<li>译者 : <a href="https://github.com/bboyfeiyu" target="_blank" rel="external">Mr.Simple</a> </li>
-<li>校对者: <a href="https://github.com/chaossss" target="_blank" rel="external">chaossss</a>  </li>
-<li>状态 :  完成 </li>
-</ul>
-<p>这篇文章是RecyclerView系列文章的结尾篇。前三部分的链接在这里 :       </p>
-<ul>
-<li><a href="../issue-9/创建-RecyclerView-LayoutManager-Part-1.md">第一部分</a></li>
-<li><a href="./创建-RecyclerView-LayoutManager-Part-2.md">第二部分</a></li>
-<li><a href="./创建-RecyclerView-LayoutManager-Part-3.md">第三部分</a></li>
-</ul>
-<p>当我在写这个系列的最后一篇文章，也就是关于predictIve animation的讨论时，我突然想到几个很有意思的点，并且很有讨论价值。这个系列文章以调查RecyclerView是否能够以简单的方式满足竖向、横向滚动的布局需求以及开发者要定制一个LayoutManager的难度有多大开始。这篇文章中我选择了一个基本的网格布局作为自定义layoutManager的示例。</p>
-<p>下面这幅图展示了运用这个自定义LayoutManager到RecyclerView的滚动效果。       </p>
-<p><img src="http://i.embed.ly/1/display/resize?url=http%3A%2F%2Fwiresareobsolete.com%2Fwp-content%2Fuploads%2F2015%2F02%2FGridWindow.gif&amp;grow=true&amp;key=92b31102528511e1a2ec4040d3dc5c07&amp;height=400" alt=""></p>
-<h2 id="打破常规设计"><a href="#打破常规设计" class="headerlink" title="打破常规设计"></a>打破常规设计</h2><p>无论你打算如何组织Adapter的位置（从左到右，上到下等等）,内容视图的视角都是显示部分不连贯数据集的区域。更确切地说，在第一个和最后一个可视位置之间的Adapter区域的数据项也会在可视区域view的外面。 </p>
-<p>这是一个很重要的点，因为它与在单轴上滚动的布局大相径庭（从而导致与当前框架下提供的默认布局背道而驰）。这些标准小工具显示，数据集是在一个连接块范围内–从第一个到最后一个可视位置之间不间断。</p>
-<p>RecyclerView LayoutManager API会假定有一个可见的数据集合，RecyclerView LayoutManager只会显示数据集合中某个范围内可见的数据项，然后产生一个像上述所展示的网格布局一样的布局效果，这稍微有那么点挑战。在predictive animation里没有什么比这部分更加明显了。为了便于扩展，我感觉在这里指出这些毛病是非常必要的。</p>
-<h2 id="假设1-：-从不可见区域移除一个数据项不会影响当前可见的View"><a href="#假设1-：-从不可见区域移除一个数据项不会影响当前可见的View" class="headerlink" title="假设1 ： 从不可见区域移除一个数据项不会影响当前可见的View"></a>假设1 ： 从不可见区域移除一个数据项不会影响当前可见的View</h2><p>当你考虑到一个Adapter移除一个数据项时LinearLayoutManager或者GridLayoutManager会做何反应时，这两个LayoutManager实际上都处理得非常好。如果被移除的数据项是可见的，一个可用的区域将会空置出来，此时就需要一个周边的View进行填充。这意味着周边显示的View必须被布局到这个位置以填补缺口。然而，并没有一个示例表明当一个移除操作执行时会发送一个隐藏视图的操作，唯一被隐藏的视图是那些被显式移除的。如果被移除的View在可见区域之外，那么对于可见区域的布局不会产生影响。在这个情况之下，你不会看到任何动画，它可能做出的修改是数据项被移到其他位置。</p>
-<p>从上述的情况看，这与文章开头我们提到的一样，LayoutManager显示的是一个不连续的数据项。然而，这一可视区域的不连续本质使得数据项在屏幕外从可视区域内移除！换种说法，它们的位置处于第一个和最后一个位置之间，但是目前数据项view并不在布局中。这导致的结果就是，屏幕外发生的数据项移除可以并且会影响我们在布局动画处理时view的生成和消失。</p>
-<p>在有机会对view的生成进行布局时，预布局是RecyclerView动画的关键阶段。RecyclerView通过其初始位置值将view返回，据此我们可以将内容布局在其初始状态。但是，当view移除与可视区域不相交时。RecyclerView就会通过其最终位置值将view返回。这样一来，在没有附加记账的情况下处理view的生成就变得困难得多。不过话说回来，难是难，也还是可以做到。</p>
-<p>在上一篇文章中我们看到的FixedGridLayoutManager，我们不仅要解析可视view，还要听从onItemsRemoved()的回调来找到移除点，并妥当处理所有生成的view案例。RecyclerView确保我们在需要时，该回调会在预布局之前出现（屏幕外案例），但相反情况下会在预布局之后出现。RecyclerView这么做是为了避免这些事件与你的布局产生冲突–其时间点对我们来说只是一个美丽的意外。</p>
-<p>我们还需要追踪的一个事实就是，可视移除会以一种我们意料之中的方式偏移view的位置，而屏幕外移除则不会。这也是为什么移除会被冠以不同类型的原因。上一篇文章忽略的一点表明，在屏幕外进行移除时，我们会对view生成逻辑提供一个手动偏移。。。所以当移除可视时，位置之间会相互匹配。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">fillGrid</span><span class="params">(<span class="keyword">int</span> direction, <span class="keyword">int</span> emptyLeft, <span class="keyword">int</span> emptyTop, RecyclerView.Recycler recycler,</span></span></div><div class="line">        <span class="keyword">boolean</span> preLayout, SparseIntArray removedPositions) &#123;</div><div class="line">    …</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; getVisibleChildCount(); i++) &#123;</div><div class="line">        <span class="keyword">int</span> nextPosition = positionOfIndex(i);</div><div class="line"></div><div class="line">        <span class="comment">/*</span></div><div class="line">         * When a removal happens out of bounds, the pre-layout positions of items</div><div class="line">         * after the removal are shifted to their final positions ahead of schedule.</div><div class="line">         * We have to track off-screen removals and shift those positions back</div><div class="line">         * so we can properly lay out all current (and appearing) views in their</div><div class="line">         * initial locations.</div><div class="line">         */</div><div class="line">        <span class="keyword">int</span> offsetPositionDelta = <span class="number">0</span>;</div><div class="line">        <span class="keyword">if</span> (preLayout) &#123;</div><div class="line">            <span class="keyword">int</span> offsetPosition = nextPosition;</div><div class="line"></div><div class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> offset = <span class="number">0</span>; offset &lt; removedPositions.size(); offset++) &#123;</div><div class="line">                <span class="comment">//Look for off-screen removals that are less-than this</span></div><div class="line">                <span class="keyword">if</span> (removedPositions.valueAt(offset) == REMOVE_INVISIBLE</div><div class="line">                        &amp;&amp; removedPositions.keyAt(offset) &lt; nextPosition) &#123;</div><div class="line">                    <span class="comment">//Offset position to match</span></div><div class="line">                    offsetPosition--;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            offsetPositionDelta = nextPosition - offsetPosition;</div><div class="line">            nextPosition = offsetPosition;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (nextPosition &lt; <span class="number">0</span> || nextPosition &gt;= getItemCount()) &#123;</div><div class="line">            <span class="comment">//Item space beyond the data set, don't attempt to add a view</span></div><div class="line">            <span class="keyword">continue</span>;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        …</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (i % mVisibleColumnCount == (mVisibleColumnCount - <span class="number">1</span>)) &#123;</div><div class="line">            leftOffset = startLeftOffset;</div><div class="line">            topOffset += mDecoratedChildHeight;</div><div class="line"></div><div class="line">            <span class="comment">//During pre-layout, on each column end, apply any additional appearing views</span></div><div class="line">            <span class="keyword">if</span> (preLayout) &#123;</div><div class="line">                layoutAppearingViews(recycler, view, nextPosition, removedPositions.size(), offsetPositionDelta);</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            leftOffset += mDecoratedChildWidth;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    …</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>之后offsetPositionDelta值会作为我们在预布局中使用到的行/列位置的全局偏移被传递到layoutAppearingViews()。如果不是出于附加记账要求，这一偏移完全可以不必存在。</p>
-<h2 id="假设-2：添加新的数据项只会导致同级view的消失，而不是生成。"><a href="#假设-2：添加新的数据项只会导致同级view的消失，而不是生成。" class="headerlink" title="假设#2：添加新的数据项只会导致同级view的消失，而不是生成。"></a>假设#2：添加新的数据项只会导致同级view的消失，而不是生成。</h2><p>添加了新的数据项之后，反面为真。如果在添加时数据项为可视，那么标准布局管理器会在屏幕外推开不可视的view以便腾出空间。之前没有出现过关于这种行为会同时触发一个或多个同级view滑向可视子类位置的案例。移除也是同样的道理，在可视区域外添加数据项并不会影响可视view，所以通常来说动画也不会起作用。</p>
-<p>对于FixedGridLayoutManager或其他任何非连贯区域的布局，在可视区域内还是可视区域外进行添加并没有多大差别。两种情况中我们都需要管理可能出现的view生成和消失。而我们在移除中使用的方案在这里则不可行，因为onItemsAdded()总是在预布局之后被调用。。。这一次我们就没那么幸运地再一次能够碰到美丽的意外了。</p>
-<p>缺少了那次回调，关于添加数据项，我们实际上在预布局时就没有多少可做的了。这样一来就变成了布局额外的view以备不时之需，而不布局一定量的额外view就会损害性能这两种情况之间的妥协。FixedGridLayoutManager在添加数据项时不支持预测view生成。</p>
-<h2 id="一切才刚刚开始"><a href="#一切才刚刚开始" class="headerlink" title="一切才刚刚开始"></a>一切才刚刚开始</h2><p>RecyclerView APIs是一个新生事物，现有案例中还有非常多的地方需要改进的。同时，它也非常复杂，想要做对并不容易。表面上看起来RecyclerView要求大家付出的努力，背后可能大家要花10倍的精力才能实现。而且这些类型越到后面可能月蛋疼。希望正在尝试这种做法的各位同仁可以视本文为一个预警，不要盲目浪费时间，但同时我们也期待这这个框架的日渐成熟。</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2017/04/27/创建-RecyclerView-LayoutManager-Redux/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/创建-RecyclerView-LayoutManager-Redux/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
       <a href="/2017/04/27/创建-RecyclerView-LayoutManager-Part-2/" title="创建 RecyclerView LayoutManager – Part 2" itemprop="url">创建 RecyclerView LayoutManager – Part 2</a>
   </h1>
   <p class="article-author">By
@@ -2096,7 +2013,7 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/04/27/在Android Lollipop中使用Palette抽取Bitmap颜色/" title="在Android Lollipop中使用Palette抽取Bitmap颜色" itemprop="url">在Android Lollipop中使用Palette抽取Bitmap颜色</a>
+      <a href="/2017/04/27/创建-RecyclerView-LayoutManager-Redux/" title="创建-RecyclerView-LayoutManager-Redux" itemprop="url">创建-RecyclerView-LayoutManager-Redux</a>
   </h1>
   <p class="article-author">By
        
@@ -2110,75 +2027,36 @@
     <div class="article-content">
         
         <ul>
-<li>原文链接 : <a href="https://www.bignerdranch.com/blog/extracting-colors-to-a-palette-with-android-lollipop/" target="_blank" rel="external">Extracting Colors to a Palette with Android Lollipop</a></li>
+<li>原文链接 : <a href="http://wiresareobsolete.com/2015/02/recyclerview-layoutmanager-redux/" target="_blank" rel="external">Building A RecyclerView LayoutManager – Redux</a></li>
+<li>原文作者 : <a href="http://wiresareobsolete.com/" target="_blank" rel="external">Dave Smith</a></li>
+<li><a href="http://www.devtf.cn" target="_blank" rel="external">译文出自 :  开发技术前线 www.devtf.cn</a></li>
+<li>译者 : <a href="https://github.com/bboyfeiyu" target="_blank" rel="external">Mr.Simple</a> </li>
+<li>校对者: <a href="https://github.com/chaossss" target="_blank" rel="external">chaossss</a>  </li>
+<li>状态 :  完成 </li>
 </ul>
-<p>一些Support库随着Android Lollipop的发布而诞生了，其中就有Palette。这个库可以让你很轻松地从一幅图中抽取特征颜色，这在你希望界面的颜色风格适应指定图片时非常有用，它还会提供与指定颜色相搭配的字体颜色。</p>
-<p>Palette有一个用法我特别喜欢：它可以定制图像波纹的颜色。这是其实一个微不足道的效果，但是我认为相比于纯灰色波纹来说是一个很大的提升。你需要在工程下的<code>build.gradle</code>里添加依赖才可以使用Palette，像如下代码所示：</p>
-<pre><code>dependencies {
-  compile &apos;com.android.support:palette-v7:21.0.0&apos;
-}
-</code></pre><p>生成一幅图像的Palette有两种方法：</p>
+<p>这篇文章是RecyclerView系列文章的结尾篇。前三部分的链接在这里 :       </p>
 <ul>
-<li><code>generate(Bitmap)</code> 生成含有16种颜色种类的Palette；</li>
-<li><code>generate(Bitmap, int)</code> 生成含有指定数量颜色种类的Palette，数量越多需要的时间越久。</li>
+<li><a href="../issue-9/创建-RecyclerView-LayoutManager-Part-1.md">第一部分</a></li>
+<li><a href="./创建-RecyclerView-LayoutManager-Part-2.md">第二部分</a></li>
+<li><a href="./创建-RecyclerView-LayoutManager-Part-3.md">第三部分</a></li>
 </ul>
-<p>这两个方法是同步方法，由于他们很可能会比较耗时（在分析大图片或者所需颜色较多时），所以它们不应该在主线程中执行。你应该先在别的线程中使用这两个函数进行解析，解析成功之后再使用。</p>
-<p>不过有时候你不会在加载图片的线程（非主线程）中使用解析出的颜色，所以Palette提供了异步方法，他们与之前的函数的区别就是需要传入<code>PaletteAsyncListener</code>，提供在图片解析完成后的回调函数：</p>
-<ul>
-<li><code>generateAsync(Bitmap, PaletteAsyncListener)</code></li>
-<li><code>generateAsync(Bitmap, int, PaletteAsyncListener)</code></li>
-</ul>
-<p><code>PaletteAsyncListener</code>的实现是非常简单的（参考下面这几行代码），它只要重写<code>onGenerated</code>就好了。如此一来你就可以在任何需要的时候使用这两个函数创建Palette。</p>
-<pre><code>Palette.PaletteAsyncListener listener = new Palette.PaletteAsyncListener() {
-  public void onGenerated(Palette palette) {
-    // 使用Palette对象，获取解析出的颜色
-  }
-}
-</code></pre><p>Palette默认会解析出图像的16种特征颜色种类，但是这六种颜色是你最经常用到的：</p>
-<ul>
-<li>vibrant(鲜艳色)</li>
-<li>dark vibrant(鲜艳色中的暗色)</li>
-<li>light vibrant(鲜艳色中的亮色)</li>
-<li>muted(柔和色)</li>
-<li>dark muted(柔和色中的暗色)</li>
-<li>light muted(柔和色中的亮色)</li>
-</ul>
-<p>这是一个Palette解析六个主颜色种类的例子：</p>
-<p><img src="http://img.blog.csdn.net/20150827183303088" alt="Six Color"></p>
-<p>你获取Palette对象之后，可以通过以下这些内置getter函数直接获取这六个颜色。你需要传入默认颜色防止Palette无法解析到指定颜色种类，返回的类型是24位RGB颜色数值。</p>
-<pre><code>Palette palette = Palette.generate(myBitmap);
-int vibrant = palette.getVibrantColor(0x000000);
-int vibrantLight = palette.getLightVibrantColor(0x000000);
-int vibrantDark = palette.getDarkVibrantColor(0x000000);
-int muted = palette.getMutedColor(0x000000);
-int mutedLight = palette.getLightMutedColor(0x000000);
-int mutedDark = palette.getDarkMutedColor(0x000000);
-</code></pre><p>###Swatch</p>
-<p>Palette解析出的颜色都来自于对应的<code>Swatch</code>，在<code>Swatch</code>里面含有很多关于对应颜色的有用信息。你可以从<code>Swatch</code>中获取RGB颜色值、HSL颜色向量、对应颜色在图像中所占的比例、与对应颜色搭配的标题字体颜色和正文字体颜色（这两个颜色和对应颜色的对比值是处理好的，你不必再去操心）。如下面这段代码所示：</p>
-<pre><code>Palette palette  = Palette.generate(myBitmap);
-Palette.Swatch swatch = palette.getVibrantSwatch();
-//rgb颜色值
-int rgbColor = swatch.getRgb();
-//hsl颜色向量
-float[] hslValues = swatch.getHsl();
-//该颜色在图像中所占的像素数
-int pixelCount = swatch.getPopulation();
-//对应的标题字体颜色
-int titleTextColor = swatch.getTitleTextColor();
-//对应的正文字体颜色
-int bodyTextColor = swatch.getBodyTextColor();
-</code></pre><p>获取六个主颜色的<code>Swatch</code>要使用与之前直接获取颜色不同的getter函数，如下面这部分代码所示。它们不需要提供默认值，如果Palette没有解析到对应<code>Swatch</code>，它会直接返回null。</p>
-<pre><code>Palette palette = Palette.generate(myBitmap);
-Palette.Swatch vibrantSwatch = palette.getVibrantSwatch();
-Palette.Swatch vibrantLightSwatch = palette.getLightVibrantSwatch();
-Palette.Swatch vibrantDarkSwatch = palette.getDarkVibrantSwatch();
-Palette.Swatch mutedSwatch = palette.getMutedSwatch();
-Palette.Swatch mutedLightSwatch = palette.getLightMutedSwatch();
-Palette.Swatch mutedDarkSwatch = palette.getDarkMutedSwatch();
-</code></pre><p>Palette只为六种主颜色种类<code>Swatch</code>提供了getter，如果你要使用其他颜色种类的<code>Swatch</code>（一共有16种颜色种类），你需要手动获取它。调用<code>getSwatchs()</code>会返回一个列表，里面有所有获取到的<code>Swatch</code>。</p>
-<p>这里是一个Palette获取所有<code>Swatch</code>的例子，里面展示了它们分别在图像中所占的比例：</p>
-<p><img src="http://img.blog.csdn.net/20150827183359416" alt="all color"></p>
-<p>Palette的异步方法使得它非常容易去使用，而且我也看到了它用在很多地方。它真是一个非常棒的工具，能够收集一幅图中所有的颜色，并将它们总结到几个不同种类的颜色中。我建议你阅读<a href="https://android.googlesource.com/platform/frameworks/support/+/master/v7/palette/src/android/support/v7/graphics" target="_blank" rel="external">源码</a>来更多地学习它！</p>
+<p>当我在写这个系列的最后一篇文章，也就是关于predictIve animation的讨论时，我突然想到几个很有意思的点，并且很有讨论价值。这个系列文章以调查RecyclerView是否能够以简单的方式满足竖向、横向滚动的布局需求以及开发者要定制一个LayoutManager的难度有多大开始。这篇文章中我选择了一个基本的网格布局作为自定义layoutManager的示例。</p>
+<p>下面这幅图展示了运用这个自定义LayoutManager到RecyclerView的滚动效果。       </p>
+<p><img src="http://i.embed.ly/1/display/resize?url=http%3A%2F%2Fwiresareobsolete.com%2Fwp-content%2Fuploads%2F2015%2F02%2FGridWindow.gif&amp;grow=true&amp;key=92b31102528511e1a2ec4040d3dc5c07&amp;height=400" alt=""></p>
+<h2 id="打破常规设计"><a href="#打破常规设计" class="headerlink" title="打破常规设计"></a>打破常规设计</h2><p>无论你打算如何组织Adapter的位置（从左到右，上到下等等）,内容视图的视角都是显示部分不连贯数据集的区域。更确切地说，在第一个和最后一个可视位置之间的Adapter区域的数据项也会在可视区域view的外面。 </p>
+<p>这是一个很重要的点，因为它与在单轴上滚动的布局大相径庭（从而导致与当前框架下提供的默认布局背道而驰）。这些标准小工具显示，数据集是在一个连接块范围内–从第一个到最后一个可视位置之间不间断。</p>
+<p>RecyclerView LayoutManager API会假定有一个可见的数据集合，RecyclerView LayoutManager只会显示数据集合中某个范围内可见的数据项，然后产生一个像上述所展示的网格布局一样的布局效果，这稍微有那么点挑战。在predictive animation里没有什么比这部分更加明显了。为了便于扩展，我感觉在这里指出这些毛病是非常必要的。</p>
+<h2 id="假设1-：-从不可见区域移除一个数据项不会影响当前可见的View"><a href="#假设1-：-从不可见区域移除一个数据项不会影响当前可见的View" class="headerlink" title="假设1 ： 从不可见区域移除一个数据项不会影响当前可见的View"></a>假设1 ： 从不可见区域移除一个数据项不会影响当前可见的View</h2><p>当你考虑到一个Adapter移除一个数据项时LinearLayoutManager或者GridLayoutManager会做何反应时，这两个LayoutManager实际上都处理得非常好。如果被移除的数据项是可见的，一个可用的区域将会空置出来，此时就需要一个周边的View进行填充。这意味着周边显示的View必须被布局到这个位置以填补缺口。然而，并没有一个示例表明当一个移除操作执行时会发送一个隐藏视图的操作，唯一被隐藏的视图是那些被显式移除的。如果被移除的View在可见区域之外，那么对于可见区域的布局不会产生影响。在这个情况之下，你不会看到任何动画，它可能做出的修改是数据项被移到其他位置。</p>
+<p>从上述的情况看，这与文章开头我们提到的一样，LayoutManager显示的是一个不连续的数据项。然而，这一可视区域的不连续本质使得数据项在屏幕外从可视区域内移除！换种说法，它们的位置处于第一个和最后一个位置之间，但是目前数据项view并不在布局中。这导致的结果就是，屏幕外发生的数据项移除可以并且会影响我们在布局动画处理时view的生成和消失。</p>
+<p>在有机会对view的生成进行布局时，预布局是RecyclerView动画的关键阶段。RecyclerView通过其初始位置值将view返回，据此我们可以将内容布局在其初始状态。但是，当view移除与可视区域不相交时。RecyclerView就会通过其最终位置值将view返回。这样一来，在没有附加记账的情况下处理view的生成就变得困难得多。不过话说回来，难是难，也还是可以做到。</p>
+<p>在上一篇文章中我们看到的FixedGridLayoutManager，我们不仅要解析可视view，还要听从onItemsRemoved()的回调来找到移除点，并妥当处理所有生成的view案例。RecyclerView确保我们在需要时，该回调会在预布局之前出现（屏幕外案例），但相反情况下会在预布局之后出现。RecyclerView这么做是为了避免这些事件与你的布局产生冲突–其时间点对我们来说只是一个美丽的意外。</p>
+<p>我们还需要追踪的一个事实就是，可视移除会以一种我们意料之中的方式偏移view的位置，而屏幕外移除则不会。这也是为什么移除会被冠以不同类型的原因。上一篇文章忽略的一点表明，在屏幕外进行移除时，我们会对view生成逻辑提供一个手动偏移。。。所以当移除可视时，位置之间会相互匹配。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">fillGrid</span><span class="params">(<span class="keyword">int</span> direction, <span class="keyword">int</span> emptyLeft, <span class="keyword">int</span> emptyTop, RecyclerView.Recycler recycler,</span></span></div><div class="line">        <span class="keyword">boolean</span> preLayout, SparseIntArray removedPositions) &#123;</div><div class="line">    …</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; getVisibleChildCount(); i++) &#123;</div><div class="line">        <span class="keyword">int</span> nextPosition = positionOfIndex(i);</div><div class="line"></div><div class="line">        <span class="comment">/*</span></div><div class="line">         * When a removal happens out of bounds, the pre-layout positions of items</div><div class="line">         * after the removal are shifted to their final positions ahead of schedule.</div><div class="line">         * We have to track off-screen removals and shift those positions back</div><div class="line">         * so we can properly lay out all current (and appearing) views in their</div><div class="line">         * initial locations.</div><div class="line">         */</div><div class="line">        <span class="keyword">int</span> offsetPositionDelta = <span class="number">0</span>;</div><div class="line">        <span class="keyword">if</span> (preLayout) &#123;</div><div class="line">            <span class="keyword">int</span> offsetPosition = nextPosition;</div><div class="line"></div><div class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> offset = <span class="number">0</span>; offset &lt; removedPositions.size(); offset++) &#123;</div><div class="line">                <span class="comment">//Look for off-screen removals that are less-than this</span></div><div class="line">                <span class="keyword">if</span> (removedPositions.valueAt(offset) == REMOVE_INVISIBLE</div><div class="line">                        &amp;&amp; removedPositions.keyAt(offset) &lt; nextPosition) &#123;</div><div class="line">                    <span class="comment">//Offset position to match</span></div><div class="line">                    offsetPosition--;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            offsetPositionDelta = nextPosition - offsetPosition;</div><div class="line">            nextPosition = offsetPosition;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (nextPosition &lt; <span class="number">0</span> || nextPosition &gt;= getItemCount()) &#123;</div><div class="line">            <span class="comment">//Item space beyond the data set, don't attempt to add a view</span></div><div class="line">            <span class="keyword">continue</span>;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        …</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (i % mVisibleColumnCount == (mVisibleColumnCount - <span class="number">1</span>)) &#123;</div><div class="line">            leftOffset = startLeftOffset;</div><div class="line">            topOffset += mDecoratedChildHeight;</div><div class="line"></div><div class="line">            <span class="comment">//During pre-layout, on each column end, apply any additional appearing views</span></div><div class="line">            <span class="keyword">if</span> (preLayout) &#123;</div><div class="line">                layoutAppearingViews(recycler, view, nextPosition, removedPositions.size(), offsetPositionDelta);</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            leftOffset += mDecoratedChildWidth;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    …</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>之后offsetPositionDelta值会作为我们在预布局中使用到的行/列位置的全局偏移被传递到layoutAppearingViews()。如果不是出于附加记账要求，这一偏移完全可以不必存在。</p>
+<h2 id="假设-2：添加新的数据项只会导致同级view的消失，而不是生成。"><a href="#假设-2：添加新的数据项只会导致同级view的消失，而不是生成。" class="headerlink" title="假设#2：添加新的数据项只会导致同级view的消失，而不是生成。"></a>假设#2：添加新的数据项只会导致同级view的消失，而不是生成。</h2><p>添加了新的数据项之后，反面为真。如果在添加时数据项为可视，那么标准布局管理器会在屏幕外推开不可视的view以便腾出空间。之前没有出现过关于这种行为会同时触发一个或多个同级view滑向可视子类位置的案例。移除也是同样的道理，在可视区域外添加数据项并不会影响可视view，所以通常来说动画也不会起作用。</p>
+<p>对于FixedGridLayoutManager或其他任何非连贯区域的布局，在可视区域内还是可视区域外进行添加并没有多大差别。两种情况中我们都需要管理可能出现的view生成和消失。而我们在移除中使用的方案在这里则不可行，因为onItemsAdded()总是在预布局之后被调用。。。这一次我们就没那么幸运地再一次能够碰到美丽的意外了。</p>
+<p>缺少了那次回调，关于添加数据项，我们实际上在预布局时就没有多少可做的了。这样一来就变成了布局额外的view以备不时之需，而不布局一定量的额外view就会损害性能这两种情况之间的妥协。FixedGridLayoutManager在添加数据项时不支持预测view生成。</p>
+<h2 id="一切才刚刚开始"><a href="#一切才刚刚开始" class="headerlink" title="一切才刚刚开始"></a>一切才刚刚开始</h2><p>RecyclerView APIs是一个新生事物，现有案例中还有非常多的地方需要改进的。同时，它也非常复杂，想要做对并不容易。表面上看起来RecyclerView要求大家付出的努力，背后可能大家要花10倍的精力才能实现。而且这些类型越到后面可能月蛋疼。希望正在尝试这种做法的各位同仁可以视本文为一个预警，不要盲目浪费时间，但同时我们也期待这这个框架的日渐成熟。</p>
 
         
         
@@ -2198,7 +2076,7 @@ Palette.Swatch mutedDarkSwatch = palette.getDarkMutedSwatch();
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2017/04/27/在Android Lollipop中使用Palette抽取Bitmap颜色/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/在Android Lollipop中使用Palette抽取Bitmap颜色/" data-count-type="comments">&nbsp;</a>
+		<a href="/2017/04/27/创建-RecyclerView-LayoutManager-Redux/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/创建-RecyclerView-LayoutManager-Redux/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -2218,7 +2096,7 @@ Palette.Swatch mutedDarkSwatch = palette.getDarkMutedSwatch();
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/04/27/深入理解Shared-Element-Transition/" title="深入理解 Shared Element Transition" itemprop="url">深入理解 Shared Element Transition</a>
+      <a href="/2017/04/27/用RxJava替代EventBus/" title="用RxJava替代EventBus" itemprop="url">用RxJava替代EventBus</a>
   </h1>
   <p class="article-author">By
        
@@ -2231,76 +2109,34 @@ Palette.Swatch mutedDarkSwatch = palette.getDarkMutedSwatch();
 </header>
     <div class="article-content">
         
-        <p>这篇文章会深度分析共享元素 transitions 和它在 Activity &amp; Fragment Transitions API 中的作用。这篇文章是下面这个系列中的第三篇</p>
-<ul>
-<li>Part 1 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-transitions-in-android-lollipop-part1.html" target="_blank" rel="external">在 Activity 和 Fragment 中使用 Transition </a></li>
-<li>Part 2 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-content-transitions-in-depth-part2.html" target="_blank" rel="external">深入理解 Content Transition</a></li>
-<li>Part 3a <a href="http://www.androiddesignpatterns.com/2015/01/activity-fragment-shared-element-transitions-in-depth-part3a.html" target="_blank" rel="external">深入理解共享元素 Transition</a></li>
-<li>Part 3b <a href="http://www.androiddesignpatterns.com/2015/03/activity-postponed-shared-element-transitions-part3b.html" target="_blank" rel="external">延迟共享元素的 Transition</a></li>
-<li>Part 3c 共享元素回调实践 (coming soon!)</li>
-<li>Part 4  Activity &amp; Fragment 过渡动画示例(coming soon!)</li>
+        <ul>
+<li>原文链接 : <a href="https://medium.com/mobiwise-blog/use-rxjava-instead-of-event-bus-libraries-aa78b5023097#.k0ecseaz7" target="_blank" rel="external">use Rxjava instead of Event Bus libraries</a></li>
 </ul>
-<p>Part 3 会分成三个部分: part3a 介绍 共享元素 transitions 的底层操作，part3b 和 part3c<br>主要关注 API 的具体实现细节，例如推迟某些 共享元素 transition 的重要性和如何实现<br>SharedElementCallbacks。</p>
-<p>我们首先会总结下在 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-transitions-in-android-lollipop-part1.html" target="_blank" rel="external">part 1</a> 中提到的关于 共享元素 transition 的知识点，然后说一说在 Android Lollipop 中是怎样使用它来构建合适的过渡动画。</p>
-<p>##什么是 共享元素 Transition ?</p>
-<p>共享元素 transition 决定了 共享元素 视图(也叫做主角视图)在<br>Activity/Fragment 场景过渡时的动画效果。共享元素 的动画<br>在被调用 Activity/Fragment  的 <strong>进入/返回</strong>  共享元素 transition<br><a id="1" href="#b1">(1)</a> 中执行，<br>可以通过下面的<a href="http://developer.android.com/reference/android/view/Window.html" target="_blank" rel="external">Window</a>/<a href="http://developer.android.com/reference/android/app/Fragment.html" target="_blank" rel="external">Fragment</a> 方法设置：</p>
-<ul>
-<li><strong>setSharedElementEnterTransition()</strong> -  <strong>B</strong> 的 <strong>进入</strong> 共享元素 transition ，执行将<br>共享元素视图 从 <strong>A</strong> 中的起始位置移动到它在 <strong>B</strong> 中的最终位置的动画。</li>
-<li><strong>setSharedElementReturnTransition()</strong>  - <strong>B</strong> 的 <strong>返回</strong> 共享元素 transition ，执行将<br>共享元素视图 从 <strong>B</strong> 中起始位置移动到它在 <strong>A</strong> 中的最终位置的动画。</li>
-</ul>
-<p><a href="http://www.androiddesignpatterns.com/assets/videos/posts/2015/01/12/music-opt.mp4" target="_blank" rel="external"><strong>Video 3.1</strong></a> 展示了在 Google Play Music 中是怎样使用共享元素 transition<br>的。这个 transition 包含两个元素：一个 <strong>ImageView</strong>和它的父视图 <strong>CardView</strong>。<br>Transition 期间，<strong>CardView</strong> 会扩展到全屏或收缩回原状，<br><strong>ImageView</strong> 能在这两个 Activity 里无缝的衔接。</p>
-<p>在 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-transitions-in-android-lollipop-part1.html" target="_blank" rel="external">part1 </a> 里只是简单的介绍了下这个话题，这篇文章将会对 共享元素 transition<br>做更深度的分析。例如 共享元素 Transition 在底层是如何实现的？都有哪些类型的 Transition 对象可以使用? Transition 期间 共享元素视图 是在哪里怎样绘制的？接下来的几章里<br>我们会逐个解答这些问题。</p>
-<p>##深入共享元素 Transitions 底层</p>
-<p>之前的文章已经介绍过 Transition 的两个主要任务分别是获取目标视图的 开始&amp;结束 状态和创建这两个状态间视图的过渡动画(Animator)。共享元素 Transition 也一样：<br>在创建动画前需要捕获每一个<br>共享元素视图的起始和结束状态(就是共享元素在 <strong>调用/被调用</strong> Activity/Fragment<br>里的位置，大小和外观)。有了这些信息 共享元素 Transition 就可以确定每一个 共享元素<br>视图应该执行的动画。</p>
-<p>和 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-content-transitions-in-depth-part2.html" target="_blank" rel="external">Content Transitions 的底层</a>相似，框架通过在运行时明确的<br>更改每个 共享元素视图 的属性将这个状态信息提供给 共享元素 Transition 。<br>更准确地说 Activity <strong>A</strong> 启动 Activity <strong>B</strong> 时将会出现以下事件：<a id="2" href="#b2">(2)</a></p>
-<hr>
-<ol>
-<li>Activity <strong>A</strong> 调用 <strong>startActivity()</strong> 构造，测量，布局了一个<br>最初背景色为透明的半透明窗口 Activity <strong>B</strong> 。</li>
-<li>框架将 <strong>B</strong> 中每一个共享元素视图复位到对应的原来在 <strong>A</strong> 中时的位置，接着 <strong>B</strong> 的进入 transition 捕获 <strong>B</strong> 中所有共享元素视图的起始状态。</li>
-<li>框架将 <strong>B</strong> 中每一个共享元素视图复位到对应的在 <strong>B</strong> 的最终位置，接着 <strong>B</strong> 的进入 transition 捕获 B 中所有共享元素视图的结束状态。</li>
-<li><strong>B</strong> 的进入 transition 比较所有共享元素视图的起始和结束状态，根据它们的不同<br>创建一个 <strong>Animator</strong>。</li>
-<li>框架命令 <strong>A</strong> 隐藏共享元素视图，并运行返回的 <strong>Animator</strong>。<strong>B</strong> 中的<br>共享元素视图到位之后，<strong>B</strong> 的窗口背景在 <strong>A </strong>上逐渐显示，直到 <strong>B</strong><br>完全的显示出来，transition 运行完毕。</li>
-</ol>
-<hr>
-<p>Content transitions 是根据每个过渡视图的可见性变化来调节的，<strong>共享元素 transition<br>是根据每个共享元素视图的位置，大小和外观的变化来调节的</strong>。从 API 21 开始，框架提供了<br>几个自定义共享元素场景切换动画的 <strong>Transition</strong> 实现。</p>
-<ul>
-<li><a href="https://developer.android.com/reference/android/transition/ChangeBounds.html" target="_blank" rel="external">ChangeBounds</a> - 捕获共享元素布局边界根据不同构造动画。<br><strong>ChangeBounds</strong> 在共享元素 Transition 中经常使用，大多数共享元素在两个<br>Activity/Fragment 间会有大小 或/和 位置不同。 </li>
-<li><a href="https://developer.android.com/reference/android/transition/ChangeTransform.html" target="_blank" rel="external">ChangeTransform</a>  - 捕获共享元素缩放和角度，<br>根据不同构建动画<a id="3" href="#b3">(3)</a>。</li>
-<li><a href="https://developer.android.com/reference/android/transition/ChangeClipBounds.html" target="_blank" rel="external">ChangeClipBounds</a> - 捕获共享元素的 <a href="https://developer.android.com/reference/android/view/View.html#getClipBounds()" target="_blank" rel="external">clip bounds</a><br>(剪辑边界) ，根据不同构建动画。</li>
-<li><a href="https://developer.android.com/reference/android/transition/ChangeImageTransform.html" target="_blank" rel="external">ChangeImageTransform</a> - 捕获共享元素 ImageView 的<br>变换矩阵( transform matrices) ，根据不同构建动画。结合 <strong>ChangeBounds</strong>，<br>可以让 ImageView<br> 无缝的改变大小，形状和 <a href="https://developer.android.com/reference/android/widget/ImageView.ScaleType.html" target="_blank" rel="external"> ImageView.ScaleType </a>。 </li>
-<li><a href="https://github.com/android/platform_frameworks_base/blob/lollipop-release/core/res/res/transition/move.xml" target="_blank" rel="external">@android:transition/move</a> - 一个 <strong>TransitionSet</strong> ，同时执行上面四种<br>transition 。在 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-transitions-in-android-lollipop-part1.html" target="_blank" rel="external">part 1</a> 里提到过，如果没有明确的声明 进入/返回 共享元素<br>transition ，框架会默认运行这个 transition。</li>
-</ul>
-<hr>
-<p>在上面的例子中，我们还可以发现 <strong>共享元素视图实例并没有在 Activities/Fragments 间<br>“共享”</strong>。事实上，进入/返回 共享元素 transitions期间，用户看到的绝大多数东西都是在<br><strong>B</strong> 的 content view 中绘制的。框架并没有从 <strong>A</strong> 向 <strong>B</strong><br>传递 共享元素视图实例，<br>而是采用了不同的方法实现相同的视觉效果。当 <strong>A</strong> 启动 <strong>B</strong> ，框架收集 <strong>A</strong><br>中共享元素的所有相关信息，并传递给 <strong>B</strong>。接下来 <strong>B</strong> 使用这些信息初始化<br>共享元素视图的起始状态(它们在 <strong>A</strong> 中时对应的大小，位置和外观)。Transition<br>开始时，B 中除了共享元素视图外的所有东西都被初始化为对用户不可见。Tansition<br>的执行过程中，框架将 B 的 Activity 窗口逐渐显示，直到 B<br>中共享元素结束动画窗口变为不透明。</p>
-<hr>
-<p>##使用共享元素 Overlay <a id="4" href="#b4">(4)</a><br>最后，如果想要完全理解共享元素 transition 的运作，我们必须先说说共享元素 overlay。<br>可能不是很明显，<strong>共享元素默认是在整个窗口视图层的顶层  <a href="https://developer.android.com/reference/android/view/ViewOverlay.html" target="_blank" rel="external">ViewOverlay</a><br>上绘制</strong>。简单介绍下 ，<br><strong>ViewOverlay</strong> 这个类是在 API 18 中为了方便在视图层顶层<br>绘制引入的。添加到视图 <strong>ViewOverlay</strong> 之中的Drawable<br>和 view (甚至是一个 <strong>ViewGroup</strong> 的子类) ，<br>将会被绘制在视图的最上层。这就解释了框架为什么<br>默认选择在窗口视图层的  <strong>ViewOverlay</strong> 中绘制共享元素。<br>共享元素视图应该是贯穿整个 transition 的焦点；<br>如果 transitioning views 意外的绘制在共享元素之上就会<br>破坏这个效果<a id="5" href="#b5">(5)</a>。</p>
-<hr>
-<p>虽然共享元素默认绘制在共享元素的 ViewOverlay 之中，但是<br>框架也提供了关闭 overlay 的方法，只要调用<br><a href="https://developer.android.com/reference/android/view/Window.html#setSharedElementsUseOverlay(boolean)" target="_blank" rel="external">Window#setSharedElementsUseOverlay(false) </a><br>就可以了。如果你关闭了 overlay<br>，要留意这样做可能会引起的副作用。例如，<a href="http://www.androiddesignpatterns.com/assets/videos/posts/2015/01/12/overlay-opt.mp4" target="_blank" rel="external">Video 3.2</a><br> 执行了一个简单的共享元素 transition 两次，<br>一次开启和一次关闭 共享元素 overlay 。第一次达到了预期想要的结果，<br>第二次关闭 overlay 后运行的效果不理想。Transition view 从底部向上移入<br>调用 Activity 的 content view 时挡住了部分 共享元素 <strong>ImageView</strong> 。虽然<br>可以改变在 View 上绘制视图的顺序或者通过在共享元素 parent 里调用<br> <strong>setClipChildren(false)</strong> 这些旁门左道来修复问题，但是与可能带来的维护问题<br> 相比真是得不偿失。总之，除非你感觉必须要关掉共享元素 overlay 才能达到你想要的效果，<br> 其他情况尽量不要关闭它，这样会保持代码简洁，并且共享元素 transition 效果更引人注目。</p>
-<p>##结语</p>
-<p>综上所诉，这篇文章讲了三个重点:</p>
-<ol>
-<li>共享元素 transition 确定 共享元素视图(主角视图) 从一个 Activity/Fragment 移动到<br>另一个其间场景过渡的动画。</li>
-<li>共享元素 transition 是根据每一个 共享元素视图 的位置，大小，和外观的变化调节的。</li>
-<li>共享元素默认是绘制在窗口视图的顶层 <strong>ViewOverlay</strong> 上面的。</li>
-</ol>
-<p>希望这篇文章对你有所帮助 ～</p>
-<hr>
-<p>1 Note that the Activity Transition API gives you the ability to also specify exit and reenter shared element transitions using the setSharedElementExitTransition() and setSharedElementReenterTransition() methods, although doing so is usually not necessary. For an example illustrating one possible use case, check out this blog post. For an explanation why exit and reenter shared element transitions are not available for Fragment Transitions, see George Mount’s answer and comments in this StackOverflow post. ↩</p>
-<p>2 A similar sequence of events occurs during the exit/return/reenter transitions for both Activities and Fragments. ↩</p>
-<p>3 One other subtle feature of ChangeTransform is that it can detect and handle changes made to a shared element view’s parent during a transition. This comes in handy when, for example, the shared element’s parent has an opaque background and is by default selected to be a transitioning view during the scene change. In this case, the ChangeTransform will detect that the shared element’s ｀parent is being actively modified by the content transition, pull out the shared element from its parent, and animate the shared element separately. See George Mount’s StackOverflow answer for more information. ↩</p>
-<p>4 Note that this section only pertains to Activity Transitions. Unlike Activity Transitions, shared elements are not drawn in a ViewOverlay by default during Fragment Transitions. That said, you can achieve a similar effect by applying a ChangeTransform transition, which will have the shared element drawn on top of the hierarchy in a ViewOverlay if it detects that its parent has changed. See this StackOverflow post for more information. ↩</p>
-<p>5 Note that one negative side-effect of having shared elements drawn on top of the entire view hierarchy is that this means it will become possible for shared elements to draw on top of the System UI (such as the status bar, navigation bar, and action bar). For more information on how you can prevent this from happening, see this Google+ post. ↩</p>
-<ol>
-<li><p>Activity Transition API 也提供了<br><strong>setSharedElementExitTransition()</strong> 和 <strong>setSharedElementReenterTransition()</strong><br>这两个方法来设置 退出/重入 共享元素过渡，虽然通常来说是不必要的。<br><a href="https://halfthought.wordpress.com/2014/12/08/what-are-all-these-dang-transitions/" target="_blank" rel="external">这篇文章</a>介绍了一个可能会遇到的用例。在这个 <a href="http://stackoverflow.com/questions/27346020/understanding-exit-reenter-shared-element-transitions" target="_blank" rel="external">stackoverflow</a><br>提问中 George Mount 的回答解释了为什么 退出/重入 共享元素 transition 在<br>Fragment Transitions 中不可用。 <a id="b1" href="#1">↩</a></p>
-</li>
-<li><p>Activities 和 Fragments 的 退出/返回/重入 transition 过程中出现事件序列相似  <a id="b2" href="#2">↩</a></p>
-</li>
-<li><strong>ChangeTransform</strong> 还有一个超赞的特性，它可以检测并处理共享元素父视图过渡期间<br>   的改变。当共享元素父视图有一个不透明背景，在场景变换过程中默认被选为<br>   transitioning view 时，<strong>ChangeTransform</strong> 就有了用武之地。如果它检测出<br>   共享元素父视图已被 content transition 更改，就会将共享元素提取出来，单独执行<br>   共享元素的动画。<a href="http://stackoverflow.com/questions/26899779/enter-transition-on-a-fragment-with-a-shared-element-targets-the-shared-element" target="_blank" rel="external">StackOverflow answer</a> 这里有 George Mount<br>   的详细说明。<br>   <a id="b3" href="#3">↩</a></li>
-<li>注意，这部分只与 Activity Transition 有关。和Activity Transition 不同，Fragment Transition<br>   期间共享元素默认不在 <strong>ViewOverlay</strong> 中绘制。尽管如此，你仍可以使用 ChangeTransform<br>   transition 来达到相似的效果，如果它检测到父视图改变了，就会把共享元素绘制在<br>   <strong>ViewOverlay</strong> 的顶层。<a href="http://stackoverflow.com/questions/27892033/is-there-a-setsharedelementsuseoverlay-method-for-fragment-transitions" target="_blank" rel="external">StackOverflow</a> 这里有更多信息。<pre><code>&lt;a id=&quot;b4&quot; href=&quot;#4&quot;&gt;↩&lt;/a&gt;
-</code></pre></li>
-<li>注意，将共享元素绘制在整个图层最顶层也有一些负面效果。有可能<br>   会将共享元素绘制在 System UI 之上(比如 status bar, navigation bar还有 action bar)。<br>   解决方法看这里 <a href="https://plus.google.com/+AlexLockwood/posts/RPtwZ5nNebb" target="_blank" rel="external">Google+ post</a>。<br>   <a id="b5" href="#5">↩</a></li>
-</ol>
-<hr>
+<p>在Android社区，每个人都在讨论RxJava，以及为什么我们应该在Android项目中使用RxJava。当我们开始在Android项目中实现RxJava后，我们注意到，我们的项目不需要引入Otto（或任何其他事件总线库）。通过这篇博客，我将展示我们是如何在项目中用RxJava替代Otto的。</p>
+<h1 id="我们项目中的MVP模式是怎么实现的"><a href="#我们项目中的MVP模式是怎么实现的" class="headerlink" title="我们项目中的MVP模式是怎么实现的"></a>我们项目中的MVP模式是怎么实现的</h1><p>开始开发我们的无线流媒体应用Radyoland的时候，我们决定使用MVP模式来设计我们的代码底层，项目架构等。我们已经分成了几层（domain，model，app等）</p>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*TuU0ZvYeLsaypR8PIeNeyw.png" alt=""></p>
+<p>在model层，我们有基于RESTful的类和接口。在domain层，我们试图实现应用程序的业务逻辑，所以我们写了一些用例类。</p>
+<h1 id="为什么我们当初使用event-bus？"><a href="#为什么我们当初使用event-bus？" class="headerlink" title="为什么我们当初使用event bus？"></a>为什么我们当初使用event bus？</h1><p>如果你的Android应用超过一层，这就意味着你需要在这些层之间传输数据。就我们而言，我们认为，如果我们为数据总线和UI总线定义一个BusUtil类，我们就可以轻松地在这些层（model，domain，presentation）之间传输数据。</p>
+<p>你可以“订阅” ，并从总线发布的特定事件“取消订阅” 。这种方法背后的逻辑是这样运作的。</p>
+<p>在我们的UsecaseController，PresenterImp类中，我们发出一个事件，请求REST实现类中描述的数据并且订阅此事件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">@Override</div><div class="line">public void getRadioList() &#123;</div><div class="line">    Call&lt;RadioWrapper&gt; radioWrapperCall = restInterface.getRadioList();</div><div class="line">    radioWrapperCall.enqueue(new Callback&lt;RadioWrapper&gt;() &#123;</div><div class="line">        @Override</div><div class="line">        public void onResponse(Response&lt;RadioWrapper&gt; response, Retrofit retrofit) &#123;</div><div class="line">            dataBus.post(response.body());</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        @Override</div><div class="line">        public void onFailure(Throwable t) &#123;</div><div class="line">            Timber.e(t.getMessage());</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>当我们调用了带有回调参数的异步数据请求方法，我们用总线发布结果数据，并订阅该事件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@Subscribe</div><div class="line">@Override</div><div class="line">public void onRadioListLoaded(RadioWrapper radioWrapper) &#123;</div><div class="line">    new SaveDatabase(radioWrapper, databaseSource).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);</div><div class="line">    uiBus.post(radioWrapper);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>然后发布数据以更新UI 。activity或fragment应该在onResume()中订阅事件并在onPause()中解除订阅 。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@Subscribe</div><div class="line">@Override</div><div class="line">public void onRadioListLoaded(RadioWrapper radioWrapper) &#123;</div><div class="line">    radioListView.onListLoaded(radioWrapper);</div><div class="line">    radioListView.dismissLoading();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这种实现方法效果还不错。但由于我们是优秀的Android程序猿，总是追求更好的解决方案。我们找到了一个方案，可以摆脱所有的回调和订阅方法。我们决定在代码中使用RxJava和RxAndroid。</p>
+<h1 id="let-me-tell-you-how-we-implemented-Rxjava"><a href="#let-me-tell-you-how-we-implemented-Rxjava" class="headerlink" title="let me tell you how we implemented Rxjava"></a>let me tell you how we implemented Rxjava</h1><p>我们是怎么实现Rxjava的</p>
+<p>首先，我们需要改变所有RestInterface的返回类型 。</p>
+<p>在没有RxJava的情况下 ;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">@GET(&quot;&quot;)</div><div class="line">Call&lt;RadioWrapper&gt; getRadioList();</div></pre></td></tr></table></figure>
+<p>有了Rxjava</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">@GET(&quot;&quot;)</div><div class="line">Observable&lt;RadioWrapper&gt; getRadioList();</div></pre></td></tr></table></figure>
+<p>在REST实现类中，我们有API调用方法。我分享了其中的一个。使用RxJava启动后，我们需要改变这种方法的实现。我们把方法的返回类型改成Observable。经过了必要的改变后，方法看起来像这样。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">@RxLogObservable</div><div class="line">@Override</div><div class="line">public Observable&lt;RadioWrapper&gt; getRadioList() &#123;</div><div class="line">    return restInterface.getRadioList();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我们完成了REST实现类。在此之后，我们需要改变用例的实现类和方法。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">@Override</div><div class="line">public Observable&lt;RadioWrapper&gt; getRadioList() &#123;</div><div class="line"></div><div class="line">    /**</div><div class="line">     * Get radiolist observable from Cache</div><div class="line">     */</div><div class="line">    Observable&lt;RadioWrapper&gt; radioListDB =  databaseSource.getRadioList()</div><div class="line">            .filter(radioWrapper -&gt; radioWrapper.radioList.size() &gt; 0)</div><div class="line">            .subscribeOn(Schedulers.computation());</div><div class="line"></div><div class="line">    /**</div><div class="line">     * Load radiolist from api layer and save it to DB.</div><div class="line">     */</div><div class="line">    Observable&lt;RadioWrapper&gt; radioListApi = apiSource.getRadioList()</div><div class="line">            .doOnNext(radioWrapper -&gt; &#123;</div><div class="line">                Observable.create(subscriber -&gt; &#123;</div><div class="line">                    databaseSource.save(radioWrapper);</div><div class="line">                    subscriber.onCompleted();</div><div class="line">                &#125;).subscribeOn(Schedulers.computation()).subscribe();</div><div class="line">            &#125;)</div><div class="line">            .subscribeOn(Schedulers.io());</div><div class="line"></div><div class="line">    /**</div><div class="line">     * concat db and api observables</div><div class="line">     */</div><div class="line">    return Observable</div><div class="line">            .concat(radioListDB, radioListApi)</div><div class="line">            .observeOn(AndroidSchedulers.mainThread());</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在，我们的方法getRadioList返回一个Observable stream到我们的UI。正如你所看到的，我们根本不<br>需要通过事件总线发送数据。你还可以过滤，合并，缓存，或根据你的需要操作这个数据流。</p>
+<h1 id="我们学到了什么"><a href="#我们学到了什么" class="headerlink" title="我们学到了什么"></a>我们学到了什么</h1><p>虽然RxJava也不是那么好用，但是通过使用RxJava替换Otto，我们已经从代码中删除了许多冗余的回调代码块。在我看来，对于任何REST API的异步数据请求，RxJava都是最佳选择。<br>如果你有更好的解决方法，请随意在这里评论或分享例子。</p>
 
         
         
@@ -2320,7 +2156,89 @@ Palette.Swatch mutedDarkSwatch = palette.getDarkMutedSwatch();
 <div class="comments-count">
 	
 	  	<span></span>
-		<a href="/2017/04/27/深入理解Shared-Element-Transition/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/深入理解Shared-Element-Transition/" data-count-type="comments">&nbsp;</a>
+		<a href="/2017/04/27/用RxJava替代EventBus/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/用RxJava替代EventBus/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/在Activity中使用Thread导致的内存泄漏/" title="在Activity中使用Thread导致的内存泄漏" itemprop="url">在Activity中使用Thread导致的内存泄漏</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ul>
+<li>原文链接 : <a href="http://www.androiddesignpatterns.com/2013/04/activitys-threads-memory-leaks.html" target="_blank" rel="external">Activitys, Threads, &amp; Memory Leaks</a></li>
+</ul>
+<blockquote>
+<p>注：这篇博文涉及的源码可以在 <a href="https://github.com/alexjlockwood/leaky-threads" target="_blank" rel="external">GitHub</a> 上面下载哦</p>
+</blockquote>
+<p>做 Android 开发最常遇到的问题就是在 Activity 的生命周期中协调耗时任务，避免执行任务导致不易察觉的内存泄漏。不妨先读一读下面的代码，代码写了一个简单的 Activity，Activity 在启动后就会开启一个线程，并循环执行该线程中的任务</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="comment">/** </span></div><div class="line"> *  示例向我们展示了在 Activity 的配置改变时（配置改变会导致其下的 Activity 实例被销</div><div class="line">    *  毁）存活。此外，Activity 的 context 也是内存泄漏的一部分，因为每一个线程都被初始</div><div class="line">    *  化为匿名内部类，使得每一个线程都持有一个外部 Activity 实例的隐式引用，使得</div><div class="line">    *  Activity 不会被 Java 的垃圾回收机制回收。</div><div class="line">    */  </div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span> </span>&#123;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span></div><div class="line">  <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">    exampleOne();</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">exampleOne</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">new</span> Thread() &#123;</div><div class="line">      <span class="meta">@Override</span></div><div class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</div><div class="line">          SystemClock.sleep(<span class="number">1000</span>);</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    &#125;.start();</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Activity 配置发生改变会使 Activity 被销毁，并新建一个 Activity，我们总会觉得 Android 系统会将与被销毁的 Activity 相关的一切清理干净，例如回收与 Activity 关联的内存，Activity 执行的线程等等……然而，现实总是很残酷的，刚刚提到的这些东西都不会被回收，并导致内存泄漏，从而显著地影响应用的性能表现。</p>
+<h2 id="Activity-内存泄漏的根源"><a href="#Activity-内存泄漏的根源" class="headerlink" title="Activity 内存泄漏的根源"></a>Activity 内存泄漏的根源</h2><p>如果你读过我以前写的一篇有关 Handler 和 内部类的博文，那我接下来要讲的知识你肯定知道。在 Java 中，非静态匿名内部类会持有其外部类的隐式引用，如果你没有考虑过这一点，那么存储该引用会导致 Activity 被保留，而不是被垃圾回收机制回收。Activity 对象持有其 View 层以及相关联的所有资源文件的引用，换句话说，如果你的内存泄漏发生在 Activity 中，那么你将损失大量的内存空间。</p>
+<p>而这样的问题在 Activity 配置改变时会更加严重，因为 Activity 的配置改变表示 Android 系统将要销毁当前 Activity 并新建一个 Activity。举例来说吧，在使用应用的时候，你执行了10次横屏/竖屏操作，每一次方向的改变都会执行下面的代码，那么我们会发现（使用<a href="http://www.eclipse.org/mat/" target="_blank" rel="external"> Eclipse 的内存分析工具</a>可以看到）每一个 Activity 对象都会因为留有一个隐式引用而被保留在内存中。</p>
+<p><img src="http://www.androiddesignpatterns.com/assets/images/posts/2013/04/15/activity-leak.png" alt=""></p>
+<p>每一次配置的改变都会使 Android 系统新建一个 Activity 并把改变前的 Activity 交给垃圾回收机制回收。但因为线程持有旧 Activity 的隐式引用，使该 Activity 没有被垃圾回收机制回收。这样的问题会导致每一个新建的 Activity 都将发生内存泄漏，与 Activity 相关的所有资源文件也不会被回收，其中的内存泄漏有多严重可想而知。</p>
+<p>看到这里可能你会很害怕，很惶恐，很无助，那我们该怎么办……莫慌，解决办法非常简单，既然我们已经确定了问题的根源，那么对症下药就可以了：我们把该线程类声明为私有的静态内部类就可以解决这个问题：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"> <span class="comment">/**</span></div><div class="line">     * 示例通过将线程类声明为私有的静态内部类避免了 Activity context 的内存泄漏问题，但</div><div class="line">     * 在配置发生改变后，线程仍然会执行。原因在于，DVM 虚拟机持有所有运行线程的引用，无论</div><div class="line">     * 这些线程是否被回收，都与 Activity 的生命周期无关。运行中的线程只会继续运行，直到</div><div class="line">     * Android 系统将整个应用进程杀死</div><div class="line">     */ </div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span> </span>&#123;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span></div><div class="line">  <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">    exampleTwo();</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">exampleTwo</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">new</span> MyThread().start();</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MyThread</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">      <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</div><div class="line">        SystemClock.sleep(<span class="number">1000</span>);</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>通过上面的代码，新线程再也不会持有一个外部 Activity 的隐式引用，而且该 Activity 也会在配置改变后被回收。</p>
+<h2 id="线程内存泄漏的根源"><a href="#线程内存泄漏的根源" class="headerlink" title="线程内存泄漏的根源"></a>线程内存泄漏的根源</h2><p>第二个问题是：对于每个新建 Activity,如果 Activity 中的线程发生发生内存泄漏。在Java中线程是垃圾回收机制的根源，也就是说，在运行系统中DVM虚拟机总会使硬件持有所有运行状态的进程的引用，结果导致处于运行状态的线程将永远不会被回收。因此，你必须为你的后台线程实现销毁逻辑！下面是一种解决办法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line">    * 除了我们需要实现销毁逻辑以保证线程不会发生内存泄漏，其他代码和示例2相同。在退出当前</div><div class="line">    * Activity 前使用 onDestroy() 方法结束你的运行中线程是个不错的选择</div><div class="line"> */</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span> </span>&#123;</div><div class="line">  <span class="keyword">private</span> MyThread mThread;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span></div><div class="line">  <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">    exampleThree();</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">exampleThree</span><span class="params">()</span> </span>&#123;</div><div class="line">    mThread = <span class="keyword">new</span> MyThread();</div><div class="line">    mThread.start();</div><div class="line">  &#125;</div><div class="line"></div><div class="line">     <span class="comment">/**</span></div><div class="line">   * 私有的静态内部类不会持有其外部类的引用，使得 Activity 实例不会在配置改变时发生内</div><div class="line">   * 存泄漏</div><div class="line">      */</div><div class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MyThread</span> <span class="keyword">extends</span> <span class="title">Thread</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> mRunning = <span class="keyword">false</span>;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">      mRunning = <span class="keyword">true</span>;</div><div class="line">      <span class="keyword">while</span> (mRunning) &#123;</div><div class="line">        SystemClock.sleep(<span class="number">1000</span>);</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> </span>&#123;</div><div class="line">      mRunning = <span class="keyword">false</span>;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="meta">@Override</span></div><div class="line">  <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onDestroy</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onDestroy();</div><div class="line">    mThread.close();</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>通过上面的代码，我们在 onDestroy() 方法中结束了线程，确保不会发生意外的线程的内存泄漏问题。如果你想要在配置改变后保留该线程（而不是每一次在关闭 Activity 后都要新建一个线程），那我建议你使用 Fragment 去完成该耗时任务。你可以翻我以前的博文，一名叫作<strong>“Handling Configuration Changes with Fragments”</strong>应该能满足你的需求，在API demo中也提供了很好理解的例子来为你阐述相关概念。</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>Android 开发过程中，在 Activity 的生命周期里协调耗时任务可能会很困难，你一不小心就会导致内存泄漏问题。下面是一些小提示，能帮助你预防内存泄漏问题的发生：</p>
+<ul>
+<li><p><strong>尽可能使用静态内部类而不是非静态内部类。</strong>每一个非静态内部类实例都会持有一个外部类的引用，若该引用是 Activity 的引用，那么该 Activity 在被销毁时将无法被回收。如果你的静态内部类需要一个相关 Activity 的引用以确保功能能够正常运行，那么你得确保你在对象中使用的是一个 Activity 的弱引用，否则你的 Activity 将会发生意外的内存泄漏。</p>
+</li>
+<li><p><strong>不要总想着 Java 的垃圾回收机制会帮你解决所有内存回收问题。</strong>就像上面的示例，我们以为垃圾回收机制会帮我们将不需要使用的内存回收，例如：我们需要结束一个 Activity，那么它的实例和相关的线程都该被回收。但现实并不会像我们剧本那样走。Java 线程会一直存活，直到他们都被显式关闭，抑或是其进程被 Android 系统杀死。所以，为你的后台线程实现销毁逻辑是你在使用线程时必须时刻铭记的细节，此外，你在设计销毁逻辑时要根据 Activity 的生命周期去设计，避免出现 Bug。</p>
+</li>
+<li><p><strong>考虑你是否真的需要使用线程。</strong>Android 应用的框架层为我们提供了很多便于开发者执行后台操作的类。例如：我们可以使用 Loader 代替在 Activity 的生命周期中用线程通过注入执行短暂的异步后台查询操作，考虑用 Service 将结构通知给 UI 的 BroadcastReceiver。最后，记住，这篇博文中对线程进行的讨论同样适用于 AsyncTask（因为 AsyncTask 使用 ExecutorService 执行它的任务）。然而，虽说 ExecutorService 只能在短暂操作（文档说最多几秒）中被使用，那么这些方法导致的 Activity 内存泄漏应该永远不会发生。</p>
+</li>
+</ul>
+<p>这篇博文的源码可以在 <a href="https://github.com/alexjlockwood/leaky-threads" target="_blank" rel="external">GitHub</a> 中下载，你也可以在 <a href="https://play.google.com/store/apps/details?id=com.adp.leaky.threads" target="_blank" rel="external">Google Play</a> 下载 APK 使用。</p>
+<p><img src="http://www.androiddesignpatterns.com/assets/images/posts/2013/04/15/leaky-threads-screenshot.png" alt=""></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/在Activity中使用Thread导致的内存泄漏/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/在Activity中使用Thread导致的内存泄漏/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
