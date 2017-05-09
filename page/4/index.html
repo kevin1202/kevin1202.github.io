@@ -78,128 +78,6 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/04/27/在Android Lollipop中使用Palette抽取Bitmap颜色/" title="在Android Lollipop中使用Palette抽取Bitmap颜色" itemprop="url">在Android Lollipop中使用Palette抽取Bitmap颜色</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <ul>
-<li>原文链接 : <a href="https://www.bignerdranch.com/blog/extracting-colors-to-a-palette-with-android-lollipop/" target="_blank" rel="external">Extracting Colors to a Palette with Android Lollipop</a></li>
-</ul>
-<p>一些Support库随着Android Lollipop的发布而诞生了，其中就有Palette。这个库可以让你很轻松地从一幅图中抽取特征颜色，这在你希望界面的颜色风格适应指定图片时非常有用，它还会提供与指定颜色相搭配的字体颜色。</p>
-<p>Palette有一个用法我特别喜欢：它可以定制图像波纹的颜色。这是其实一个微不足道的效果，但是我认为相比于纯灰色波纹来说是一个很大的提升。你需要在工程下的<code>build.gradle</code>里添加依赖才可以使用Palette，像如下代码所示：</p>
-<pre><code>dependencies {
-  compile &apos;com.android.support:palette-v7:21.0.0&apos;
-}
-</code></pre><p>生成一幅图像的Palette有两种方法：</p>
-<ul>
-<li><code>generate(Bitmap)</code> 生成含有16种颜色种类的Palette；</li>
-<li><code>generate(Bitmap, int)</code> 生成含有指定数量颜色种类的Palette，数量越多需要的时间越久。</li>
-</ul>
-<p>这两个方法是同步方法，由于他们很可能会比较耗时（在分析大图片或者所需颜色较多时），所以它们不应该在主线程中执行。你应该先在别的线程中使用这两个函数进行解析，解析成功之后再使用。</p>
-<p>不过有时候你不会在加载图片的线程（非主线程）中使用解析出的颜色，所以Palette提供了异步方法，他们与之前的函数的区别就是需要传入<code>PaletteAsyncListener</code>，提供在图片解析完成后的回调函数：</p>
-<ul>
-<li><code>generateAsync(Bitmap, PaletteAsyncListener)</code></li>
-<li><code>generateAsync(Bitmap, int, PaletteAsyncListener)</code></li>
-</ul>
-<p><code>PaletteAsyncListener</code>的实现是非常简单的（参考下面这几行代码），它只要重写<code>onGenerated</code>就好了。如此一来你就可以在任何需要的时候使用这两个函数创建Palette。</p>
-<pre><code>Palette.PaletteAsyncListener listener = new Palette.PaletteAsyncListener() {
-  public void onGenerated(Palette palette) {
-    // 使用Palette对象，获取解析出的颜色
-  }
-}
-</code></pre><p>Palette默认会解析出图像的16种特征颜色种类，但是这六种颜色是你最经常用到的：</p>
-<ul>
-<li>vibrant(鲜艳色)</li>
-<li>dark vibrant(鲜艳色中的暗色)</li>
-<li>light vibrant(鲜艳色中的亮色)</li>
-<li>muted(柔和色)</li>
-<li>dark muted(柔和色中的暗色)</li>
-<li>light muted(柔和色中的亮色)</li>
-</ul>
-<p>这是一个Palette解析六个主颜色种类的例子：</p>
-<p><img src="http://img.blog.csdn.net/20150827183303088" alt="Six Color"></p>
-<p>你获取Palette对象之后，可以通过以下这些内置getter函数直接获取这六个颜色。你需要传入默认颜色防止Palette无法解析到指定颜色种类，返回的类型是24位RGB颜色数值。</p>
-<pre><code>Palette palette = Palette.generate(myBitmap);
-int vibrant = palette.getVibrantColor(0x000000);
-int vibrantLight = palette.getLightVibrantColor(0x000000);
-int vibrantDark = palette.getDarkVibrantColor(0x000000);
-int muted = palette.getMutedColor(0x000000);
-int mutedLight = palette.getLightMutedColor(0x000000);
-int mutedDark = palette.getDarkMutedColor(0x000000);
-</code></pre><p>###Swatch</p>
-<p>Palette解析出的颜色都来自于对应的<code>Swatch</code>，在<code>Swatch</code>里面含有很多关于对应颜色的有用信息。你可以从<code>Swatch</code>中获取RGB颜色值、HSL颜色向量、对应颜色在图像中所占的比例、与对应颜色搭配的标题字体颜色和正文字体颜色（这两个颜色和对应颜色的对比值是处理好的，你不必再去操心）。如下面这段代码所示：</p>
-<pre><code>Palette palette  = Palette.generate(myBitmap);
-Palette.Swatch swatch = palette.getVibrantSwatch();
-//rgb颜色值
-int rgbColor = swatch.getRgb();
-//hsl颜色向量
-float[] hslValues = swatch.getHsl();
-//该颜色在图像中所占的像素数
-int pixelCount = swatch.getPopulation();
-//对应的标题字体颜色
-int titleTextColor = swatch.getTitleTextColor();
-//对应的正文字体颜色
-int bodyTextColor = swatch.getBodyTextColor();
-</code></pre><p>获取六个主颜色的<code>Swatch</code>要使用与之前直接获取颜色不同的getter函数，如下面这部分代码所示。它们不需要提供默认值，如果Palette没有解析到对应<code>Swatch</code>，它会直接返回null。</p>
-<pre><code>Palette palette = Palette.generate(myBitmap);
-Palette.Swatch vibrantSwatch = palette.getVibrantSwatch();
-Palette.Swatch vibrantLightSwatch = palette.getLightVibrantSwatch();
-Palette.Swatch vibrantDarkSwatch = palette.getDarkVibrantSwatch();
-Palette.Swatch mutedSwatch = palette.getMutedSwatch();
-Palette.Swatch mutedLightSwatch = palette.getLightMutedSwatch();
-Palette.Swatch mutedDarkSwatch = palette.getDarkMutedSwatch();
-</code></pre><p>Palette只为六种主颜色种类<code>Swatch</code>提供了getter，如果你要使用其他颜色种类的<code>Swatch</code>（一共有16种颜色种类），你需要手动获取它。调用<code>getSwatchs()</code>会返回一个列表，里面有所有获取到的<code>Swatch</code>。</p>
-<p>这里是一个Palette获取所有<code>Swatch</code>的例子，里面展示了它们分别在图像中所占的比例：</p>
-<p><img src="http://img.blog.csdn.net/20150827183359416" alt="all color"></p>
-<p>Palette的异步方法使得它非常容易去使用，而且我也看到了它用在很多地方。它真是一个非常棒的工具，能够收集一幅图中所有的颜色，并将它们总结到几个不同种类的颜色中。我建议你阅读<a href="https://android.googlesource.com/platform/frameworks/support/+/master/v7/palette/src/android/support/v7/graphics" target="_blank" rel="external">源码</a>来更多地学习它！</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2017/04/27/在Android Lollipop中使用Palette抽取Bitmap颜色/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/在Android Lollipop中使用Palette抽取Bitmap颜色/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
       <a href="/2017/04/27/在Android M中权限被拒绝时该如何处理/" title="在Android M中权限被拒绝时该如何处理" itemprop="url">在Android M中权限被拒绝时该如何处理</a>
   </h1>
   <p class="article-author">By
@@ -242,6 +120,86 @@ Palette.Swatch mutedDarkSwatch = palette.getDarkMutedSwatch();
 	
 	  	<span></span>
 		<a href="/2017/04/27/在Android M中权限被拒绝时该如何处理/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/在Android M中权限被拒绝时该如何处理/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/用RxJava替代EventBus/" title="用RxJava替代EventBus" itemprop="url">用RxJava替代EventBus</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ul>
+<li>原文链接 : <a href="https://medium.com/mobiwise-blog/use-rxjava-instead-of-event-bus-libraries-aa78b5023097#.k0ecseaz7" target="_blank" rel="external">use Rxjava instead of Event Bus libraries</a></li>
+</ul>
+<p>在Android社区，每个人都在讨论RxJava，以及为什么我们应该在Android项目中使用RxJava。当我们开始在Android项目中实现RxJava后，我们注意到，我们的项目不需要引入Otto（或任何其他事件总线库）。通过这篇博客，我将展示我们是如何在项目中用RxJava替代Otto的。</p>
+<h1 id="我们项目中的MVP模式是怎么实现的"><a href="#我们项目中的MVP模式是怎么实现的" class="headerlink" title="我们项目中的MVP模式是怎么实现的"></a>我们项目中的MVP模式是怎么实现的</h1><p>开始开发我们的无线流媒体应用Radyoland的时候，我们决定使用MVP模式来设计我们的代码底层，项目架构等。我们已经分成了几层（domain，model，app等）</p>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*TuU0ZvYeLsaypR8PIeNeyw.png" alt=""></p>
+<p>在model层，我们有基于RESTful的类和接口。在domain层，我们试图实现应用程序的业务逻辑，所以我们写了一些用例类。</p>
+<h1 id="为什么我们当初使用event-bus？"><a href="#为什么我们当初使用event-bus？" class="headerlink" title="为什么我们当初使用event bus？"></a>为什么我们当初使用event bus？</h1><p>如果你的Android应用超过一层，这就意味着你需要在这些层之间传输数据。就我们而言，我们认为，如果我们为数据总线和UI总线定义一个BusUtil类，我们就可以轻松地在这些层（model，domain，presentation）之间传输数据。</p>
+<p>你可以“订阅” ，并从总线发布的特定事件“取消订阅” 。这种方法背后的逻辑是这样运作的。</p>
+<p>在我们的UsecaseController，PresenterImp类中，我们发出一个事件，请求REST实现类中描述的数据并且订阅此事件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">@Override</div><div class="line">public void getRadioList() &#123;</div><div class="line">    Call&lt;RadioWrapper&gt; radioWrapperCall = restInterface.getRadioList();</div><div class="line">    radioWrapperCall.enqueue(new Callback&lt;RadioWrapper&gt;() &#123;</div><div class="line">        @Override</div><div class="line">        public void onResponse(Response&lt;RadioWrapper&gt; response, Retrofit retrofit) &#123;</div><div class="line">            dataBus.post(response.body());</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        @Override</div><div class="line">        public void onFailure(Throwable t) &#123;</div><div class="line">            Timber.e(t.getMessage());</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>当我们调用了带有回调参数的异步数据请求方法，我们用总线发布结果数据，并订阅该事件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@Subscribe</div><div class="line">@Override</div><div class="line">public void onRadioListLoaded(RadioWrapper radioWrapper) &#123;</div><div class="line">    new SaveDatabase(radioWrapper, databaseSource).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);</div><div class="line">    uiBus.post(radioWrapper);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>然后发布数据以更新UI 。activity或fragment应该在onResume()中订阅事件并在onPause()中解除订阅 。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@Subscribe</div><div class="line">@Override</div><div class="line">public void onRadioListLoaded(RadioWrapper radioWrapper) &#123;</div><div class="line">    radioListView.onListLoaded(radioWrapper);</div><div class="line">    radioListView.dismissLoading();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这种实现方法效果还不错。但由于我们是优秀的Android程序猿，总是追求更好的解决方案。我们找到了一个方案，可以摆脱所有的回调和订阅方法。我们决定在代码中使用RxJava和RxAndroid。</p>
+<h1 id="let-me-tell-you-how-we-implemented-Rxjava"><a href="#let-me-tell-you-how-we-implemented-Rxjava" class="headerlink" title="let me tell you how we implemented Rxjava"></a>let me tell you how we implemented Rxjava</h1><p>我们是怎么实现Rxjava的</p>
+<p>首先，我们需要改变所有RestInterface的返回类型 。</p>
+<p>在没有RxJava的情况下 ;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">@GET(&quot;&quot;)</div><div class="line">Call&lt;RadioWrapper&gt; getRadioList();</div></pre></td></tr></table></figure>
+<p>有了Rxjava</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">@GET(&quot;&quot;)</div><div class="line">Observable&lt;RadioWrapper&gt; getRadioList();</div></pre></td></tr></table></figure>
+<p>在REST实现类中，我们有API调用方法。我分享了其中的一个。使用RxJava启动后，我们需要改变这种方法的实现。我们把方法的返回类型改成Observable。经过了必要的改变后，方法看起来像这样。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">@RxLogObservable</div><div class="line">@Override</div><div class="line">public Observable&lt;RadioWrapper&gt; getRadioList() &#123;</div><div class="line">    return restInterface.getRadioList();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我们完成了REST实现类。在此之后，我们需要改变用例的实现类和方法。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">@Override</div><div class="line">public Observable&lt;RadioWrapper&gt; getRadioList() &#123;</div><div class="line"></div><div class="line">    /**</div><div class="line">     * Get radiolist observable from Cache</div><div class="line">     */</div><div class="line">    Observable&lt;RadioWrapper&gt; radioListDB =  databaseSource.getRadioList()</div><div class="line">            .filter(radioWrapper -&gt; radioWrapper.radioList.size() &gt; 0)</div><div class="line">            .subscribeOn(Schedulers.computation());</div><div class="line"></div><div class="line">    /**</div><div class="line">     * Load radiolist from api layer and save it to DB.</div><div class="line">     */</div><div class="line">    Observable&lt;RadioWrapper&gt; radioListApi = apiSource.getRadioList()</div><div class="line">            .doOnNext(radioWrapper -&gt; &#123;</div><div class="line">                Observable.create(subscriber -&gt; &#123;</div><div class="line">                    databaseSource.save(radioWrapper);</div><div class="line">                    subscriber.onCompleted();</div><div class="line">                &#125;).subscribeOn(Schedulers.computation()).subscribe();</div><div class="line">            &#125;)</div><div class="line">            .subscribeOn(Schedulers.io());</div><div class="line"></div><div class="line">    /**</div><div class="line">     * concat db and api observables</div><div class="line">     */</div><div class="line">    return Observable</div><div class="line">            .concat(radioListDB, radioListApi)</div><div class="line">            .observeOn(AndroidSchedulers.mainThread());</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在，我们的方法getRadioList返回一个Observable stream到我们的UI。正如你所看到的，我们根本不<br>需要通过事件总线发送数据。你还可以过滤，合并，缓存，或根据你的需要操作这个数据流。</p>
+<h1 id="我们学到了什么"><a href="#我们学到了什么" class="headerlink" title="我们学到了什么"></a>我们学到了什么</h1><p>虽然RxJava也不是那么好用，但是通过使用RxJava替换Otto，我们已经从代码中删除了许多冗余的回调代码块。在我看来，对于任何REST API的异步数据请求，RxJava都是最佳选择。<br>如果你有更好的解决方法，请随意在这里评论或分享例子。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/用RxJava替代EventBus/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/用RxJava替代EventBus/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -366,6 +324,128 @@ Palette.Swatch mutedDarkSwatch = palette.getDarkMutedSwatch();
 	
 	  	<span></span>
 		<a href="/2017/04/27/在你开发应用前应知道的六件事情/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/在你开发应用前应知道的六件事情/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/深入理解Shared-Element-Transition/" title="深入理解 Shared Element Transition" itemprop="url">深入理解 Shared Element Transition</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>这篇文章会深度分析共享元素 transitions 和它在 Activity &amp; Fragment Transitions API 中的作用。这篇文章是下面这个系列中的第三篇</p>
+<ul>
+<li>Part 1 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-transitions-in-android-lollipop-part1.html" target="_blank" rel="external">在 Activity 和 Fragment 中使用 Transition </a></li>
+<li>Part 2 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-content-transitions-in-depth-part2.html" target="_blank" rel="external">深入理解 Content Transition</a></li>
+<li>Part 3a <a href="http://www.androiddesignpatterns.com/2015/01/activity-fragment-shared-element-transitions-in-depth-part3a.html" target="_blank" rel="external">深入理解共享元素 Transition</a></li>
+<li>Part 3b <a href="http://www.androiddesignpatterns.com/2015/03/activity-postponed-shared-element-transitions-part3b.html" target="_blank" rel="external">延迟共享元素的 Transition</a></li>
+<li>Part 3c 共享元素回调实践 (coming soon!)</li>
+<li>Part 4  Activity &amp; Fragment 过渡动画示例(coming soon!)</li>
+</ul>
+<p>Part 3 会分成三个部分: part3a 介绍 共享元素 transitions 的底层操作，part3b 和 part3c<br>主要关注 API 的具体实现细节，例如推迟某些 共享元素 transition 的重要性和如何实现<br>SharedElementCallbacks。</p>
+<p>我们首先会总结下在 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-transitions-in-android-lollipop-part1.html" target="_blank" rel="external">part 1</a> 中提到的关于 共享元素 transition 的知识点，然后说一说在 Android Lollipop 中是怎样使用它来构建合适的过渡动画。</p>
+<p>##什么是 共享元素 Transition ?</p>
+<p>共享元素 transition 决定了 共享元素 视图(也叫做主角视图)在<br>Activity/Fragment 场景过渡时的动画效果。共享元素 的动画<br>在被调用 Activity/Fragment  的 <strong>进入/返回</strong>  共享元素 transition<br><a id="1" href="#b1">(1)</a> 中执行，<br>可以通过下面的<a href="http://developer.android.com/reference/android/view/Window.html" target="_blank" rel="external">Window</a>/<a href="http://developer.android.com/reference/android/app/Fragment.html" target="_blank" rel="external">Fragment</a> 方法设置：</p>
+<ul>
+<li><strong>setSharedElementEnterTransition()</strong> -  <strong>B</strong> 的 <strong>进入</strong> 共享元素 transition ，执行将<br>共享元素视图 从 <strong>A</strong> 中的起始位置移动到它在 <strong>B</strong> 中的最终位置的动画。</li>
+<li><strong>setSharedElementReturnTransition()</strong>  - <strong>B</strong> 的 <strong>返回</strong> 共享元素 transition ，执行将<br>共享元素视图 从 <strong>B</strong> 中起始位置移动到它在 <strong>A</strong> 中的最终位置的动画。</li>
+</ul>
+<p><a href="http://www.androiddesignpatterns.com/assets/videos/posts/2015/01/12/music-opt.mp4" target="_blank" rel="external"><strong>Video 3.1</strong></a> 展示了在 Google Play Music 中是怎样使用共享元素 transition<br>的。这个 transition 包含两个元素：一个 <strong>ImageView</strong>和它的父视图 <strong>CardView</strong>。<br>Transition 期间，<strong>CardView</strong> 会扩展到全屏或收缩回原状，<br><strong>ImageView</strong> 能在这两个 Activity 里无缝的衔接。</p>
+<p>在 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-transitions-in-android-lollipop-part1.html" target="_blank" rel="external">part1 </a> 里只是简单的介绍了下这个话题，这篇文章将会对 共享元素 transition<br>做更深度的分析。例如 共享元素 Transition 在底层是如何实现的？都有哪些类型的 Transition 对象可以使用? Transition 期间 共享元素视图 是在哪里怎样绘制的？接下来的几章里<br>我们会逐个解答这些问题。</p>
+<p>##深入共享元素 Transitions 底层</p>
+<p>之前的文章已经介绍过 Transition 的两个主要任务分别是获取目标视图的 开始&amp;结束 状态和创建这两个状态间视图的过渡动画(Animator)。共享元素 Transition 也一样：<br>在创建动画前需要捕获每一个<br>共享元素视图的起始和结束状态(就是共享元素在 <strong>调用/被调用</strong> Activity/Fragment<br>里的位置，大小和外观)。有了这些信息 共享元素 Transition 就可以确定每一个 共享元素<br>视图应该执行的动画。</p>
+<p>和 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-content-transitions-in-depth-part2.html" target="_blank" rel="external">Content Transitions 的底层</a>相似，框架通过在运行时明确的<br>更改每个 共享元素视图 的属性将这个状态信息提供给 共享元素 Transition 。<br>更准确地说 Activity <strong>A</strong> 启动 Activity <strong>B</strong> 时将会出现以下事件：<a id="2" href="#b2">(2)</a></p>
+<hr>
+<ol>
+<li>Activity <strong>A</strong> 调用 <strong>startActivity()</strong> 构造，测量，布局了一个<br>最初背景色为透明的半透明窗口 Activity <strong>B</strong> 。</li>
+<li>框架将 <strong>B</strong> 中每一个共享元素视图复位到对应的原来在 <strong>A</strong> 中时的位置，接着 <strong>B</strong> 的进入 transition 捕获 <strong>B</strong> 中所有共享元素视图的起始状态。</li>
+<li>框架将 <strong>B</strong> 中每一个共享元素视图复位到对应的在 <strong>B</strong> 的最终位置，接着 <strong>B</strong> 的进入 transition 捕获 B 中所有共享元素视图的结束状态。</li>
+<li><strong>B</strong> 的进入 transition 比较所有共享元素视图的起始和结束状态，根据它们的不同<br>创建一个 <strong>Animator</strong>。</li>
+<li>框架命令 <strong>A</strong> 隐藏共享元素视图，并运行返回的 <strong>Animator</strong>。<strong>B</strong> 中的<br>共享元素视图到位之后，<strong>B</strong> 的窗口背景在 <strong>A </strong>上逐渐显示，直到 <strong>B</strong><br>完全的显示出来，transition 运行完毕。</li>
+</ol>
+<hr>
+<p>Content transitions 是根据每个过渡视图的可见性变化来调节的，<strong>共享元素 transition<br>是根据每个共享元素视图的位置，大小和外观的变化来调节的</strong>。从 API 21 开始，框架提供了<br>几个自定义共享元素场景切换动画的 <strong>Transition</strong> 实现。</p>
+<ul>
+<li><a href="https://developer.android.com/reference/android/transition/ChangeBounds.html" target="_blank" rel="external">ChangeBounds</a> - 捕获共享元素布局边界根据不同构造动画。<br><strong>ChangeBounds</strong> 在共享元素 Transition 中经常使用，大多数共享元素在两个<br>Activity/Fragment 间会有大小 或/和 位置不同。 </li>
+<li><a href="https://developer.android.com/reference/android/transition/ChangeTransform.html" target="_blank" rel="external">ChangeTransform</a>  - 捕获共享元素缩放和角度，<br>根据不同构建动画<a id="3" href="#b3">(3)</a>。</li>
+<li><a href="https://developer.android.com/reference/android/transition/ChangeClipBounds.html" target="_blank" rel="external">ChangeClipBounds</a> - 捕获共享元素的 <a href="https://developer.android.com/reference/android/view/View.html#getClipBounds()" target="_blank" rel="external">clip bounds</a><br>(剪辑边界) ，根据不同构建动画。</li>
+<li><a href="https://developer.android.com/reference/android/transition/ChangeImageTransform.html" target="_blank" rel="external">ChangeImageTransform</a> - 捕获共享元素 ImageView 的<br>变换矩阵( transform matrices) ，根据不同构建动画。结合 <strong>ChangeBounds</strong>，<br>可以让 ImageView<br> 无缝的改变大小，形状和 <a href="https://developer.android.com/reference/android/widget/ImageView.ScaleType.html" target="_blank" rel="external"> ImageView.ScaleType </a>。 </li>
+<li><a href="https://github.com/android/platform_frameworks_base/blob/lollipop-release/core/res/res/transition/move.xml" target="_blank" rel="external">@android:transition/move</a> - 一个 <strong>TransitionSet</strong> ，同时执行上面四种<br>transition 。在 <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-transitions-in-android-lollipop-part1.html" target="_blank" rel="external">part 1</a> 里提到过，如果没有明确的声明 进入/返回 共享元素<br>transition ，框架会默认运行这个 transition。</li>
+</ul>
+<hr>
+<p>在上面的例子中，我们还可以发现 <strong>共享元素视图实例并没有在 Activities/Fragments 间<br>“共享”</strong>。事实上，进入/返回 共享元素 transitions期间，用户看到的绝大多数东西都是在<br><strong>B</strong> 的 content view 中绘制的。框架并没有从 <strong>A</strong> 向 <strong>B</strong><br>传递 共享元素视图实例，<br>而是采用了不同的方法实现相同的视觉效果。当 <strong>A</strong> 启动 <strong>B</strong> ，框架收集 <strong>A</strong><br>中共享元素的所有相关信息，并传递给 <strong>B</strong>。接下来 <strong>B</strong> 使用这些信息初始化<br>共享元素视图的起始状态(它们在 <strong>A</strong> 中时对应的大小，位置和外观)。Transition<br>开始时，B 中除了共享元素视图外的所有东西都被初始化为对用户不可见。Tansition<br>的执行过程中，框架将 B 的 Activity 窗口逐渐显示，直到 B<br>中共享元素结束动画窗口变为不透明。</p>
+<hr>
+<p>##使用共享元素 Overlay <a id="4" href="#b4">(4)</a><br>最后，如果想要完全理解共享元素 transition 的运作，我们必须先说说共享元素 overlay。<br>可能不是很明显，<strong>共享元素默认是在整个窗口视图层的顶层  <a href="https://developer.android.com/reference/android/view/ViewOverlay.html" target="_blank" rel="external">ViewOverlay</a><br>上绘制</strong>。简单介绍下 ，<br><strong>ViewOverlay</strong> 这个类是在 API 18 中为了方便在视图层顶层<br>绘制引入的。添加到视图 <strong>ViewOverlay</strong> 之中的Drawable<br>和 view (甚至是一个 <strong>ViewGroup</strong> 的子类) ，<br>将会被绘制在视图的最上层。这就解释了框架为什么<br>默认选择在窗口视图层的  <strong>ViewOverlay</strong> 中绘制共享元素。<br>共享元素视图应该是贯穿整个 transition 的焦点；<br>如果 transitioning views 意外的绘制在共享元素之上就会<br>破坏这个效果<a id="5" href="#b5">(5)</a>。</p>
+<hr>
+<p>虽然共享元素默认绘制在共享元素的 ViewOverlay 之中，但是<br>框架也提供了关闭 overlay 的方法，只要调用<br><a href="https://developer.android.com/reference/android/view/Window.html#setSharedElementsUseOverlay(boolean)" target="_blank" rel="external">Window#setSharedElementsUseOverlay(false) </a><br>就可以了。如果你关闭了 overlay<br>，要留意这样做可能会引起的副作用。例如，<a href="http://www.androiddesignpatterns.com/assets/videos/posts/2015/01/12/overlay-opt.mp4" target="_blank" rel="external">Video 3.2</a><br> 执行了一个简单的共享元素 transition 两次，<br>一次开启和一次关闭 共享元素 overlay 。第一次达到了预期想要的结果，<br>第二次关闭 overlay 后运行的效果不理想。Transition view 从底部向上移入<br>调用 Activity 的 content view 时挡住了部分 共享元素 <strong>ImageView</strong> 。虽然<br>可以改变在 View 上绘制视图的顺序或者通过在共享元素 parent 里调用<br> <strong>setClipChildren(false)</strong> 这些旁门左道来修复问题，但是与可能带来的维护问题<br> 相比真是得不偿失。总之，除非你感觉必须要关掉共享元素 overlay 才能达到你想要的效果，<br> 其他情况尽量不要关闭它，这样会保持代码简洁，并且共享元素 transition 效果更引人注目。</p>
+<p>##结语</p>
+<p>综上所诉，这篇文章讲了三个重点:</p>
+<ol>
+<li>共享元素 transition 确定 共享元素视图(主角视图) 从一个 Activity/Fragment 移动到<br>另一个其间场景过渡的动画。</li>
+<li>共享元素 transition 是根据每一个 共享元素视图 的位置，大小，和外观的变化调节的。</li>
+<li>共享元素默认是绘制在窗口视图的顶层 <strong>ViewOverlay</strong> 上面的。</li>
+</ol>
+<p>希望这篇文章对你有所帮助 ～</p>
+<hr>
+<p>1 Note that the Activity Transition API gives you the ability to also specify exit and reenter shared element transitions using the setSharedElementExitTransition() and setSharedElementReenterTransition() methods, although doing so is usually not necessary. For an example illustrating one possible use case, check out this blog post. For an explanation why exit and reenter shared element transitions are not available for Fragment Transitions, see George Mount’s answer and comments in this StackOverflow post. ↩</p>
+<p>2 A similar sequence of events occurs during the exit/return/reenter transitions for both Activities and Fragments. ↩</p>
+<p>3 One other subtle feature of ChangeTransform is that it can detect and handle changes made to a shared element view’s parent during a transition. This comes in handy when, for example, the shared element’s parent has an opaque background and is by default selected to be a transitioning view during the scene change. In this case, the ChangeTransform will detect that the shared element’s ｀parent is being actively modified by the content transition, pull out the shared element from its parent, and animate the shared element separately. See George Mount’s StackOverflow answer for more information. ↩</p>
+<p>4 Note that this section only pertains to Activity Transitions. Unlike Activity Transitions, shared elements are not drawn in a ViewOverlay by default during Fragment Transitions. That said, you can achieve a similar effect by applying a ChangeTransform transition, which will have the shared element drawn on top of the hierarchy in a ViewOverlay if it detects that its parent has changed. See this StackOverflow post for more information. ↩</p>
+<p>5 Note that one negative side-effect of having shared elements drawn on top of the entire view hierarchy is that this means it will become possible for shared elements to draw on top of the System UI (such as the status bar, navigation bar, and action bar). For more information on how you can prevent this from happening, see this Google+ post. ↩</p>
+<ol>
+<li><p>Activity Transition API 也提供了<br><strong>setSharedElementExitTransition()</strong> 和 <strong>setSharedElementReenterTransition()</strong><br>这两个方法来设置 退出/重入 共享元素过渡，虽然通常来说是不必要的。<br><a href="https://halfthought.wordpress.com/2014/12/08/what-are-all-these-dang-transitions/" target="_blank" rel="external">这篇文章</a>介绍了一个可能会遇到的用例。在这个 <a href="http://stackoverflow.com/questions/27346020/understanding-exit-reenter-shared-element-transitions" target="_blank" rel="external">stackoverflow</a><br>提问中 George Mount 的回答解释了为什么 退出/重入 共享元素 transition 在<br>Fragment Transitions 中不可用。 <a id="b1" href="#1">↩</a></p>
+</li>
+<li><p>Activities 和 Fragments 的 退出/返回/重入 transition 过程中出现事件序列相似  <a id="b2" href="#2">↩</a></p>
+</li>
+<li><strong>ChangeTransform</strong> 还有一个超赞的特性，它可以检测并处理共享元素父视图过渡期间<br>   的改变。当共享元素父视图有一个不透明背景，在场景变换过程中默认被选为<br>   transitioning view 时，<strong>ChangeTransform</strong> 就有了用武之地。如果它检测出<br>   共享元素父视图已被 content transition 更改，就会将共享元素提取出来，单独执行<br>   共享元素的动画。<a href="http://stackoverflow.com/questions/26899779/enter-transition-on-a-fragment-with-a-shared-element-targets-the-shared-element" target="_blank" rel="external">StackOverflow answer</a> 这里有 George Mount<br>   的详细说明。<br>   <a id="b3" href="#3">↩</a></li>
+<li>注意，这部分只与 Activity Transition 有关。和Activity Transition 不同，Fragment Transition<br>   期间共享元素默认不在 <strong>ViewOverlay</strong> 中绘制。尽管如此，你仍可以使用 ChangeTransform<br>   transition 来达到相似的效果，如果它检测到父视图改变了，就会把共享元素绘制在<br>   <strong>ViewOverlay</strong> 的顶层。<a href="http://stackoverflow.com/questions/27892033/is-there-a-setsharedelementsuseoverlay-method-for-fragment-transitions" target="_blank" rel="external">StackOverflow</a> 这里有更多信息。<pre><code>&lt;a id=&quot;b4&quot; href=&quot;#4&quot;&gt;↩&lt;/a&gt;
+</code></pre></li>
+<li>注意，将共享元素绘制在整个图层最顶层也有一些负面效果。有可能<br>   会将共享元素绘制在 System UI 之上(比如 status bar, navigation bar还有 action bar)。<br>   解决方法看这里 <a href="https://plus.google.com/+AlexLockwood/posts/RPtwZ5nNebb" target="_blank" rel="external">Google+ post</a>。<br>   <a id="b5" href="#5">↩</a></li>
+</ol>
+<hr>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/深入理解Shared-Element-Transition/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/深入理解Shared-Element-Transition/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -556,161 +636,6 @@ Palette.Swatch mutedDarkSwatch = palette.getDarkMutedSwatch();
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/04/27/用RxJava替代EventBus/" title="用RxJava替代EventBus" itemprop="url">用RxJava替代EventBus</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <ul>
-<li>原文链接 : <a href="https://medium.com/mobiwise-blog/use-rxjava-instead-of-event-bus-libraries-aa78b5023097#.k0ecseaz7" target="_blank" rel="external">use Rxjava instead of Event Bus libraries</a></li>
-</ul>
-<p>在Android社区，每个人都在讨论RxJava，以及为什么我们应该在Android项目中使用RxJava。当我们开始在Android项目中实现RxJava后，我们注意到，我们的项目不需要引入Otto（或任何其他事件总线库）。通过这篇博客，我将展示我们是如何在项目中用RxJava替代Otto的。</p>
-<h1 id="我们项目中的MVP模式是怎么实现的"><a href="#我们项目中的MVP模式是怎么实现的" class="headerlink" title="我们项目中的MVP模式是怎么实现的"></a>我们项目中的MVP模式是怎么实现的</h1><p>开始开发我们的无线流媒体应用Radyoland的时候，我们决定使用MVP模式来设计我们的代码底层，项目架构等。我们已经分成了几层（domain，model，app等）</p>
-<p><img src="https://cdn-images-1.medium.com/max/800/1*TuU0ZvYeLsaypR8PIeNeyw.png" alt=""></p>
-<p>在model层，我们有基于RESTful的类和接口。在domain层，我们试图实现应用程序的业务逻辑，所以我们写了一些用例类。</p>
-<h1 id="为什么我们当初使用event-bus？"><a href="#为什么我们当初使用event-bus？" class="headerlink" title="为什么我们当初使用event bus？"></a>为什么我们当初使用event bus？</h1><p>如果你的Android应用超过一层，这就意味着你需要在这些层之间传输数据。就我们而言，我们认为，如果我们为数据总线和UI总线定义一个BusUtil类，我们就可以轻松地在这些层（model，domain，presentation）之间传输数据。</p>
-<p>你可以“订阅” ，并从总线发布的特定事件“取消订阅” 。这种方法背后的逻辑是这样运作的。</p>
-<p>在我们的UsecaseController，PresenterImp类中，我们发出一个事件，请求REST实现类中描述的数据并且订阅此事件。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">@Override</div><div class="line">public void getRadioList() &#123;</div><div class="line">    Call&lt;RadioWrapper&gt; radioWrapperCall = restInterface.getRadioList();</div><div class="line">    radioWrapperCall.enqueue(new Callback&lt;RadioWrapper&gt;() &#123;</div><div class="line">        @Override</div><div class="line">        public void onResponse(Response&lt;RadioWrapper&gt; response, Retrofit retrofit) &#123;</div><div class="line">            dataBus.post(response.body());</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        @Override</div><div class="line">        public void onFailure(Throwable t) &#123;</div><div class="line">            Timber.e(t.getMessage());</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>当我们调用了带有回调参数的异步数据请求方法，我们用总线发布结果数据，并订阅该事件。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@Subscribe</div><div class="line">@Override</div><div class="line">public void onRadioListLoaded(RadioWrapper radioWrapper) &#123;</div><div class="line">    new SaveDatabase(radioWrapper, databaseSource).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);</div><div class="line">    uiBus.post(radioWrapper);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>然后发布数据以更新UI 。activity或fragment应该在onResume()中订阅事件并在onPause()中解除订阅 。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@Subscribe</div><div class="line">@Override</div><div class="line">public void onRadioListLoaded(RadioWrapper radioWrapper) &#123;</div><div class="line">    radioListView.onListLoaded(radioWrapper);</div><div class="line">    radioListView.dismissLoading();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这种实现方法效果还不错。但由于我们是优秀的Android程序猿，总是追求更好的解决方案。我们找到了一个方案，可以摆脱所有的回调和订阅方法。我们决定在代码中使用RxJava和RxAndroid。</p>
-<h1 id="let-me-tell-you-how-we-implemented-Rxjava"><a href="#let-me-tell-you-how-we-implemented-Rxjava" class="headerlink" title="let me tell you how we implemented Rxjava"></a>let me tell you how we implemented Rxjava</h1><p>我们是怎么实现Rxjava的</p>
-<p>首先，我们需要改变所有RestInterface的返回类型 。</p>
-<p>在没有RxJava的情况下 ;</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">@GET(&quot;&quot;)</div><div class="line">Call&lt;RadioWrapper&gt; getRadioList();</div></pre></td></tr></table></figure>
-<p>有了Rxjava</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">@GET(&quot;&quot;)</div><div class="line">Observable&lt;RadioWrapper&gt; getRadioList();</div></pre></td></tr></table></figure>
-<p>在REST实现类中，我们有API调用方法。我分享了其中的一个。使用RxJava启动后，我们需要改变这种方法的实现。我们把方法的返回类型改成Observable。经过了必要的改变后，方法看起来像这样。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">@RxLogObservable</div><div class="line">@Override</div><div class="line">public Observable&lt;RadioWrapper&gt; getRadioList() &#123;</div><div class="line">    return restInterface.getRadioList();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>我们完成了REST实现类。在此之后，我们需要改变用例的实现类和方法。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">@Override</div><div class="line">public Observable&lt;RadioWrapper&gt; getRadioList() &#123;</div><div class="line"></div><div class="line">    /**</div><div class="line">     * Get radiolist observable from Cache</div><div class="line">     */</div><div class="line">    Observable&lt;RadioWrapper&gt; radioListDB =  databaseSource.getRadioList()</div><div class="line">            .filter(radioWrapper -&gt; radioWrapper.radioList.size() &gt; 0)</div><div class="line">            .subscribeOn(Schedulers.computation());</div><div class="line"></div><div class="line">    /**</div><div class="line">     * Load radiolist from api layer and save it to DB.</div><div class="line">     */</div><div class="line">    Observable&lt;RadioWrapper&gt; radioListApi = apiSource.getRadioList()</div><div class="line">            .doOnNext(radioWrapper -&gt; &#123;</div><div class="line">                Observable.create(subscriber -&gt; &#123;</div><div class="line">                    databaseSource.save(radioWrapper);</div><div class="line">                    subscriber.onCompleted();</div><div class="line">                &#125;).subscribeOn(Schedulers.computation()).subscribe();</div><div class="line">            &#125;)</div><div class="line">            .subscribeOn(Schedulers.io());</div><div class="line"></div><div class="line">    /**</div><div class="line">     * concat db and api observables</div><div class="line">     */</div><div class="line">    return Observable</div><div class="line">            .concat(radioListDB, radioListApi)</div><div class="line">            .observeOn(AndroidSchedulers.mainThread());</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>现在，我们的方法getRadioList返回一个Observable stream到我们的UI。正如你所看到的，我们根本不<br>需要通过事件总线发送数据。你还可以过滤，合并，缓存，或根据你的需要操作这个数据流。</p>
-<h1 id="我们学到了什么"><a href="#我们学到了什么" class="headerlink" title="我们学到了什么"></a>我们学到了什么</h1><p>虽然RxJava也不是那么好用，但是通过使用RxJava替换Otto，我们已经从代码中删除了许多冗余的回调代码块。在我看来，对于任何REST API的异步数据请求，RxJava都是最佳选择。<br>如果你有更好的解决方法，请随意在这里评论或分享例子。</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2017/04/27/用RxJava替代EventBus/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/用RxJava替代EventBus/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/27/如何修复编译时的MultiDex崩溃/" title="如何修复编译时的MultiDex崩溃" itemprop="url">如何修复编译时的MultiDex崩溃</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <ul>
-<li>原文链接 : <a href="https://medium.com/sebs-top-tips/psa-fix-multidex-build-crashes-ae2b81bcf711" target="_blank" rel="external">PSA: fix MultiDex build crashes</a></li>
-<li>原文作者 : <a href="https://medium.com/@seebrock3r" target="_blank" rel="external">Sebastiano Poggi</a></li>
-<li><a href="http://www.devtf.cn" target="_blank" rel="external">译文出自 :  开发技术前线 www.devtf.cn</a></li>
-<li>译者 : <a href="https://github.com/zijianwang90" target="_blank" rel="external">zijianwang90</a> </li>
-</ul>
-<p>[“太长不想看了”在文章末尾]</p>
-<p>是否有那么一天，你曾经在编译你的项目时候因为以下这样的错误而失败了：</p>
-<blockquote>
-<p>trouble writing output:<br>Too many field references: 131000; max is 65536.<br>You may try using –multi-dex option.</p>
-</blockquote>
-<p>为啥？也许是最新的Play服务更新造成的，又或许是你应用中的某某统计SDK造成的。但是有一点是可以肯定的：你的应用成为了拥有超过六万五千个方法或变量的应用之一。</p>
-<p>若在一年之前，这也许是个大问题。当时有一些办法可以避免这个问题，包括一些拆分dex文件的方法，但这些方法往往并不完全奏效。</p>
-<p>#MultiDex?<br>幸运的是，自从谷歌引入了<strong>MultiDex</strong>机制，上述情况就非常容易解决了。在你的build.gradle中做如下配置即可：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">android &#123;</div><div class="line">  // ...</div><div class="line">  defaultConfig &#123;</div><div class="line">    // ...</div><div class="line">    multiDexEnabled true</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>##缺点<br><strong>Multidex也有一些缺点</strong>。首先，<strong>编译时间增加</strong>。其次，在Delvik虚拟机下（非ART），由于classloader需要读取多个dex文件，所以<strong>应用的启动时间会大幅增加</strong>。</p>
-<p>但更严重的是，他有时候会造成你的<strong>编译崩溃</strong>。是的，编译崩溃，不是应用崩溃。</p>
-<blockquote>
-<p>UNEXPECTED TOP-LEVEL ERROR:<br>java.lang.OutOfMemoryError: GC overhead limit exceeded<br>  at com.android.dx.cf.code.ExecutionStack.copy(ExecutionStack.java:66)<br>  at com.android.dx.cf.code.Frame.makeExceptionHandlerStartFrame(Frame.java:397)<br>  at com.android.dx.cf.code.Ropper.processBlock(Ropper.java:916)<br>  at com.android.dx.cf.code.Ropper.doit(Ropper.java:742)<br>  at com.android.dx.cf.code.Ropper.convert(Ropper.java:349)<br>  at com.android.dx.dex.cf.CfTranslator.processMethods(CfTranslator.java:280)<br>  at com.android.dx.dex.cf.CfTranslator.translate0(CfTranslator.java:137)<br>  at com.android.dx.dex.cf.CfTranslator.translate(CfTranslator.java:93)<br>  at com.android.dx.command.dexer.Main.processClass(Main.java:729)<br>  at com.android.dx.command.dexer.Main.processFileBytes(Main.java:673)<br>  at com.android.dx.command.dexer.Main.access\$300(Main.java:83)<br>  at com.android.dx.command.dexer.Main$1.processFileBytes(Main.java:602)<br>  at com.android.dx.cf.direct.ClassPathOpener.processArchive(ClassPathOpener.java:284)<br>  at com.android.dx.cf.direct.ClassPathOpener.processOne(ClassPathOpener.java:166)<br>  at com.android.dx.cf.direct.ClassPathOpener.process(ClassPathOpener.java:144)<br>  at com.android.dx.command.dexer.Main.processOne(Main.java:632)<br>  at com.android.dx.command.dexer.Main.processAllFiles(Main.java:505)<br>  at com.android.dx.command.dexer.Main.runMultiDex(Main.java:334)<br>  at com.android.dx.command.dexer.Main.run(Main.java:244)<br>  at com.android.dx.command.dexer.Main.main(Main.java:215)<br>  at com.android.dx.command.Main.main(Main.java:106)</p>
-</blockquote>
-<p>以上这些错误大致意思就是我们在生成Dex阶段内存不足了。</p>
-<p>#解决办法（太长不想看了）<br>感谢那谁给我意见（不好意思忘了是谁了，时间有点久了），在绞尽脑汁了一段时间之后，我找到了一个非常简单的解决办法。</p>
-<p>那就是在你相应module的build.gradle文件中做出如下配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">android &#123;</div><div class="line">  // ...</div><div class="line">  dexOptions &#123;</div><div class="line">    javaMaxHeapSize “2048M”</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>搞定！</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2017/04/27/如何修复编译时的MultiDex崩溃/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/如何修复编译时的MultiDex崩溃/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
       <a href="/2017/04/27/深入理解ContentTransition(part2)/" title="深入理解Content Transition  (part 2)" itemprop="url">深入理解Content Transition  (part 2)</a>
   </h1>
   <p class="article-author">By
@@ -835,6 +760,81 @@ Palette.Swatch mutedDarkSwatch = palette.getDarkMutedSwatch();
 	
 	  	<span></span>
 		<a href="/2017/04/27/深入理解ContentTransition(part2)/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/深入理解ContentTransition(part2)/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/如何修复编译时的MultiDex崩溃/" title="如何修复编译时的MultiDex崩溃" itemprop="url">如何修复编译时的MultiDex崩溃</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ul>
+<li>原文链接 : <a href="https://medium.com/sebs-top-tips/psa-fix-multidex-build-crashes-ae2b81bcf711" target="_blank" rel="external">PSA: fix MultiDex build crashes</a></li>
+<li>原文作者 : <a href="https://medium.com/@seebrock3r" target="_blank" rel="external">Sebastiano Poggi</a></li>
+<li><a href="http://www.devtf.cn" target="_blank" rel="external">译文出自 :  开发技术前线 www.devtf.cn</a></li>
+<li>译者 : <a href="https://github.com/zijianwang90" target="_blank" rel="external">zijianwang90</a> </li>
+</ul>
+<p>[“太长不想看了”在文章末尾]</p>
+<p>是否有那么一天，你曾经在编译你的项目时候因为以下这样的错误而失败了：</p>
+<blockquote>
+<p>trouble writing output:<br>Too many field references: 131000; max is 65536.<br>You may try using –multi-dex option.</p>
+</blockquote>
+<p>为啥？也许是最新的Play服务更新造成的，又或许是你应用中的某某统计SDK造成的。但是有一点是可以肯定的：你的应用成为了拥有超过六万五千个方法或变量的应用之一。</p>
+<p>若在一年之前，这也许是个大问题。当时有一些办法可以避免这个问题，包括一些拆分dex文件的方法，但这些方法往往并不完全奏效。</p>
+<p>#MultiDex?<br>幸运的是，自从谷歌引入了<strong>MultiDex</strong>机制，上述情况就非常容易解决了。在你的build.gradle中做如下配置即可：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">android &#123;</div><div class="line">  // ...</div><div class="line">  defaultConfig &#123;</div><div class="line">    // ...</div><div class="line">    multiDexEnabled true</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>##缺点<br><strong>Multidex也有一些缺点</strong>。首先，<strong>编译时间增加</strong>。其次，在Delvik虚拟机下（非ART），由于classloader需要读取多个dex文件，所以<strong>应用的启动时间会大幅增加</strong>。</p>
+<p>但更严重的是，他有时候会造成你的<strong>编译崩溃</strong>。是的，编译崩溃，不是应用崩溃。</p>
+<blockquote>
+<p>UNEXPECTED TOP-LEVEL ERROR:<br>java.lang.OutOfMemoryError: GC overhead limit exceeded<br>  at com.android.dx.cf.code.ExecutionStack.copy(ExecutionStack.java:66)<br>  at com.android.dx.cf.code.Frame.makeExceptionHandlerStartFrame(Frame.java:397)<br>  at com.android.dx.cf.code.Ropper.processBlock(Ropper.java:916)<br>  at com.android.dx.cf.code.Ropper.doit(Ropper.java:742)<br>  at com.android.dx.cf.code.Ropper.convert(Ropper.java:349)<br>  at com.android.dx.dex.cf.CfTranslator.processMethods(CfTranslator.java:280)<br>  at com.android.dx.dex.cf.CfTranslator.translate0(CfTranslator.java:137)<br>  at com.android.dx.dex.cf.CfTranslator.translate(CfTranslator.java:93)<br>  at com.android.dx.command.dexer.Main.processClass(Main.java:729)<br>  at com.android.dx.command.dexer.Main.processFileBytes(Main.java:673)<br>  at com.android.dx.command.dexer.Main.access\$300(Main.java:83)<br>  at com.android.dx.command.dexer.Main$1.processFileBytes(Main.java:602)<br>  at com.android.dx.cf.direct.ClassPathOpener.processArchive(ClassPathOpener.java:284)<br>  at com.android.dx.cf.direct.ClassPathOpener.processOne(ClassPathOpener.java:166)<br>  at com.android.dx.cf.direct.ClassPathOpener.process(ClassPathOpener.java:144)<br>  at com.android.dx.command.dexer.Main.processOne(Main.java:632)<br>  at com.android.dx.command.dexer.Main.processAllFiles(Main.java:505)<br>  at com.android.dx.command.dexer.Main.runMultiDex(Main.java:334)<br>  at com.android.dx.command.dexer.Main.run(Main.java:244)<br>  at com.android.dx.command.dexer.Main.main(Main.java:215)<br>  at com.android.dx.command.Main.main(Main.java:106)</p>
+</blockquote>
+<p>以上这些错误大致意思就是我们在生成Dex阶段内存不足了。</p>
+<p>#解决办法（太长不想看了）<br>感谢那谁给我意见（不好意思忘了是谁了，时间有点久了），在绞尽脑汁了一段时间之后，我找到了一个非常简单的解决办法。</p>
+<p>那就是在你相应module的build.gradle文件中做出如下配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">android &#123;</div><div class="line">  // ...</div><div class="line">  dexOptions &#123;</div><div class="line">    javaMaxHeapSize “2048M”</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>搞定！</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/如何修复编译时的MultiDex崩溃/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/如何修复编译时的MultiDex崩溃/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -1009,6 +1009,101 @@ Palette.Swatch mutedDarkSwatch = palette.getDarkMutedSwatch();
 	
 	  	<span></span>
 		<a href="/2017/04/27/如何在本地搭建一个Android应用crashing跟踪系统－ACRA/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/如何在本地搭建一个Android应用crashing跟踪系统－ACRA/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/04/27/延迟共享元素的过渡动画/" title="延迟共享元素的过渡动画 (part 3b)" itemprop="url">延迟共享元素的过渡动画 (part 3b)</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ul>
+<li>原文链接 : <a href="http://www.androiddesignpatterns.com/2015/03/activity-postponed-shared-element-transitions-part3b.html" target="_blank" rel="external">Postponed Shared Element Transitions (part 3b)</a></li>
+</ul>
+<p>通过讨论 Lollipop Transition API 的一个重要的特性：延迟共享元素的过渡动画，这篇博文将继续我们关于共享元素 Transition 的深度解析。这也是我关于 Transition 这个专栏的第四篇文章。</p>
+<ul>
+<li>Part 1: <a href="https://github.com/bboyfeiyu/android-tech-frontier/tree/master/others/%E6%B7%B1%E5%85%A5%E6%B5%85%E5%87%BAAndroid%20%E6%96%B0%E7%89%B9%E6%80%A7-Transition-Part-1" target="_blank" rel="external">在 Activity 和 Fragment 中使用 Transition </a></li>
+<li>Part 2: <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-content-transitions-in-depth-part2.html" target="_blank" rel="external">深入理解 Transition</a></li>
+<li>Part 3a: <a href="http://www.androiddesignpatterns.com/2015/01/activity-fragment-shared-element-transitions-in-depth-part3a.html" target="_blank" rel="external">深入理解共享元素的 Transition</a></li>
+<li>Part 3b:  <a href="http://www.androiddesignpatterns.com/2015/03/activity-postponed-shared-element-transitions-part3b.html" target="_blank" rel="external">延迟共享元素的 Transition</a></li>
+<li>Part 3c: 共享元素回调实践 (coming soon!)</li>
+<li>Part 4:  Activity &amp; Fragment 过渡动画示例(coming soon!)</li>
+</ul>
+<p>我们通过一个常见的问题来解释为什么需要推迟某些共享元素的过渡动画。</p>
+<p>##理解问题</p>
+<p>通常问题的根源是框架在 Activity 生命周期非常早的时候启动共享元素 Transition 。回想我们的第一篇文章，Transitions 必须捕获目标 View 的起始和结束状态来构建合适的动画。因此，如果框架在共享元素获得它在调用它的 Activity 中所给定的大小和位置前启动共享元素的过渡动画，这个 Transition 将不能正确捕获到共享元素的结束状态值,生成动画也会失败(一个过渡失败的例子<a href="http://www.androiddesignpatterns.com/assets/videos/posts/2015/03/09/postpone-bug-opt.mp4" target="_blank" rel="external">Video 3.3</a>).</p>
+<p>Transition 开始前，能否计算出正确的共享元素的结束值主要依靠两个因素:</p>
+<p>(1) 调用共享元素的 Activity 的布局复杂度以及布局层次结构的深度<br>(2)调用共享元素Activity载入数据消耗的时间</p>
+<p>布局越复杂，在屏幕上确定共享元素的大小位置耗时越长。同样，如果调用共享元素的 Activity 依赖一个异步的数据载入，框架仍有可能会在数据载入完成前自动开始共享元素 Transition。下面列出的是你可能遇到的常见问题:</p>
+<ul>
+<li><p><strong>存在于 Activity 托管的 Fragment 中的共享元素</strong>。<a href="https://developer.android.com/reference/android/app/FragmentTransaction.html#commit()" target="_blank" rel="external">FragmentTransactions 在 commit 后并不会被立即执行</a>，它们会被安排到主线程中等待执行。因此，如果共享元素存在的 Fragment 的视图层和FragmentTransaction没有被及时执行，框架有可能在共享元素被正确测量大小和布局到屏幕前启动共享元素 Transition。<a id="b1" href="#1">(1)</a></p>
+</li>
+<li><p><strong>共享元素是一个高分辨率的图片</strong>。给 <strong>ImageView</strong> 设置一个超过其初始化边界的高分辨率图片，最终可能会导致在这个视图层里出现<a href="https://github.com/android/platform_frameworks_base/blob/lollipop-release/core/java/android/widget/ImageView.java#L453-L455" target="_blank" rel="external">额外的布局传递</a>，由此增加在共享元素准备好前就启动 Transition 的几率。流行的异步图片处理库比如 <a href="https://android.googlesource.com/platform/frameworks/volley" target="_blank" rel="external"><code>Volley</code></a> 和 <a href="http://square.github.io/picasso/" target="_blank" rel="external"><code>Picasso</code></a> ，也不能可靠的解决这个问题：框架不能预先了解图片是要被下载，缩放还是在后台线程中从磁盘读取，也不管图片是否处理完毕就启动共享元素 Transition。</p>
+</li>
+<li><p><strong>共享元素依赖于异步的数据加载</strong>如果共享元素所需的数据是通过<strong>AsyncTask</strong>，<strong>AsyncQueryHandler</strong>,<strong>Loader</strong>或者其他类似的东西加载，在它们获得在调用它们的 Activity 的最终数据（大小、位置）前，框架就有可能在主线程中启动 Transition。</p>
+</li>
+</ul>
+<p>现在你可能会想：如果有办法能让暂时延迟 Transition 的使用，直到我们确定了共享元素的确切大小和位置才使用它就好了。幸好 Activity Transitions API<a id="b2" href="#2">(2)</a> 为我们提供了解决方案。</p>
+<p>在 Activity 的<code>onCreate()</code>中调用<a href="https://developer.android.com/reference/android/app/Activity.html#postponeEnterTransition()" target="_blank" rel="external"><code>postponeEnterTransition()</code></a> 方法来暂时阻止启动共享元素 Transition。之后，你需要在共享元素准备好后调用 <a href="https://developer.android.com/reference/android/app/Activity.html#startPostponedEnterTransition()" target="_blank" rel="external"><code>startPostponedEnterTransition</code></a> 来恢复过渡效果。常见的模式是在一个<a href="http://developer.android.com/reference/android/view/ViewTreeObserver.OnPreDrawListener.html" target="_blank" rel="external"><code>OnPreDrawListener</code></a>中启动延时 Transition，它会在共享元素测量和布局完毕后被调用<a id="b3" href="#3">(3)</a>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">    setContentView(R.layout.activity_main);</div><div class="line"></div><div class="line">    <span class="comment">// Postpone the shared element enter transition.</span></div><div class="line">    postponeEnterTransition();</div><div class="line"></div><div class="line">    <span class="comment">// <span class="doctag">TODO:</span> Call the "scheduleStartPostponedTransition()" method</span></div><div class="line">    <span class="comment">// below when you know for certain that the shared element is</span></div><div class="line">    <span class="comment">// ready for the transition to begin.</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * Schedules the shared element transition to be started immediately</div><div class="line"> * after the shared element has been measured and laid out within the</div><div class="line"> * activity's view hierarchy. Some common places where it might make</div><div class="line"> * sense to call this method are:</div><div class="line"> *</div><div class="line"> * (1) Inside a Fragment's onCreateView() method (if the shared element</div><div class="line"> *     lives inside a Fragment hosted by the called Activity).</div><div class="line"> *</div><div class="line"> * (2) Inside a Picasso Callback object (if you need to wait for Picasso to</div><div class="line"> *     asynchronously load/scale a bitmap before the transition can begin).</div><div class="line"> *</div><div class="line"> * (3) Inside a LoaderCallback's onLoadFinished() method (if the shared</div><div class="line"> *     element depends on data queried by a Loader).</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">scheduleStartPostponedTransition</span><span class="params">(<span class="keyword">final</span> View sharedElement)</span> </span>&#123;</div><div class="line">    sharedElement.getViewTreeObserver().addOnPreDrawListener(</div><div class="line">        <span class="keyword">new</span> ViewTreeObserver.OnPreDrawListener() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onPreDraw</span><span class="params">()</span> </span>&#123;</div><div class="line">                sharedElement.getViewTreeObserver().removeOnPreDrawListener(<span class="keyword">this</span>);</div><div class="line">                startPostponedEnterTransition();</div><div class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>忽略方法名，这里还有第二种方法可以延迟共享元素的返回 Transition，在调用Activity的<a href="https://developer.android.com/reference/android/app/Activity.html#onActivityReenter(int,%20android.content.Intent)" target="_blank" rel="external"><code>onActivityReenter()</code></a> 方法中延缓返回 Transition<a id="b4" href="#4">(4)</a></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Don't forget to call setResult(Activity.RESULT_OK) in the returning</div><div class="line"> * activity or else this method won't be called!</div><div class="line"> */</div><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onActivityReenter</span><span class="params">(<span class="keyword">int</span> resultCode, Intent data)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onActivityReenter(resultCode, data);</div><div class="line"></div><div class="line">    <span class="comment">// Postpone the shared element return transition.</span></div><div class="line">    postponeEnterTransition();</div><div class="line"></div><div class="line">    <span class="comment">// <span class="doctag">TODO:</span> Call the "scheduleStartPostponedTransition()" method</span></div><div class="line">    <span class="comment">// above when you know for certain that the shared element is</span></div><div class="line">    <span class="comment">// ready for the transition to begin.</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>尽管添加延时可以让共享元素 Transition 更加流畅准确，但是你也要知道在应用中引入共享元素 Transition 的延迟可能会产生一些负面影响：</p>
+<ul>
+<li><strong>调用<code>postponeEnterTransition</code>后不要忘记调用<code>startPostponedEnterTransition</code></strong>。<br>忘记调用<code>startPostponedEnterTransition</code>会让你的应用处于死锁状态，用户无法进入下个Activity。</li>
+</ul>
+<ul>
+<li><strong>不要将共享元素 Transition 延迟设置到1s以上</strong>。延迟时间过长会在应用中产生不必要的卡顿，影响用户体验。</li>
+</ul>
+<p>感谢阅读！希望这篇文章对你有所帮助。</p>
+<p><a id="1" href="#b1"><strong>1</strong></a>: 当然，许多应用通过调用 <a href="https://developer.android.com/reference/android/app/FragmentManager.html#executePendingTransactions(" target="_blank" rel="external"><code>FragmentManager#executePendingTransactions()</code></a>) 来避开这个问题，这样会强制立即执行FragmentTransactions而不是异步。</p>
+<p><a id="2" href="#b2"><strong>2</strong></a>: 注意!<code>postponeEnterTransition()</code>和<code>startPostponedEnterTransition()</code>只对 Activity Transition起作用，对Fragment无效。详细信息可以在这里找到 <a href="http://stackoverflow.com/questions/26977303/how-to-postpone-a-fragments-enter-transition-in-android-lollipop" target="_blank" rel="external">StackOverflow</a> &amp; <a href="https://plus.google.com/+AlexLockwood/posts/3DxHT42rmmY" target="_blank" rel="external">Google+</a></p>
+<p><a id="3" href="#b3"><strong>3</strong></a>: 小贴士:你可以先调用 <a href="http://developer.android.com/reference/android/view/View.html#isLayoutRequested(" target="_blank" rel="external"><code>View#isLayoutRequested()</code></a>) 来确认是否需要调用 <a href="http://developer.android.com/reference/android/view/ViewTreeObserver.OnPreDrawListener.html" target="_blank" rel="external"><code>OnPreDrawListener</code></a>，有必要的话 <a href="http://developer.android.com/reference/android/view/View.html#isLaidOut(" target="_blank" rel="external"><code>View#isLaidOut()</code></a>) 在一些情况下也能派上用场</p>
+<p><a id="4" href="#b4"><strong>4</strong></a>: 在开发者选项中启用不保留 Activity 选项可以方便调试共享元素返回/重新进入时对应过渡动画的行为，这也可以帮助测试在返回的过渡效果开始之前可能发生最糟糕的情况( Activity 需要重新构造布局加载数据…)</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/延迟共享元素的过渡动画/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/延迟共享元素的过渡动画/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -1221,101 +1316,6 @@ htmlOutput file(&quot;$project.buildDir/reports/lint/lint.html&quot;)
 	
 	  	<span></span>
 		<a href="/2017/04/27/如何提高你的代码质量/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/如何提高你的代码质量/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2017/04/27/延迟共享元素的过渡动画/" title="延迟共享元素的过渡动画 (part 3b)" itemprop="url">延迟共享元素的过渡动画 (part 3b)</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <ul>
-<li>原文链接 : <a href="http://www.androiddesignpatterns.com/2015/03/activity-postponed-shared-element-transitions-part3b.html" target="_blank" rel="external">Postponed Shared Element Transitions (part 3b)</a></li>
-</ul>
-<p>通过讨论 Lollipop Transition API 的一个重要的特性：延迟共享元素的过渡动画，这篇博文将继续我们关于共享元素 Transition 的深度解析。这也是我关于 Transition 这个专栏的第四篇文章。</p>
-<ul>
-<li>Part 1: <a href="https://github.com/bboyfeiyu/android-tech-frontier/tree/master/others/%E6%B7%B1%E5%85%A5%E6%B5%85%E5%87%BAAndroid%20%E6%96%B0%E7%89%B9%E6%80%A7-Transition-Part-1" target="_blank" rel="external">在 Activity 和 Fragment 中使用 Transition </a></li>
-<li>Part 2: <a href="http://www.androiddesignpatterns.com/2014/12/activity-fragment-content-transitions-in-depth-part2.html" target="_blank" rel="external">深入理解 Transition</a></li>
-<li>Part 3a: <a href="http://www.androiddesignpatterns.com/2015/01/activity-fragment-shared-element-transitions-in-depth-part3a.html" target="_blank" rel="external">深入理解共享元素的 Transition</a></li>
-<li>Part 3b:  <a href="http://www.androiddesignpatterns.com/2015/03/activity-postponed-shared-element-transitions-part3b.html" target="_blank" rel="external">延迟共享元素的 Transition</a></li>
-<li>Part 3c: 共享元素回调实践 (coming soon!)</li>
-<li>Part 4:  Activity &amp; Fragment 过渡动画示例(coming soon!)</li>
-</ul>
-<p>我们通过一个常见的问题来解释为什么需要推迟某些共享元素的过渡动画。</p>
-<p>##理解问题</p>
-<p>通常问题的根源是框架在 Activity 生命周期非常早的时候启动共享元素 Transition 。回想我们的第一篇文章，Transitions 必须捕获目标 View 的起始和结束状态来构建合适的动画。因此，如果框架在共享元素获得它在调用它的 Activity 中所给定的大小和位置前启动共享元素的过渡动画，这个 Transition 将不能正确捕获到共享元素的结束状态值,生成动画也会失败(一个过渡失败的例子<a href="http://www.androiddesignpatterns.com/assets/videos/posts/2015/03/09/postpone-bug-opt.mp4" target="_blank" rel="external">Video 3.3</a>).</p>
-<p>Transition 开始前，能否计算出正确的共享元素的结束值主要依靠两个因素:</p>
-<p>(1) 调用共享元素的 Activity 的布局复杂度以及布局层次结构的深度<br>(2)调用共享元素Activity载入数据消耗的时间</p>
-<p>布局越复杂，在屏幕上确定共享元素的大小位置耗时越长。同样，如果调用共享元素的 Activity 依赖一个异步的数据载入，框架仍有可能会在数据载入完成前自动开始共享元素 Transition。下面列出的是你可能遇到的常见问题:</p>
-<ul>
-<li><p><strong>存在于 Activity 托管的 Fragment 中的共享元素</strong>。<a href="https://developer.android.com/reference/android/app/FragmentTransaction.html#commit()" target="_blank" rel="external">FragmentTransactions 在 commit 后并不会被立即执行</a>，它们会被安排到主线程中等待执行。因此，如果共享元素存在的 Fragment 的视图层和FragmentTransaction没有被及时执行，框架有可能在共享元素被正确测量大小和布局到屏幕前启动共享元素 Transition。<a id="b1" href="#1">(1)</a></p>
-</li>
-<li><p><strong>共享元素是一个高分辨率的图片</strong>。给 <strong>ImageView</strong> 设置一个超过其初始化边界的高分辨率图片，最终可能会导致在这个视图层里出现<a href="https://github.com/android/platform_frameworks_base/blob/lollipop-release/core/java/android/widget/ImageView.java#L453-L455" target="_blank" rel="external">额外的布局传递</a>，由此增加在共享元素准备好前就启动 Transition 的几率。流行的异步图片处理库比如 <a href="https://android.googlesource.com/platform/frameworks/volley" target="_blank" rel="external"><code>Volley</code></a> 和 <a href="http://square.github.io/picasso/" target="_blank" rel="external"><code>Picasso</code></a> ，也不能可靠的解决这个问题：框架不能预先了解图片是要被下载，缩放还是在后台线程中从磁盘读取，也不管图片是否处理完毕就启动共享元素 Transition。</p>
-</li>
-<li><p><strong>共享元素依赖于异步的数据加载</strong>如果共享元素所需的数据是通过<strong>AsyncTask</strong>，<strong>AsyncQueryHandler</strong>,<strong>Loader</strong>或者其他类似的东西加载，在它们获得在调用它们的 Activity 的最终数据（大小、位置）前，框架就有可能在主线程中启动 Transition。</p>
-</li>
-</ul>
-<p>现在你可能会想：如果有办法能让暂时延迟 Transition 的使用，直到我们确定了共享元素的确切大小和位置才使用它就好了。幸好 Activity Transitions API<a id="b2" href="#2">(2)</a> 为我们提供了解决方案。</p>
-<p>在 Activity 的<code>onCreate()</code>中调用<a href="https://developer.android.com/reference/android/app/Activity.html#postponeEnterTransition()" target="_blank" rel="external"><code>postponeEnterTransition()</code></a> 方法来暂时阻止启动共享元素 Transition。之后，你需要在共享元素准备好后调用 <a href="https://developer.android.com/reference/android/app/Activity.html#startPostponedEnterTransition()" target="_blank" rel="external"><code>startPostponedEnterTransition</code></a> 来恢复过渡效果。常见的模式是在一个<a href="http://developer.android.com/reference/android/view/ViewTreeObserver.OnPreDrawListener.html" target="_blank" rel="external"><code>OnPreDrawListener</code></a>中启动延时 Transition，它会在共享元素测量和布局完毕后被调用<a id="b3" href="#3">(3)</a>。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">    setContentView(R.layout.activity_main);</div><div class="line"></div><div class="line">    <span class="comment">// Postpone the shared element enter transition.</span></div><div class="line">    postponeEnterTransition();</div><div class="line"></div><div class="line">    <span class="comment">// <span class="doctag">TODO:</span> Call the "scheduleStartPostponedTransition()" method</span></div><div class="line">    <span class="comment">// below when you know for certain that the shared element is</span></div><div class="line">    <span class="comment">// ready for the transition to begin.</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"> * Schedules the shared element transition to be started immediately</div><div class="line"> * after the shared element has been measured and laid out within the</div><div class="line"> * activity's view hierarchy. Some common places where it might make</div><div class="line"> * sense to call this method are:</div><div class="line"> *</div><div class="line"> * (1) Inside a Fragment's onCreateView() method (if the shared element</div><div class="line"> *     lives inside a Fragment hosted by the called Activity).</div><div class="line"> *</div><div class="line"> * (2) Inside a Picasso Callback object (if you need to wait for Picasso to</div><div class="line"> *     asynchronously load/scale a bitmap before the transition can begin).</div><div class="line"> *</div><div class="line"> * (3) Inside a LoaderCallback's onLoadFinished() method (if the shared</div><div class="line"> *     element depends on data queried by a Loader).</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">scheduleStartPostponedTransition</span><span class="params">(<span class="keyword">final</span> View sharedElement)</span> </span>&#123;</div><div class="line">    sharedElement.getViewTreeObserver().addOnPreDrawListener(</div><div class="line">        <span class="keyword">new</span> ViewTreeObserver.OnPreDrawListener() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onPreDraw</span><span class="params">()</span> </span>&#123;</div><div class="line">                sharedElement.getViewTreeObserver().removeOnPreDrawListener(<span class="keyword">this</span>);</div><div class="line">                startPostponedEnterTransition();</div><div class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>忽略方法名，这里还有第二种方法可以延迟共享元素的返回 Transition，在调用Activity的<a href="https://developer.android.com/reference/android/app/Activity.html#onActivityReenter(int,%20android.content.Intent)" target="_blank" rel="external"><code>onActivityReenter()</code></a> 方法中延缓返回 Transition<a id="b4" href="#4">(4)</a></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Don't forget to call setResult(Activity.RESULT_OK) in the returning</div><div class="line"> * activity or else this method won't be called!</div><div class="line"> */</div><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onActivityReenter</span><span class="params">(<span class="keyword">int</span> resultCode, Intent data)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onActivityReenter(resultCode, data);</div><div class="line"></div><div class="line">    <span class="comment">// Postpone the shared element return transition.</span></div><div class="line">    postponeEnterTransition();</div><div class="line"></div><div class="line">    <span class="comment">// <span class="doctag">TODO:</span> Call the "scheduleStartPostponedTransition()" method</span></div><div class="line">    <span class="comment">// above when you know for certain that the shared element is</span></div><div class="line">    <span class="comment">// ready for the transition to begin.</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>尽管添加延时可以让共享元素 Transition 更加流畅准确，但是你也要知道在应用中引入共享元素 Transition 的延迟可能会产生一些负面影响：</p>
-<ul>
-<li><strong>调用<code>postponeEnterTransition</code>后不要忘记调用<code>startPostponedEnterTransition</code></strong>。<br>忘记调用<code>startPostponedEnterTransition</code>会让你的应用处于死锁状态，用户无法进入下个Activity。</li>
-</ul>
-<ul>
-<li><strong>不要将共享元素 Transition 延迟设置到1s以上</strong>。延迟时间过长会在应用中产生不必要的卡顿，影响用户体验。</li>
-</ul>
-<p>感谢阅读！希望这篇文章对你有所帮助。</p>
-<p><a id="1" href="#b1"><strong>1</strong></a>: 当然，许多应用通过调用 <a href="https://developer.android.com/reference/android/app/FragmentManager.html#executePendingTransactions(" target="_blank" rel="external"><code>FragmentManager#executePendingTransactions()</code></a>) 来避开这个问题，这样会强制立即执行FragmentTransactions而不是异步。</p>
-<p><a id="2" href="#b2"><strong>2</strong></a>: 注意!<code>postponeEnterTransition()</code>和<code>startPostponedEnterTransition()</code>只对 Activity Transition起作用，对Fragment无效。详细信息可以在这里找到 <a href="http://stackoverflow.com/questions/26977303/how-to-postpone-a-fragments-enter-transition-in-android-lollipop" target="_blank" rel="external">StackOverflow</a> &amp; <a href="https://plus.google.com/+AlexLockwood/posts/3DxHT42rmmY" target="_blank" rel="external">Google+</a></p>
-<p><a id="3" href="#b3"><strong>3</strong></a>: 小贴士:你可以先调用 <a href="http://developer.android.com/reference/android/view/View.html#isLayoutRequested(" target="_blank" rel="external"><code>View#isLayoutRequested()</code></a>) 来确认是否需要调用 <a href="http://developer.android.com/reference/android/view/ViewTreeObserver.OnPreDrawListener.html" target="_blank" rel="external"><code>OnPreDrawListener</code></a>，有必要的话 <a href="http://developer.android.com/reference/android/view/View.html#isLaidOut(" target="_blank" rel="external"><code>View#isLaidOut()</code></a>) 在一些情况下也能派上用场</p>
-<p><a id="4" href="#b4"><strong>4</strong></a>: 在开发者选项中启用不保留 Activity 选项可以方便调试共享元素返回/重新进入时对应过渡动画的行为，这也可以帮助测试在返回的过渡效果开始之前可能发生最糟糕的情况( Activity 需要重新构造布局加载数据…)</p>
-
-        
-        
-        <p class="article-more-link">
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2017/04/27/延迟共享元素的过渡动画/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/延迟共享元素的过渡动画/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
@@ -2212,6 +2212,109 @@ tab"></p>
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2017/04/27/通过Jenkins并行完成UI的自动化测试/" title="通过Jenkins并行完成UI的自动化测试" itemprop="url">通过Jenkins并行完成UI的自动化测试</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
+		
+  <p class="article-time">
+    <time datetime="2017-04-27T10:28:07.000Z" itemprop="datePublished"> 发表于 2017-04-27</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <ul>
+<li>原文链接 : <a href="http://www.hidroh.com/2015/04/14/concurrent-android-ui-automation-jenkins/" target="_blank" rel="external">Concurrent Android UI automation with Jenkins</a></li>
+</ul>
+<p><img src="http://www.hidroh.com/assets/img/parallel-cover.jpg" alt=""></p>
+<p>现在的 IT 公司会为了进入不同的市场开发相应的 App，来自同一家公司的 App 总会具有相似的 UI 逻辑，但 UI 的细节、风格又各有区分。随着产品的发展，抑或是在产品应用于新市场的过程中产生了旧 UI 逻辑的变种，用于测试所有 UI 逻辑的时间会与新 UI 的数量呈正比例关系增长。即使有 UI 的自动化框架可以用来减少测试所需的时间（例如 Calabash Android），使得每天只需要2个小时就能完成对 UI 的测试，但在这套 UI 衍生出四套“变种 UI”后，却要花费8个小时才能完成测试。</p>
+<p>这篇博文将利用 Continuous Integration (CI) 服务，同时在不同的设备中执行 UI 测试，并介绍一种从根源上减少这种实际场景下自动化测试所需时间的方法。此外，我们的测试都是在真机上运行，而不是虚拟机。</p>
+<p>更贴近现实的自动化测试：有很多东西只能通过真机来反映，像内存消耗，CPU 消耗：虚拟机通常都是消耗电脑的资源，而真机基本不会消耗电脑资源。</p>
+<p>而且用真机进行测试性价比较高！Android 设备都很便宜，所以你可以在需要设备进行测试的时候毫不犹豫地买买买，如果用虚拟机测试的话，由于虚拟机会消耗很多电脑资源而且拓展电脑硬件很烧钱，这无疑会限制测试设备的数量。</p>
+<p>虽说博文里同时使用了 Calabash Android 自动化框架 和 <a href="https://jenkins-ci.org/" target="_blank" rel="external">Jenkins CI</a>，但我提到的大部分方法可以通过运行在任意 CI 服务上的 <a href="https://wiki.jenkins-ci.org/display/JENKINS/Distributed+builds#Distributedbuilds-RunningMultipleSlavesontheSameMachine" target="_blank" rel="external">Android Debug Bridge (ADB)</a> 应用于其他的自动化测试框架里。</p>
+<h2 id="创建-Jenkins-slaves-和-slave-group"><a href="#创建-Jenkins-slaves-和-slave-group" class="headerlink" title="创建 Jenkins slaves 和 slave group"></a>创建 Jenkins slaves 和 slave group</h2><p>完成<a href="https://wiki.jenkins-ci.org/display/JENKINS/Distributed+builds" target="_blank" rel="external">分布式构建</a>的第一步就是创建 Jenkins slave，授权它管理多个“奴隶”。我们可以通过 Jenkins -&gt; Manage Jenkins -&gt; Manage Nodes 导航到 Jenkins slaves/nodes 的配置界面。</p>
+<p>根据定义，Jenkins slave 用于完成 Jenkins 主机分发下来的任务。在我们的使用场景中，需要完成的任务则是运行在 Android 设备上的自动化测试。为了完成这项任务，所有奴隶都可以<a href="https://wiki.jenkins-ci.org/display/JENKINS/Distributed+builds#Distributedbuilds-RunningMultipleSlavesontheSameMachine" target="_blank" rel="external">运行在相同的机器上</a>，也就是通过 USB 连接在电脑上的，具有执行 ADB 命令的 Android 设备。</p>
+<p>下面是一个与 Samsung S3 关联的奴隶的安装细节：</p>
+<p><img src="http://www.hidroh.com/assets/img/parallel-slave-1.png" alt=""></p>
+<p>当所有奴隶都运行在同一台机器上时，我建议为不同的奴隶结点提供不同的系统 roots 文件，因为它们很可能会在测试结果处被存储，如果它们指向同一个 root 文件，可能会让测试结果被不同的结点重写。我们可以通过 Remote FS root 进行这样的设置。</p>
+<blockquote>
+<p><strong>Remote FS root</strong></p>
+<p>每个奴隶都需要拥有 Jenkins 中的一个专用目录，我们在奴隶中为其指定绝对路径，如：’/var/jenkins’ 或 ‘c:\jenkins’，而且该路径应该是奴隶设备中的本地路径。但是该路径不需要对 Jenkins 可见，怎么正常怎么来就行。</p>
+<p>奴隶不会持有重要数据（不同于最后创建于其上的项目的活跃工作区），所以你可以将奴隶的工作区设置到一个临时目录。这样做的唯一缺点在于：你可能会在奴隶设备关机后失去最新的工作区。</p>
+</blockquote>
+<p>当 separate FS roots 和多处理器允许 Calabash 的并行操作时，ADB_DEVICE_ARG 环境变量需要用于通知 Calabash，因为 Calabash 运行的设备应该向其发送 ADB 命令，防止设备的多重连接。底层中，Calabash 通过 ADB 设备命令自动化 UI，当一个设备匹配于另一个奴隶结点，ADB_DEVICE_ARG 应该通过环境变量的配置应用到 node 结点层中，并在其后在任务层变为可用。</p>
+<blockquote>
+<p><strong>环境变量</strong></p>
+<p>这些键值对将会应用于结点上的每一个构建，并重写任意全局值，所以他们能在 Jenkins 的配置中被使用（如 $key 或 ${key}），而且将会被添加到构建上启动的进程。</p>
+</blockquote>
+<p>在 Nexus 4 中设置奴隶的方式如上</p>
+<p><img src="http://www.hidroh.com/assets/img/parallel-slave-2.png" alt=""></p>
+<p>如果你留心注意一些细节你会发现，所有奴隶结点都被配置了相同的 android-group 标签。这样做的目的主要是将奴隶分组，使得当我们需要使用奴隶时，方便我们调用特定分组里的所有奴隶。</p>
+<blockquote>
+<p>标签</p>
+<p>标签（AKA 标签）用于将多个奴隶分到一个逻辑组中，而每一个标签都会消耗空间。例如 ‘regression java6’ 将为为结点分配 ‘regression’ 和 ‘java6’ 标签。</p>
+<p>举例来说吧，如果你有多个窗口奴隶，而且你要完成的任务需要窗口，那么你可以让你的所有窗口奴隶持有 ‘windows’ 标签，然后将需要执行的任务与 ‘windows’ 标签绑定。这使得你的任务在所有窗口奴隶中被执行，而不是被随意执行。</p>
+</blockquote>
+<p><img src="http://www.hidroh.com/assets/img/parallel-slave-group.png" alt=""></p>
+<p>现在如果我们检查 android-group，我们会得到一个所有结点都带着 android-group 标签的列表，把其他设备添加到这个组里就像拷贝一个已存在的结点和更新 ADB_DEVICE_ARG 环境变量一样简单。</p>
+<h2 id="使用奴隶群建立并行任务"><a href="#使用奴隶群建立并行任务" class="headerlink" title="使用奴隶群建立并行任务"></a>使用奴隶群建立并行任务</h2><p>在进行了上面的配置以后，我们现在可以创建一个 Jenkins 任务使用连接到电脑的设备，通过各自的奴隶和具有 android-group 的奴隶群执行 Calabash Android。</p>
+<p><img src="http://www.hidroh.com/assets/img/parallel-downstream-1.png" alt=""></p>
+<p>通过选中“如果必要的话，执行并行构建”和“限制项目运行位置”两个配置选项，使得任务可以被并行执行，主题对结点可用，仅使用标有“android-group”标签的结点。但其中的限制是：需要确保只有与已连接的设备关联的结点才能用于自动化测试，因为我们有用于完成其他任务的其他与未连接设备关联的结点。</p>
+<blockquote>
+<p><strong>如果必要的话，执行并行构建</strong></p>
+<p>如果需要并行执行构建，Jenkins 会安排并并行执行多个构建（假设你有足够的执行器和传入的构建请求），这对于耗时长的构建和测试任务来说非常有用……此外，参数化构建也是非常实用的，因为每一个执行器的执行任务与其他执行器的执行任务相互独立。</p>
+</blockquote>
+<p>现在假设我们有4个自动化测试的请求和三个已连接的设备，处理完所有请求将需要两轮操作（第一轮三个设备将会被使用，剩下一个请求在队列中等待处理，当某个设备变为空闲状态则会处理该请求）。这就意味着我们可以使4个产品风格自动化测试的时间从8小时减少为4小时，如果我们再买一台或者多台设备的话，时间甚至会更少。</p>
+<p>##通过上游任务触发并行的下游任务</p>
+<p>写到这里，我们已经能够随心所欲地对我们想要的设备（连接在 USB 端口处可用的设备！）手动地触发并行的自动化测试。但是，我们为什么要手动地完成这些工作呢？我们可以用 Jenkins Parameterized Trigger Plugin 设置上游任务，通过相应的参数触发多个下游任务。</p>
+<p>例如，如果我们想要使用所有可用设备并行地测试多个应用 UI，那么我们可以设置一个这样的上游任务，并执行它：</p>
+<p><img src="http://www.hidroh.com/assets/img/parallel-upstream-2.png" alt=""></p>
+<p><img src="http://www.hidroh.com/assets/img/parallel-upstream-3.png" alt=""></p>
+<p>上面的配置完成后，我们可以触发三个并行的 MOBILE_TEST 下游任务（必须进行了“如果必要的话，执行并行构建”的配置），每一个下游任务将会测试一个指定的 App 风格“cherry”，“tomato”，“rasberry”，并通过一个叫作风格的参数发送到下游任务。上游任务将会被阻塞，等待所有下游任务完成任务并因此设置构建状态。</p>
+<p>我建议大家把上游任务运行在不同的奴隶结点/奴隶组中，而不是运行在和下游任务相同的奴隶结点/奴隶组中，否则它将占着设备不处理，浪费了资源</p>
+<p><img src="http://www.hidroh.com/assets/img/parallel-upstream-1.png" alt=""></p>
+<p>所以从今天开始，让我们一起回收这些被淘汰的设备，让它为我们贡献最后一丝价值吧！</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/04/27/通过Jenkins并行完成UI的自动化测试/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/04/27/通过Jenkins并行完成UI的自动化测试/" data-count-type="comments">&nbsp;</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2017/02/16/理解Java中的ThreadLocal/" title="理解Java中的ThreadLocal" itemprop="url">理解Java中的ThreadLocal</a>
   </h1>
   <p class="article-author">By
@@ -2321,110 +2424,6 @@ tab"></p>
 	
 	  	<span></span>
 		<a href="/2017/02/15/Java之数组array和集合list、set、map/#comments" class="ds-thread-count comments-count-link" data-thread-key="2017/02/15/Java之数组array和集合list、set、map/" data-count-type="comments">&nbsp;</a>
-	
-</div>
-
-</footer>
-
-
-    </article>
-
-
-
-
-
-
-   
-    
-    <article class="post-expand post" itemprop="articleBody"> 
-        <header class="article-info clearfix">
-  <h1 itemprop="name">
-    
-      <a href="/2016/12/08/git命令使用大全/" title="Git命令使用大全" itemprop="url">Git命令使用大全</a>
-  </h1>
-  <p class="article-author">By
-       
-		<a href="/about" title="Kevin" target="_blank" itemprop="author">Kevin</a>
-		
-  <p class="article-time">
-    <time datetime="2016-12-08T04:10:15.000Z" itemprop="datePublished"> 发表于 2016-12-08</time>
-    
-  </p>
-</header>
-    <div class="article-content">
-        
-        <h4 id="1-新建代码库"><a href="#1-新建代码库" class="headerlink" title="1.新建代码库"></a>1.新建代码库</h4><ul>
-<li><p>在当前目录新建一个Git代码库</p>
-<p><code>$ git init</code></p>
-</li>
-<li><p>新建一个目录，将其初始化为Git代码库</p>
-<p><code>$ git init [project-name]</code></p>
-</li>
-<li><p>下载一个项目和它的整个代码历史</p>
-<p><code>$ git clone [url]</code></p>
-</li>
-</ul>
-<h4 id="2-配置"><a href="#2-配置" class="headerlink" title="2.配置"></a>2.配置</h4><p>Git的设置文件为.gitconfig，它可以在用户主目录下（全局配置），也可以在项目目录下（项目配置）。</p>
-<ul>
-<li><p>显示当前的Git配置</p>
-<p><code>$ git config —list</code></p>
-</li>
-<li><p>编辑Git配置文件</p>
-<p><code>$ git config -e [—global]</code></p>
-</li>
-<li><p>设置提交代码时的用户信息</p>
-</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$ git config [--global] user.name &quot;[name]&quot;</div><div class="line">$ git config [--global] user.email &quot;[email address]&quot;</div></pre></td></tr></table></figure>
-<h4 id="3-增加-删除文件"><a href="#3-增加-删除文件" class="headerlink" title="3.增加/删除文件"></a>3.增加/删除文件</h4><ul>
-<li><p>添加指定文件到暂存区</p>
-<p><code>$ git add [file1][file2] …</code></p>
-</li>
-<li><p>添加指定目录到暂存区，包括子目录</p>
-<p><code>$ git add [dir]</code></p>
-</li>
-<li><p>添加当前目录的所有文件到暂存区</p>
-<p><code>$ git add .</code></p>
-</li>
-<li><p>添加每个变化前，都会要求确认,对于同一个文件的多处变化，可以实现分次提交</p>
-<p><code>$ git add -p</code></p>
-</li>
-<li><p>删除工作区文件，并且将这次删除放入暂存区</p>
-<p><code>$ git rm [file1][file2] …</code></p>
-</li>
-<li><p>停止追踪指定文件，但该文件会保留在工作区</p>
-<p><code>$ git rm --cached [file]</code></p>
-</li>
-<li><p>改名文件，并且将这个改名放入暂存区</p>
-<p><code>$ git mv [file-original][file-renamed]</code></p>
-</li>
-</ul>
-        
-        
-        <p class="article-more-link">
-          
-            <a href="/2016/12/08/git命令使用大全/#more">阅读全文</a>
-          
-       </p>
-    </div>
-    <footer class="article-footer clearfix">
-<div class="article-catetags">
-
-<div class="article-categories">
-  <span></span>
-  <a class="article-category-link" href="/categories/git/">git</a>
-</div>
-
-
-</div>
-
-
-
-
-<div class="comments-count">
-	
-	  	<span></span>
-		<a href="/2016/12/08/git命令使用大全/#comments" class="ds-thread-count comments-count-link" data-thread-key="2016/12/08/git命令使用大全/" data-count-type="comments">&nbsp;</a>
 	
 </div>
 
