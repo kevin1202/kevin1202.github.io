@@ -11,26 +11,23 @@
     
 
     
-    <meta name="description" content="原文链接 : Gradle tips &amp;amp; tricks to survive the zombie apocalypse
-
-#Gradle提示和使用技巧Rick Grimes不能帮助你，所以让我们一起获得它！
-Gradle 虽然之前一直存在于Android Studio中，但是它变成热门的转折点是Android Studio成为官方开发IDE。但是，我们充分利用这个伟大的构建自动化系统了">
+    <meta name="description" content="Gradle 虽然之前一直存在于Android Studio中，但是它变成热门的转折点是Android Studio成为官方开发IDE。但是，我们充分利用这个伟大的构建自动化系统了吗？
+工程和构建专门的全局变量使用gradle，会自动生成一个BuildConfig类文件并且我们有能力在它里面生成额外的字段。这对于像配置服务器URL和切换开关这类功能都是非常有用的。
+1234567891011121">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Gradle提示和使用技巧">
 <meta property="og:url" content="https://kevin1202.github.io/2017/04/27/Gradle提示和使用技巧/index.html">
 <meta property="og:site_name" content="Kevin博客">
-<meta property="og:description" content="原文链接 : Gradle tips &amp;amp; tricks to survive the zombie apocalypse
-
-#Gradle提示和使用技巧Rick Grimes不能帮助你，所以让我们一起获得它！
-Gradle 虽然之前一直存在于Android Studio中，但是它变成热门的转折点是Android Studio成为官方开发IDE。但是，我们充分利用这个伟大的构建自动化系统了">
+<meta property="og:description" content="Gradle 虽然之前一直存在于Android Studio中，但是它变成热门的转折点是Android Studio成为官方开发IDE。但是，我们充分利用这个伟大的构建自动化系统了吗？
+工程和构建专门的全局变量使用gradle，会自动生成一个BuildConfig类文件并且我们有能力在它里面生成额外的字段。这对于像配置服务器URL和切换开关这类功能都是非常有用的。
+1234567891011121">
 <meta property="og:image" content="https://cdn-images-1.medium.com/max/1600/1*njDARwtg9P9NdL5GfhIjqA.png">
-<meta property="og:updated_time" content="2017-04-28T06:03:02.000Z">
+<meta property="og:updated_time" content="2017-05-17T13:36:44.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Gradle提示和使用技巧">
-<meta name="twitter:description" content="原文链接 : Gradle tips &amp;amp; tricks to survive the zombie apocalypse
-
-#Gradle提示和使用技巧Rick Grimes不能帮助你，所以让我们一起获得它！
-Gradle 虽然之前一直存在于Android Studio中，但是它变成热门的转折点是Android Studio成为官方开发IDE。但是，我们充分利用这个伟大的构建自动化系统了">
+<meta name="twitter:description" content="Gradle 虽然之前一直存在于Android Studio中，但是它变成热门的转折点是Android Studio成为官方开发IDE。但是，我们充分利用这个伟大的构建自动化系统了吗？
+工程和构建专门的全局变量使用gradle，会自动生成一个BuildConfig类文件并且我们有能力在它里面生成额外的字段。这对于像配置服务器URL和切换开关这类功能都是非常有用的。
+1234567891011121">
 <meta name="twitter:image" content="https://cdn-images-1.medium.com/max/1600/1*njDARwtg9P9NdL5GfhIjqA.png">
 
     
@@ -108,11 +105,7 @@ Gradle 虽然之前一直存在于Android Studio中，但是它变成热门的�
 		
 		</div>
 		
-		<ul>
-<li>原文链接 : <a href="https://medium.com/@cesarmcferreira/gradle-tips-tricks-to-survive-the-zombie-apocalypse-3dd996604341#.k8a9o93ww" target="_blank" rel="external">Gradle tips &amp; tricks to survive the zombie apocalypse</a></li>
-</ul>
-<p>#Gradle提示和使用技巧<br>Rick Grimes不能帮助你，所以让我们一起获得它！</p>
-<p><a href="http://www.gradle.org/" target="_blank" rel="external">Gradle</a> 虽然之前一直存在于<a href="https://developer.android.com/sdk/installing/studio.html" target="_blank" rel="external">Android Studio</a>中，但是它变成热门的转折点是Android Studio成为官方开发IDE。但是，我们充分利用这个伟大的构建自动化系统了吗？</p>
+		<p><a href="http://www.gradle.org/" target="_blank" rel="external">Gradle</a> 虽然之前一直存在于<a href="https://developer.android.com/sdk/installing/studio.html" target="_blank" rel="external">Android Studio</a>中，但是它变成热门的转折点是Android Studio成为官方开发IDE。但是，我们充分利用这个伟大的构建自动化系统了吗？</p>
 <h2 id="工程和构建专门的全局变量"><a href="#工程和构建专门的全局变量" class="headerlink" title="工程和构建专门的全局变量"></a>工程和构建专门的全局变量</h2><p>使用gradle，会自动生成一个<strong>BuildConfig</strong>类文件并且我们有能力在它里面生成额外的字段。这对于像配置服务器URL和切换开关这类功能都是非常有用的。</p>
 <figure class="highlight gradle"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">defaultConfig &#123;</div><div class="line">    buildConfigField <span class="string">"String"</span>, <span class="string">"TWITTER_TOKEN"</span>, <span class="string">'"SDASJHDKAJSK"'</span></div><div class="line">&#125;</div><div class="line">buildTypes &#123;</div><div class="line">    debug &#123;</div><div class="line">      buildConfigField <span class="string">"String"</span>, <span class="string">"API_URL"</span>, <span class="string">'"http://api.dev.com/"'</span></div><div class="line">      buildConfigField <span class="string">"boolean"</span>, <span class="string">"REPORT_CRASHES"</span>, <span class="string">"true"</span></div><div class="line">    &#125;</div><div class="line">    release &#123;</div><div class="line">      buildConfigField <span class="string">"String"</span>, <span class="string">"API_URL"</span>, <span class="string">'"http://api.prod.com/"'</span></div><div class="line">      buildConfigField <span class="string">"boolean"</span>, <span class="string">"REPORT_CRASHES"</span>, <span class="string">"false"</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p><strong>BuildConfig.TWITTER_TOKEN</strong>, <strong>BuildConfig.REPORT_CRASHES</strong> 和 <strong>BuildConfig.API_URL</strong> 都是能够通过<strong>BuildConfig</strong>这个final class访问的。（后面两个变量的值根据构建类型而不同）</p>
@@ -138,8 +131,6 @@ Gradle 虽然之前一直存在于Android Studio中，但是它变成热门的�
 <p>单元测试日志输出</p>
 <h2 id="Gradle-告诉我我很漂亮"><a href="#Gradle-告诉我我很漂亮" class="headerlink" title="Gradle,告诉我我很漂亮"></a>Gradle,告诉我我很漂亮</h2><p>一个有组织地方式使用它：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">android &#123;</div><div class="line">    ...</div><div class="line">    buildTypes &#123;</div><div class="line">        def BOOLEAN = &quot;boolean&quot;</div><div class="line">        def TRUE = &quot;true&quot;</div><div class="line">        def FALSE = &quot;false&quot;</div><div class="line">        def LOG_HTTP_REQUESTS = &quot;LOG_HTTP_REQUESTS&quot;</div><div class="line">        def REPORT_CRASHES = &quot;REPORT_CRASHES&quot;</div><div class="line">        def DEBUG_IMAGES = &quot;DEBUG_IMAGES&quot;</div><div class="line"> </div><div class="line">        debug &#123;</div><div class="line">            ...</div><div class="line">            buildConfigField BOOLEAN, LOG_HTTP_REQUESTS, TRUE</div><div class="line">            buildConfigField BOOLEAN, REPORT_CRASHES, FALSE</div><div class="line">            buildConfigField BOOLEAN, DEBUG_IMAGES, TRUE</div><div class="line">        &#125;</div><div class="line"> </div><div class="line">        release &#123;</div><div class="line">            ...</div><div class="line">            buildConfigField BOOLEAN, LOG_HTTP_REQUESTS, FALSE</div><div class="line">            buildConfigField BOOLEAN, REPORT_CRASHES, TRUE</div><div class="line">            buildConfigField BOOLEAN, DEBUG_IMAGES, FALSE</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>如果你有任何问题在 <a href="https://twitter.com/cesarmcferreira" target="_blank" rel="external">@cesarmcferreira</a>和我联系</p>
-<p>感谢<a href="https://medium.com/@jacoelho" target="_blank" rel="external">José Coelho</a>.</p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -166,18 +157,18 @@ Gradle 虽然之前一直存在于Android Studio中，但是它变成热门的�
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/2017/04/27/2015-Google-IO带来的新Android开发工具 /" title="2015 Google IO带来的新 Android 开发工具">
+ <a href="/2017/04/27/Code Review最佳实践/" title="Code Review最佳实践">
   <strong>上一篇：</strong><br/>
   <span>
-  2015 Google IO带来的新 Android 开发工具</span>
+  Code Review最佳实践</span>
 </a>
 </div>
 
 
 <div class="next">
-<a href="/2017/04/27/自动化截图－应用分发时的自动截图方案/"  title="自动化截图－应用分发时的自动截图方案">
+<a href="/2017/04/27/Parcelable vs Serializable对比/"  title="Parcelable vs Serializable">
  <strong>下一篇：</strong><br/> 
- <span>自动化截图－应用分发时的自动截图方案
+ <span>Parcelable vs Serializable
 </span>
 </a>
 </div>
@@ -245,14 +236,6 @@ Gradle 虽然之前一直存在于Android Studio中，但是它变成热门的�
 			
 		
 			
-				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
 			
 		
@@ -262,6 +245,14 @@ Gradle 虽然之前一直存在于Android Studio中，但是它变成热门的�
 		
 			
 				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
 			
 		
 			

@@ -11,25 +11,19 @@
     
 
     
-    <meta name="description" content="原文链接 : Code Review Best Practices
-
-在Wiredrive上，我们做了很多的Code Review。在此之前我从来没有做过，这对于我来说是一个全新的体验，下面来总结一下在Code Review中做的事情以及说说谈论Code Review的最好方式。
-简单的说，Code Review是开发者之间讨论修改代码来解决问题的过程。很多文章谈论了Code Review的诸多">
+    <meta name="description" content="在Wiredrive上，我们做了很多的Code Review。在此之前我从来没有做过，这对于我来说是一个全新的体验，下面来总结一下在Code Review中做的事情以及说说谈论Code Review的最好方式。
+简单的说，Code Review是开发者之间讨论修改代码来解决问题的过程。很多文章谈论了Code Review的诸多好处，包括知识共享，代码的质量，开发者的成长，却很少讨论审查什么、如何审">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Code Review最佳实践">
 <meta property="og:url" content="https://kevin1202.github.io/2017/04/27/Code Review最佳实践/index.html">
 <meta property="og:site_name" content="Kevin博客">
-<meta property="og:description" content="原文链接 : Code Review Best Practices
-
-在Wiredrive上，我们做了很多的Code Review。在此之前我从来没有做过，这对于我来说是一个全新的体验，下面来总结一下在Code Review中做的事情以及说说谈论Code Review的最好方式。
-简单的说，Code Review是开发者之间讨论修改代码来解决问题的过程。很多文章谈论了Code Review的诸多">
-<meta property="og:updated_time" content="2017-04-28T05:42:50.000Z">
+<meta property="og:description" content="在Wiredrive上，我们做了很多的Code Review。在此之前我从来没有做过，这对于我来说是一个全新的体验，下面来总结一下在Code Review中做的事情以及说说谈论Code Review的最好方式。
+简单的说，Code Review是开发者之间讨论修改代码来解决问题的过程。很多文章谈论了Code Review的诸多好处，包括知识共享，代码的质量，开发者的成长，却很少讨论审查什么、如何审">
+<meta property="og:updated_time" content="2017-05-17T13:53:42.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Code Review最佳实践">
-<meta name="twitter:description" content="原文链接 : Code Review Best Practices
-
-在Wiredrive上，我们做了很多的Code Review。在此之前我从来没有做过，这对于我来说是一个全新的体验，下面来总结一下在Code Review中做的事情以及说说谈论Code Review的最好方式。
-简单的说，Code Review是开发者之间讨论修改代码来解决问题的过程。很多文章谈论了Code Review的诸多">
+<meta name="twitter:description" content="在Wiredrive上，我们做了很多的Code Review。在此之前我从来没有做过，这对于我来说是一个全新的体验，下面来总结一下在Code Review中做的事情以及说说谈论Code Review的最好方式。
+简单的说，Code Review是开发者之间讨论修改代码来解决问题的过程。很多文章谈论了Code Review的诸多好处，包括知识共享，代码的质量，开发者的成长，却很少讨论审查什么、如何审">
 
     
     
@@ -106,10 +100,7 @@
 		
 		</div>
 		
-		<ul>
-<li>原文链接 : <a href="http://kevinlondon.com/2015/05/05/code-review-best-practices.html" target="_blank" rel="external">Code Review Best Practices</a></li>
-</ul>
-<p>在Wiredrive上，我们做了很多的Code Review。在此之前我从来没有做过，这对于我来说是一个全新的体验，下面来总结一下在Code Review中做的事情以及说说谈论Code Review的最好方式。</p>
+		<p>在Wiredrive上，我们做了很多的Code Review。在此之前我从来没有做过，这对于我来说是一个全新的体验，下面来总结一下在Code Review中做的事情以及说说谈论Code Review的最好方式。</p>
 <p>简单的说，Code Review是开发者之间讨论修改代码来解决问题的过程。很多文章谈论了Code Review的诸多好处，包括知识共享，代码的质量，开发者的成长，却很少讨论审查什么、如何审查。</p>
 <p>###审查的内容</p>
 <p>####体系结构和代码设计</p>
@@ -177,26 +168,6 @@
 <li>必要时进行重构，随着项目的迭代，在计划新增功能的同时，开发要主动计划重构的工作项。</li>
 <li>开放的心态，虚心接受大家的Review Comments。</li>
 </ul>
-<p>####参考<br>一些关于clean code的书籍，如下：</p>
-<ul>
-<li><a href="http://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882" target="_blank" rel="external">Clean Code</a></li>
-<li><a href="http://www.amazon.com/Refactoring-Improving-Design-Existing-Code/dp/0201485672" target="_blank" rel="external">Refactoring</a></li>
-<li><a href="https://www.youtube.com/watch?v=8bZh5LMaSmE&amp;index=1&amp;list=LLlt4ZSW8NUcXLWiB3NMnK_w" target="_blank" rel="external">All the Small Things by Sandi Metz</a></li>
-<li><a href="https://www.youtube.com/watch?v=aAb7hSCtvGw&amp;list=LLlt4ZSW8NUcXLWiB3NMnK_w&amp;index=48" target="_blank" rel="external">How to Design a Good API and Why it Matters</a></li>
-<li><a href="https://news.ycombinator.com/item?id=9517892" target="_blank" rel="external">Discussion on Hacker News</a></li>
-</ul>
-<p>##译者注</p>
-<p>#####一. 参考了 <a href="http://jimhuang.cn/?p=59" target="_blank" rel="external">http://jimhuang.cn/?p=59</a></p>
-<p>#####二. 国内阿里的<a href="http://coolshell.cn/articles/author/haoel" target="_blank" rel="external">陈皓</a>写的关于codereview的文章，也很有见底，推荐大家看看</p>
-<p>######1.<a href="http://coolshell.cn/articles/1302.html" target="_blank" rel="external">Code Review中的几个提示</a></p>
-<ul>
-<li>先Review设计实现思路，然后Review设计模式，接着Review成形的骨干代码，最后Review完成的代码，如果程序复杂的话，需要拆成几个单元或模块分别Review</li>
-<li>Code Review不要太正式，而且要短</li>
-<li>学会享受Code Reivew</li>
-</ul>
-<p>######2.<a href="http://coolshell.cn/articles/11432.html/comment-page-1#comments" target="_blank" rel="external">从Code Review 谈如何做技术</a></p>
-<p>#####三. Code Review 工具<br><a href="https://github.com/reviewboard/reviewboard" target="_blank" rel="external">Review Board</a></p>
-<p>#####四.<br>在Code Review时，要在 <strong>意识</strong> <strong>方法</strong> <strong>心态</strong> <strong>习惯</strong> 这几个方面上下功夫，坚持code review，相信我们会在各方面有很大的提升。</p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -223,18 +194,18 @@
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/2017/04/27/Android进行单元测试难在哪-part4/" title="Android 进行单元测试难在哪-part4">
+ <a href="/2017/05/07/面试知识点/" title="面试知识点">
   <strong>上一篇：</strong><br/>
   <span>
-  Android 进行单元测试难在哪-part4</span>
+  面试知识点</span>
 </a>
 </div>
 
 
 <div class="next">
-<a href="/2017/04/27/FaceBook推出的Android图片加载库-Fresco/"  title="FaceBook推出的Android图片加载库-Fresco">
+<a href="/2017/04/27/Gradle提示和使用技巧/"  title="Gradle提示和使用技巧">
  <strong>下一篇：</strong><br/> 
- <span>FaceBook推出的Android图片加载库-Fresco
+ <span>Gradle提示和使用技巧
 </span>
 </a>
 </div>
@@ -302,14 +273,6 @@
 			
 		
 			
-				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
 			
 		
@@ -319,6 +282,14 @@
 		
 			
 				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
 			
 		
 			

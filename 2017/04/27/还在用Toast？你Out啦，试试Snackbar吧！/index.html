@@ -11,30 +11,33 @@
     
 
     
-    <meta name="description" content="原文链接 : Welcome Snackbar, Goodbye Toast!
+    <meta name="description" content="Snackbar是design support library中另一个组件，使用Snackbar我们可以在屏幕底部(大多时候)快速弹出消息，它和Toast非常相似，但是它更灵活一些。
 
-欢迎来到Android design support library系列教程第二部分，第一部分我们讨论了Floating action button的一些attributes 和 常见issues。
-今天我们讨论一下另一个组件”Snackbar”.
-Welcome Snackbar, Goodbye Toast!">
+当它显示一段时间后或用户与屏幕交互时它会自动消失。
+可以自定义action-可选操作。
+swiping it off the screen可以让FAB消失
+它是context sensitive message(自">
 <meta property="og:type" content="article">
 <meta property="og:title" content="还在用Toast？你Out啦，试试Snackbar吧！">
 <meta property="og:url" content="https://kevin1202.github.io/2017/04/27/还在用Toast？你Out啦，试试Snackbar吧！/index.html">
 <meta property="og:site_name" content="Kevin博客">
-<meta property="og:description" content="原文链接 : Welcome Snackbar, Goodbye Toast!
+<meta property="og:description" content="Snackbar是design support library中另一个组件，使用Snackbar我们可以在屏幕底部(大多时候)快速弹出消息，它和Toast非常相似，但是它更灵活一些。
 
-欢迎来到Android design support library系列教程第二部分，第一部分我们讨论了Floating action button的一些attributes 和 常见issues。
-今天我们讨论一下另一个组件”Snackbar”.
-Welcome Snackbar, Goodbye Toast!">
+当它显示一段时间后或用户与屏幕交互时它会自动消失。
+可以自定义action-可选操作。
+swiping it off the screen可以让FAB消失
+它是context sensitive message(自">
 <meta property="og:image" content="http://www.technotalkative.com/wp-content/uploads/2015/06/Snackbar-framelayout1.gif">
 <meta property="og:image" content="http://www.technotalkative.com/wp-content/uploads/2015/06/Snackbar-with-CoordinatorLayout1.gif">
-<meta property="og:updated_time" content="2017-04-28T05:53:11.000Z">
+<meta property="og:updated_time" content="2017-05-17T13:47:07.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="还在用Toast？你Out啦，试试Snackbar吧！">
-<meta name="twitter:description" content="原文链接 : Welcome Snackbar, Goodbye Toast!
+<meta name="twitter:description" content="Snackbar是design support library中另一个组件，使用Snackbar我们可以在屏幕底部(大多时候)快速弹出消息，它和Toast非常相似，但是它更灵活一些。
 
-欢迎来到Android design support library系列教程第二部分，第一部分我们讨论了Floating action button的一些attributes 和 常见issues。
-今天我们讨论一下另一个组件”Snackbar”.
-Welcome Snackbar, Goodbye Toast!">
+当它显示一段时间后或用户与屏幕交互时它会自动消失。
+可以自定义action-可选操作。
+swiping it off the screen可以让FAB消失
+它是context sensitive message(自">
 <meta name="twitter:image" content="http://www.technotalkative.com/wp-content/uploads/2015/06/Snackbar-framelayout1.gif">
 
     
@@ -112,16 +115,7 @@ Welcome Snackbar, Goodbye Toast!">
 		
 		</div>
 		
-		<ul>
-<li>原文链接 : <a href="http://www.technotalkative.com/part-2-welcome-snackbar-goodbye-toast/" target="_blank" rel="external">Welcome Snackbar, Goodbye Toast!</a></li>
-</ul>
-<p>欢迎来到Android design support library系列教程第二部分，第一部分我们讨论了<a href="http://www.technotalkative.com/part-1-floating-action-button/" target="_blank" rel="external">Floating action button</a>的一些attributes 和 常见issues。</p>
-<p>今天我们讨论一下另一个组件”Snackbar”.</p>
-<p>Welcome Snackbar, Goodbye Toast!</p>
-<blockquote>
-<p>“Providing lightweight, quick feedback about an operation is a perfect opportunity to use a snackbar.”</p>
-</blockquote>
-<p>Snackbar是design support library中另一个组件，使用Snackbar我们可以在屏幕底部(大多时候)快速弹出消息，它和Toast非常相似，但是它更灵活一些。</p>
+		<p>Snackbar是design support library中另一个组件，使用Snackbar我们可以在屏幕底部(大多时候)快速弹出消息，它和Toast非常相似，但是它更灵活一些。</p>
 <ul>
 <li>当它显示一段时间后或用户与屏幕交互时它会自动消失。</li>
 <li>可以自定义action-可选操作。</li>
@@ -158,7 +152,6 @@ Welcome Snackbar, Goodbye Toast!">
 <p>###配置Snackbar可选操作</p>
 <p>我们可以使用额外的可选操作来配置snackbar，比如<em><font color="red">setActionTextColor</font></em> 和 <em><font color="red">setDuration</font></em>:</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Snackbar.make(rootlayout, <span class="string">"Hello SnackBar!"</span>, Snackbar.LENGTH_SHORT)</div><div class="line">       .setAction(<span class="string">"Undo"</span>, <span class="keyword">new</span> View.OnClickListener() &#123;</div><div class="line">           <span class="meta">@Override</span></div><div class="line">           <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</div><div class="line">               <span class="comment">// Perform anything for the action selected</span></div><div class="line">           &#125;</div><div class="line">       &#125;)</div><div class="line">       .setActionTextColor(R.color.material_blue)</div><div class="line">       .setDuration(<span class="number">4000</span>).show();</div></pre></td></tr></table></figure>
-<p>下载示例代码：<a href="https://github.com/PareshMayani/DesignSupportLibraryExamples" target="_blank" rel="external">https://github.com/PareshMayani/DesignSupportLibraryExamples</a></p>
 <p>参考文档：<br><a href="https://developer.android.com/reference/android/support/design/widget/Snackbar.html" target="_blank" rel="external">https://developer.android.com/reference/android/support/design/widget/Snackbar.html</a></p>
 <p>###总结</p>
 <p>在这部分文章中，我们讨论了Snackbar，它和TOAST很相似，但是它更灵活一些。Snackbar中可以定义action，当用户与屏幕交互时或者显示一段时间后会自动消失。</p>
@@ -189,18 +182,18 @@ Welcome Snackbar, Goodbye Toast!">
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/2017/04/27/FaceBook推出的Android图片加载库-Fresco/" title="FaceBook推出的Android图片加载库-Fresco">
+ <a href="/2017/04/27/Parcelable vs Serializable对比/" title="Parcelable vs Serializable">
   <strong>上一篇：</strong><br/>
   <span>
-  FaceBook推出的Android图片加载库-Fresco</span>
+  Parcelable vs Serializable</span>
 </a>
 </div>
 
 
 <div class="next">
-<a href="/2017/04/27/Gradle小知识1/"  title="Gradle小知识#1：tasks">
+<a href="/2017/04/27/如何在本地搭建一个Android应用crashing跟踪系统－ACRA/"  title="如何在本地搭建一个Android应用crashing跟踪系统－ACRA">
  <strong>下一篇：</strong><br/> 
- <span>Gradle小知识#1：tasks
+ <span>如何在本地搭建一个Android应用crashing跟踪系统－ACRA
 </span>
 </a>
 </div>
@@ -268,14 +261,6 @@ Welcome Snackbar, Goodbye Toast!">
 			
 		
 			
-				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/Spannable/" title="Spannable">Spannable<sup>1</sup></a></li>
 			
 		
@@ -285,6 +270,14 @@ Welcome Snackbar, Goodbye Toast!">
 		
 			
 				<li><a href="/tags/Timer/" title="Timer">Timer<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Mac/" title="Mac">Mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Library/" title="Library">Library<sup>1</sup></a></li>
 			
 		
 			
